@@ -141,7 +141,7 @@ for i in compute-dpdk contrail-controller contrail-analytics contrail-database c
 ## create tht template copy
 ```
 cp -r /usr/share/openstack-tripleo-heat-templates/ tripleo-heat-templates
-git clone https://github.com/juniper/contrail-tripleo-heat-templates -b stable/queens
+git clone https://github.com/tungstenfabric/tf-tripleo-heat-templates -b stable/queens
 cp -r contrail-tripleo-heat-templates/* tripleo-heat-templates/
 ```
 
