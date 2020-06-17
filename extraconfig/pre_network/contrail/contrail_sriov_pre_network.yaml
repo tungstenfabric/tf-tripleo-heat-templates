@@ -21,35 +21,6 @@ parameters:
       toplevel DeploymentServerBlacklist parameter's value.
   server:
     type: string
-  KernelArgs:
-    default: ""
-    type: string
-    description: Kernel Args to apply to the host
-    tags:
-      - role_specific
-  TunedProfileName:
-    default: ""
-    type: string
-    description: Tuned Profile to apply to the host
-    tags:
-      - role_specific
-  IsolCpusList:
-    default: ""
-    type: string
-    description: >
-      List of logical CPU ids whic need to be isolated from the host processes.
-      This input is provided to the tuned profile cpu-partitioning to configure
-      systemd and repin interrupts (IRQ repinning).
-    tags:
-      - role_specific
-  ContrailSriovHugepages2MB:
-    default: '1024'
-    description: Number of 2MB hugepages
-    type: string
-  ContrailSriovHugepages1GB:
-    default: ''
-    description: Number of 1GB hugepages
-    type: string
   ContrailVrouterModuleOptions:
     default: ''
     description: >
@@ -195,8 +166,6 @@ resources:
     properties:
       group: ansible
       inputs:
-        - name: _CONTRAIL_HUGEPAGES_1GB_
-        - name: _CONTRAIL_HUGEPAGES_2MB_
         - name: _CONTRAIL_SRIOV_NUM_VFS_
         - name: _IS_DPDK_
       outputs:
@@ -216,8 +185,6 @@ resources:
           - []
           - ['CREATE'] # Only do this on CREATE
       input_values:
-        _CONTRAIL_HUGEPAGES_1GB_: {get_attr: [ContrailSettingsRoleParametersValue, value, hugepages_1gb]}
-        _CONTRAIL_HUGEPAGES_2MB_: {get_attr: [ContrailSettingsRoleParametersValue, value, hugepages_2mb]}
         _CONTRAIL_SRIOV_NUM_VFS_: {get_attr: [ContrailSettingsRoleParametersValue, value, sriov_num]}
         _IS_DPDK_: {if: [is_dpdk, 'True', '']}
 
@@ -275,103 +242,17 @@ resources:
       - DockerContrailVrouterAgentDpdkImageNormalize
       - DockerContrailVrouterKernelInitDpdkImageNormalize
 
-  SriovKernelParametersConfig:
-    type: OS::Heat::SoftwareConfig
-    properties:
-      group: ansible
-      inputs:
-        - name: _CONTRAIL_DPDK_DRIVER_
-        - name: _CONTRAIL_SRIOV_NUM_VFS_
-        - name: _CONTRAIL_HUGEPAGES_2MB_
-        - name: _CONTRAIL_HUGEPAGES_1GB_
-        - name: _TUNED_PROFILE_NAME_
-        - name: _TUNED_CORES_
-      outputs:
-        - name: result
-      config:
-        get_file: contrail_ansible_kernel_config.yaml
-
-  SriovKernelParametersDeployment:
-    type: OS::TripleO::SoftwareDeployment
-    depends_on: [SriovContainerParametersDeployment]
-    properties:
-      name: SriovKernelParametersDeployment
-      server:  {get_param: server}
-      config: {get_resource: SriovKernelParametersConfig}
-      actions:
-        if:
-          - deployment_actions_empty
-          - []
-          - ['CREATE'] # Only do this on CREATE
-      input_values:
-        _CONTRAIL_DPDK_DRIVER_: {get_attr: [ContrailSettingsRoleParametersValue, value, dpdk_driver]}
-        _CONTRAIL_HUGEPAGES_1GB_: {get_attr: [ContrailSettingsRoleParametersValue, value, hugepages_1gb]}
-        _CONTRAIL_HUGEPAGES_2MB_: {get_attr: [ContrailSettingsRoleParametersValue, value, hugepages_2mb]}
-        _CONTRAIL_SRIOV_NUM_VFS_: {get_attr: [ContrailSettingsRoleParametersValue, value, sriov_num]}
-        _KERNEL_ARGS_: {get_param: [RoleParameters, KernelArgs]}
-        _TUNED_PROFILE_NAME_: {get_param: [RoleParameters, TunedProfileName]}
-        _TUNED_CORES_: {get_param: [RoleParameters, IsolCpusList]}
-
-  RebootConfig:
-    type: OS::Heat::SoftwareConfig
-    properties:
-      group: script
-      config: |
-        #!/bin/bash
-        # Stop os-collect-config to avoid any race collecting another
-        # deployment before reboot happens
-        # Do reboot only if it is really required.
-        if [ -f /tmp/kernel_args_reboot_required.ansible ]; then
-          rm -f /tmp/kernel_args_reboot_required.ansible
-          systemctl stop os-collect-config.service
-          /sbin/reboot
-        fi
-
-  RebootDeployment:
-    type: OS::TripleO::SoftwareDeployment
-    depends_on: [SriovKernelParametersDeployment]
-    properties:
-      name: RebootDeployment
-      server:  {get_param: server}
-      config: {get_resource: RebootConfig}
-      actions:
-        if:
-          - deployment_actions_empty
-          - []
-          - ['CREATE'] # Only do this on CREATE
-      signal_transport: NO_SIGNAL
-
-  RebootEnsureConfig:
-    type: OS::Heat::SoftwareConfig
-    properties:
-      group: script
-      config: |
-        #!/bin/bash
-        echo "Reboot completed"
-
-  RebootEnsureDeployment:
-    type: OS::TripleO::SoftwareDeployment
-    depends_on: RebootDeployment
-    properties:
-      name: RebootEnsureDeployment
-      server:  {get_param: server}
-      config: {get_resource: RebootEnsureConfig}
-      actions:
-        if:
-          - deployment_actions_empty
-          - []
-          - ['CREATE'] # Only do this on CREATE
 
 outputs:
   result:
     value:
-      get_attr: [SriovKernelParametersDeployment, result]
+      get_attr: [SriovContainerParametersDeployment, result]
   stdout:
     value:
-      get_attr: [SriovKernelParametersDeployment, deploy_stdout]
+      get_attr: [SriovContainerParametersDeployment, deploy_stdout]
   stderr:
     value:
-      get_attr: [SriovKernelParametersDeployment, deploy_stderr]
+      get_attr: [SriovContainerParametersDeployment, deploy_stderr]
   status_code:
     value:
-      get_attr: [SriovKernelParametersDeployment, deploy_status_code]
+      get_attr: [SriovContainerParametersDeployment, deploy_status_code]
