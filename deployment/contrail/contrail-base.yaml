@@ -766,6 +766,8 @@ outputs:
                       (allow container_t container_share_t ( file ( entrypoint )))
                       (allow container_t container_file_t (chr_file (read)))
                       (allow container_t spc_t (fifo_file (write ioctl getattr setattr)))
+                      (allow container_t mount_var_run_t (dir ( openat read write )))
+                      (allow container_t container_var_run_t (file ( openat open read write )))
                       )
 
                 - name: create selinux module from file /tmp/contrail_container.cil

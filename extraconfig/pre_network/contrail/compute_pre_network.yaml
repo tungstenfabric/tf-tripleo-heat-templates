@@ -21,27 +21,6 @@ parameters:
       toplevel DeploymentServerBlacklist parameter's value.
   server:
     type: string
-  KernelArgs:
-    default: ""
-    type: string
-    description: Kernel Args to apply to the host
-    tags:
-      - role_specific
-  TunedProfileName:
-    default: ""
-    type: string
-    description: Tuned Profile to apply to the host
-    tags:
-      - role_specific
-  IsolCpusList:
-    default: ""
-    type: string
-    description: >
-      List of logical CPU ids whic need to be isolated from the host processes.
-      This input is provided to the tuned profile cpu-partitioning to configure
-      systemd and repin interrupts (IRQ repinning).
-    tags:
-      - role_specific
   ContrailRegistry:
     default: 'michaelhenkel'
     description: Contrail Registry
@@ -49,14 +28,6 @@ parameters:
   ContrailImageTag:
     default: 'latest'
     description: Contrail container image tag
-    type: string
-  ContrailVrouterHugepages2MB:
-    default: '1024'
-    description: Number of 2MB hugepages
-    type: string
-  ContrailVrouterHugepages1GB:
-    default: ''
-    description: Number of 1GB hugepages
     type: string
   ContrailVrouterModuleOptions:
     default: ''
@@ -100,13 +71,6 @@ description: >
   os-net-config takes over.
 
 conditions:
-  is_kernel_config_required:
-    or:
-      - {not: {equals: [{get_param: ContrailVrouterHugepages1GB}, ""]}}
-      - {not: {equals: [{get_param: [RoleParameters, ContrailVrouterHugepages1GB]}, ""]}}
-      - {not: {equals: [{get_param: [RoleParameters, KernelArgs]}, ""]}}
-      - {not: {equals: [{get_param: [RoleParameters, TunedProfileName]}, ""]}}
-      - {not: {equals: [{get_param: [RoleParameters, IsolCpusList]}, ""]}}
   deployment_actions_empty:
     equals:
       - {get_param: deployment_actions}
@@ -136,42 +100,12 @@ resources:
         map_replace:
           - map_replace:
             - contrail_settings: ContrailSettings
-              hugepages_2mb: ContrailVrouterHugepages2MB
-              hugepages_1gb: ContrailVrouterHugepages1GB
               vrouter_module_opts: ContrailVrouterModuleOptions
             - values: {get_param: [RoleParameters]}
           - values:
               ContrailSettings: {get_param: ContrailSettings}
-              ContrailVrouterHugepages2MB: {get_param: ContrailVrouterHugepages2MB}
-              ContrailVrouterHugepages1GB: {get_param: ContrailVrouterHugepages1GB}
               ContrailVrouterModuleOptions: {get_param: ContrailVrouterModuleOptions}
 
-  VrouterHostParametersConfig:
-    type: OS::Heat::SoftwareConfig
-    properties:
-      group: ansible
-      inputs:
-        - name: _CONTRAIL_HUGEPAGES_1GB_
-        - name: _CONTRAIL_HUGEPAGES_2MB_
-      outputs:
-        - name: result
-      config:
-        get_file: contrail_ansible_host_config.yaml
-
-  VrouterHostParametersDeployment:
-    type: OS::Heat::SoftwareDeployment
-    properties:
-      name: VrouterHostParametersDeployment
-      server:  {get_param: server}
-      config: {get_resource: VrouterHostParametersConfig}
-      actions:
-        if:
-          - deployment_actions_empty
-          - []
-          - ['CREATE'] # Only do this on CREATE
-      input_values:
-        _CONTRAIL_HUGEPAGES_1GB_: {get_attr: [ContrailSettingsRoleParametersValue, value, hugepages_1gb]}
-        _CONTRAIL_HUGEPAGES_2MB_: {get_attr: [ContrailSettingsRoleParametersValue, value, hugepages_2mb]}
 
   VrouterContainerParametersConfig:
     type: OS::Heat::SoftwareConfig
@@ -212,110 +146,21 @@ resources:
         _CONTRAIL_VROUTER_PLUGIN_INIT_IMAGE_: {get_attr: [DockerContrailVrouterPluginInitImageNormalize, contrail_image]}
         _CONTRAIL_VROUTER_PLUGIN_INIT_IMAGE_NAME_: {get_attr: [DockerContrailVrouterPluginInitImageNormalize, contrail_image_only]}
     depends_on:
-      - VrouterHostParametersDeployment
       - DockerContrailVrouterPluginInitImageNormalize
       - DockerContrailVrouterKernelImageNormalize
       - DockerContrailVrouterAgentImageNormalize
 
-  VrouterKernelParametersConfig:
-    type: OS::Heat::SoftwareConfig
-    condition: is_kernel_config_required
-    properties:
-      group: ansible
-      inputs:
-        - name: _CONTRAIL_HUGEPAGES_2MB_
-        - name: _CONTRAIL_HUGEPAGES_1GB_
-        - name: _TUNED_PROFILE_NAME_
-        - name: _TUNED_CORES_
-      outputs:
-        - name: result
-      config:
-        get_file: contrail_ansible_kernel_config.yaml
-
-  VrouterKernelParametersDeployment:
-    type: OS::TripleO::SoftwareDeployment
-    depends_on: [VrouterContainerParametersDeployment]
-    condition: is_kernel_config_required
-    properties:
-      name: VrouterKernelParametersDeployment
-      server:  {get_param: server}
-      config: {get_resource: VrouterKernelParametersConfig}
-      actions:
-        if:
-          - deployment_actions_empty
-          - []
-          - ['CREATE'] # Only do this on CREATE
-      input_values:
-        _CONTRAIL_HUGEPAGES_2MB_: {get_attr: [ContrailSettingsRoleParametersValue, value, hugepages_2mb]}
-        _CONTRAIL_HUGEPAGES_1GB_: {get_attr: [ContrailSettingsRoleParametersValue, value, hugepages_1gb]}
-        _KERNEL_ARGS_: {get_param: [RoleParameters, KernelArgs]}
-        _TUNED_PROFILE_NAME_: {get_param: [RoleParameters, TunedProfileName]}
-        _TUNED_CORES_: {get_param: [RoleParameters, IsolCpusList]}
-
-  RebootConfig:
-    type: OS::Heat::SoftwareConfig
-    condition: is_kernel_config_required
-    properties:
-      group: script
-      config: |
-        #!/bin/bash
-        # Stop os-collect-config to avoid any race collecting another
-        # deployment before reboot happens
-        # Do reboot only if it is really required.
-        if [ -f /tmp/kernel_args_reboot_required.ansible ]; then
-          rm -f /tmp/kernel_args_reboot_required.ansible
-          systemctl stop os-collect-config.service
-          /sbin/reboot
-        fi
-
-  RebootDeployment:
-    type: OS::TripleO::SoftwareDeployment
-    depends_on: [VrouterKernelParametersDeployment]
-    condition: is_kernel_config_required
-    properties:
-      name: RebootDeployment
-      server:  {get_param: server}
-      config: {get_resource: RebootConfig}
-      actions:
-        if:
-          - deployment_actions_empty
-          - []
-          - ['CREATE'] # Only do this on CREATE
-      signal_transport: NO_SIGNAL
-
-  RebootEnsureConfig:
-    type: OS::Heat::SoftwareConfig
-    #condition: is_kernel_config_required
-    properties:
-      group: script
-      config: |
-        #!/bin/bash
-        echo "Reboot completed"
-
-  RebootEnsureDeployment:
-    type: OS::TripleO::SoftwareDeployment
-    depends_on: RebootDeployment
-    condition: is_kernel_config_required
-    properties:
-      name: RebootEnsureDeployment
-      server:  {get_param: server}
-      config: {get_resource: RebootEnsureConfig}
-      actions:
-        if:
-          - deployment_actions_empty
-          - []
-          - ['CREATE'] # Only do this on CREATE
 
 outputs:
   result:
     value:
-      get_attr: [VrouterHostParametersDeployment, result]
+      get_attr: [VrouterContainerParametersDeployment, result]
   stdout:
     value:
-      get_attr: [VrouterHostParametersDeployment, deploy_stdout]
+      get_attr: [VrouterContainerParametersDeployment, deploy_stdout]
   stderr:
     value:
-      get_attr: [VrouterHostParametersDeployment, deploy_stderr]
+      get_attr: [VrouterContainerParametersDeployment, deploy_stderr]
   status_code:
     value:
-      get_attr: [VrouterHostParametersDeployment, deploy_status_code]
+      get_attr: [VrouterContainerParametersDeployment, deploy_status_code]

@@ -277,6 +277,7 @@
   HostnameFormatDefault: '%stackname%-contrailcontroller-%index%'
   ServicesDefault:
     - OS::TripleO::Services::AuditD
+    - OS::TripleO::Services::BootParams
     - OS::TripleO::Services::CACerts
     - OS::TripleO::Services::CertmongerUser
     - OS::TripleO::Services::Collectd
@@ -321,6 +322,7 @@
   HostnameFormatDefault: '%stackname%-contrailcontrolonly-%index%'
   ServicesDefault:
     - OS::TripleO::Services::AuditD
+    - OS::TripleO::Services::BootParams
     - OS::TripleO::Services::CACerts
     - OS::TripleO::Services::CertmongerUser
     - OS::TripleO::Services::Collectd
@@ -359,6 +361,7 @@
   ServicesDefault:
     - OS::TripleO::Services::Aide
     - OS::TripleO::Services::AuditD
+    - OS::TripleO::Services::BootParams
     - OS::TripleO::Services::CACerts
     - OS::TripleO::Services::CephClient
     - OS::TripleO::Services::CephExternal
@@ -413,6 +416,7 @@
   ServicesDefault:
     - OS::TripleO::Services::Aide
     - OS::TripleO::Services::AuditD
+    - OS::TripleO::Services::BootParams
     - OS::TripleO::Services::AgilioVrouter
     - OS::TripleO::Services::CACerts
     - OS::TripleO::Services::CephClient
@@ -468,6 +472,7 @@
   ServicesDefault:
     - OS::TripleO::Services::Aide
     - OS::TripleO::Services::AuditD
+    - OS::TripleO::Services::BootParams
     - OS::TripleO::Services::CACerts
     - OS::TripleO::Services::CephClient
     - OS::TripleO::Services::CephExternal
@@ -515,6 +520,7 @@
       subnet: tenant_subnet
   ServicesDefault:
     - OS::TripleO::Services::AuditD
+    - OS::TripleO::Services::BootParams
     - OS::TripleO::Services::CACerts
     - OS::TripleO::Services::CertmongerUser
     - OS::TripleO::Services::Collectd

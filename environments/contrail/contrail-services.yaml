@@ -62,9 +62,9 @@ parameter_defaults:
 
 # Enable hugepages for vrouter kernel mode by default - 2GB of total size
 # (to disable just put empty value '')
-#TODO: temporary disabled
-#  ContrailVrouterHugepages1GB: '2'
-#  ContrailSriovHugepages1GB: '2'
+# KernelArgs for nodes can be changed here
+  ComputeParameters:
+    KernelArgs: "default_hugepagesz=1GB hugepagesz=1G hugepages=2 hugepagesz=2M hugepages=1024"
 
 # ContrailDefaults - environment passed to provisione container
 # Pass all params as a list of strings
