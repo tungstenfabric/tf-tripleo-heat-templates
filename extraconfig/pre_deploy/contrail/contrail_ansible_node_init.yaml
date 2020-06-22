@@ -37,6 +37,9 @@
         - /var/log/containers/contrail
         - /var/log/containers/contrail/database
         - /var/log/containers/contrail/config-database
+        - /var/log/containers/contrail/kafka-zookeeper
+        - /var/log/containers/contrail/kafka
+        - /var/log/containers/contrail/zookeeper
 
     - name: create contrail containers ssl directories
       file:

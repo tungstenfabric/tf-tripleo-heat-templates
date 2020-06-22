@@ -113,6 +113,11 @@ parameters:
     description: Docker volume for contrail config zookeeper service
     type: string
 
+  DockerContrailZookeeperLogPath:
+    default: '/var/log/containers/contrail/zookeeper'
+    description: Path to Zookeeper logs on host
+    type: string
+
   ContrailRegistry:
     default: 'opencontrailnightly'
     description: Contrail Registry
@@ -159,6 +164,11 @@ parameters:
     description: image
     type: string
     default: "contrail-external-kafka"
+
+  DockerContrailKafkaLogPath:
+    default: '/var/log/containers/contrail/kafka'
+    description: Path to Kafka logs on host
+    type: string
 
   ContrailAnalyticsDBMinDiskGB:
     description:  The min size for Contrail Analytics DB.
@@ -611,6 +621,11 @@ outputs:
                       - ':'
                       - - {get_param: DockerContrailConfigZookeeperVolume}
                         - '/data'
+              - - list_join:
+                    - ':'
+                    - - {get_param: DockerContrailZookeeperLogPath}
+                      - /var/log/zookeeper
+                      - z
             environment:
               list_concat:
                 - get_attr: [ContrailBase, role_data, contrail_base_env]
@@ -704,7 +719,12 @@ outputs:
                 user: root
                 restart: always
                 volumes:
-                  get_attr: [ContrailBase, role_data, contrail_base_volumes]
+                  list_concat:
+                    - get_attr: [ContrailBase, role_data, contrail_base_volumes]
+                    - - list_join:
+                      - ':'
+                      - - {get_param: DockerContrailKafkaLogPath}
+                        - '/var/log/kafka'
                 environment:
                   list_concat:
                     - get_attr: [ContrailBase, role_data, contrail_base_env]
