@@ -171,15 +171,18 @@ outputs:
                     - - list_join:
                           - ':'
                           - - {get_param: ContrailAnalyticsDBPath}
-                            - '/var/lib/cassandra/data'
+                            - /var/lib/cassandra/data
+                            - z
                       - list_join:
                           - ':'
                           - - {get_param: ContrailAnalyticsCommitlogPath}
-                            - '/var/lib/cassandra/commitlog'
+                            - /var/lib/cassandra/commitlog
+                            - z
                       - list_join:
                           - ':'
                           - - {get_param: ContrailAnalyticsDBLogPath}
-                            - '/var/log/cassandra'
+                            - /var/log/cassandra
+                            - z
                 environment:
                   get_attr: [ContrailBase, role_data, contrail_base_env]
                 env_file:
@@ -203,11 +206,11 @@ outputs:
                 volumes:
                   list_concat:
                     - {get_attr: [ContrailBase, role_data, contrail_base_volumes]}
-                    - - /var/run:/var/run
-                      - /run/runc:/run/runc
-                      - /sys/fs/cgroup:/sys/fs/cgroup
-                      - /sys/fs/selinux:/sys/fs/selinux
-                      - /var/lib/containers:/var/lib/containers
+                    - - /var/run:/var/run:z
+                      - /run/runc:/run/runc:z
+                      - /sys/fs/cgroup:/sys/fs/cgroup:ro
+                      - /sys/fs/selinux:/sys/fs/selinux:ro
+                      - /var/lib/containers:/var/lib/containers:z
                 environment:
                   list_concat:
                     - {get_attr: [ContrailBase, role_data, contrail_base_env]}
