@@ -45,6 +45,10 @@ parameters:
     default: '/var/lib/contrail/config_zookeeper'
     description: Docker volume for contrail config zookeeper service
     type: string
+  DockerContrailZookeeperLogPath:
+    default: '/var/log/containers/contrail/zookeeper'
+    description: Path to Zookeeper logs on host
+    type: string
   EndpointMap:
     default: {}
     description: Mapping of service endpoint -> protocol. Typically set
@@ -185,7 +189,13 @@ outputs:
                 - - list_join:
                       - ':'
                       - - {get_param: DockerContrailConfigZookeeperVolume}
-                        - '/data'
+                        - /data
+                        - z
+                - - list_join:
+                      - ':'
+                      - - {get_param: DockerContrailZookeeperLogPath}
+                        - /var/log/zookeeper
+                        - z
             environment:
               get_attr: [ContrailBase, role_data, contrail_base_env]
             env_file:
@@ -205,11 +215,11 @@ outputs:
                 volumes:
                   list_concat:
                     - {get_attr: [ContrailBase, role_data, contrail_base_volumes]}
-                    - - /var/run:/var/run
-                      - /run/runc:/run/runc
-                      - /sys/fs/cgroup:/sys/fs/cgroup
-                      - /sys/fs/selinux:/sys/fs/selinux
-                      - /var/lib/containers:/var/lib/containers
+                    - - /var/run:/var/run:z
+                      - /run/runc:/run/runc:z
+                      - /sys/fs/cgroup:/sys/fs/cgroup:z
+                      - /sys/fs/selinux:/sys/fs/selinux:z
+                      - /var/lib/containers:/var/lib/containers:z
                 environment:
                    list_concat:
                     - {get_attr: [ContrailBase, role_data, contrail_base_env]}
@@ -237,11 +247,13 @@ outputs:
                     - - list_join:
                           - ':'
                           - - {get_param: DockerContrailConfigDatabaseVolume}
-                            - '/var/lib/cassandra'
+                            - /var/lib/cassandra
+                            - z
                       - list_join:
                           - ':'
                           - - {get_param: DockerContrailConfigDatabaseLogPath}
-                            - '/var/log/cassandra'
+                            - /var/log/cassandra
+                            - z
                 environment:
                   get_attr: [ContrailBase, role_data, contrail_base_env]
                 env_file:

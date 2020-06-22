@@ -161,7 +161,7 @@ outputs:
                 volumes:
                   list_concat:
                     - {get_attr: [ContrailBase, role_data, contrail_base_volumes]}
-                    - - /var/run:/var/run
+                    - - /var/run:/var/run:z
                 environment:
                   get_attr: [ContrailBase, role_data, contrail_base_env]
                 env_file:
@@ -194,7 +194,7 @@ outputs:
                 volumes:
                   list_concat:
                     - get_attr: [ContrailBase, role_data, contrail_base_volumes]
-                    - - /var/lib/contrail/contrail_control_dns:/etc/contrail/dns
+                    - - /var/lib/contrail/contrail_control_dns:/etc/contrail/dns:z
                 environment:
                   get_attr: [ContrailBase, role_data, contrail_base_env]
                 env_file:

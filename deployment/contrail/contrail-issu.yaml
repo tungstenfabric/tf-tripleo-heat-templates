@@ -113,6 +113,11 @@ parameters:
     description: Docker volume for contrail config zookeeper service
     type: string
 
+  DockerContrailZookeeperLogPath:
+    default: '/var/log/containers/contrail/zookeeper'
+    description: Path to Zookeeper logs on host
+    type: string
+
   ContrailRegistry:
     default: 'opencontrailnightly'
     description: Contrail Registry
@@ -159,6 +164,11 @@ parameters:
     description: image
     type: string
     default: "contrail-external-kafka"
+
+  DockerContrailKafkaLogPath:
+    default: '/var/log/containers/contrail/kafka'
+    description: Path to Kafka logs on host
+    type: string
 
   ContrailAnalyticsDBMinDiskGB:
     description:  The min size for Contrail Analytics DB.
@@ -611,6 +621,12 @@ outputs:
                       - ':'
                       - - {get_param: DockerContrailConfigZookeeperVolume}
                         - '/data'
+                        - z
+              - - list_join:
+                    - ':'
+                    - - {get_param: DockerContrailZookeeperLogPath}
+                      - /var/log/zookeeper
+                      - z
             environment:
               list_concat:
                 - get_attr: [ContrailBase, role_data, contrail_base_env]
@@ -647,11 +663,11 @@ outputs:
                 volumes:
                   list_concat:
                     - {get_attr: [ContrailBase, role_data, contrail_base_volumes]}
-                    - - /var/run:/var/run
-                      - /run/runc:/run/runc
-                      - /sys/fs/cgroup:/sys/fs/cgroup
-                      - /sys/fs/selinux:/sys/fs/selinux
-                      - /var/lib/containers:/var/lib/containers
+                    - - /var/run:/var/run:z
+                      - /run/runc:/run/runc:z
+                      - /sys/fs/cgroup:/sys/fs/cgroup:z
+                      - /sys/fs/selinux:/sys/fs/selinux:z
+                      - /var/lib/containers:/var/lib/containers:z
                 environment:
                   list_concat:
                     - {get_attr: [ContrailBase, role_data, contrail_base_env]}
@@ -678,7 +694,8 @@ outputs:
                     - - list_join:
                           - ':'
                           - - {get_param: DockerContrailConfigDatabaseVolume}
-                            - '/var/lib/cassandra'
+                            - /var/lib/cassandra
+                            - z
                 environment:
                   get_attr: [ContrailBase, role_data, contrail_base_env]
                 env_file:
@@ -704,7 +721,13 @@ outputs:
                 user: root
                 restart: always
                 volumes:
-                  get_attr: [ContrailBase, role_data, contrail_base_volumes]
+                  list_concat:
+                    - get_attr: [ContrailBase, role_data, contrail_base_volumes]
+                    - - list_join:
+                      - ':'
+                      - - {get_param: DockerContrailKafkaLogPath}
+                        - /var/log/kafka
+                        - z
                 environment:
                   list_concat:
                     - get_attr: [ContrailBase, role_data, contrail_base_env]
@@ -726,11 +749,13 @@ outputs:
                     - - list_join:
                           - ':'
                           - - {get_param: ContrailAnalyticsDBPath}
-                            - '/var/lib/cassandra/data'
+                            - /var/lib/cassandra/data
+                            - z
                       - list_join:
                           - ':'
                           - - {get_param: ContrailAnalyticsCommitlogPath}
-                            - '/var/lib/cassandra/commitlog'
+                            - /var/lib/cassandra/commitlog
+                            - z
                 environment:
                   get_attr: [ContrailBase, role_data, contrail_base_env]
                 env_file:
@@ -793,7 +818,7 @@ outputs:
                     volumes:
                       list_concat:
                         - {get_attr: [ContrailBase, role_data, contrail_base_volumes]}
-                        - - /var/run:/var/run
+                        - - /var/run:/var/run:z
                     environment:
                       list_concat:
                         - {get_attr: [ContrailBase, role_data, contrail_base_env]}
@@ -847,7 +872,7 @@ outputs:
                 volumes:
                   list_concat:
                     - {get_attr: [ContrailBase, role_data, contrail_base_volumes]}
-                    - - /var/run:/var/run
+                    - - /var/run:/var/run:z
                 environment:
                   list_concat:
                     - get_attr: [ContrailBase, role_data, contrail_base_env]
@@ -911,7 +936,7 @@ outputs:
                 volumes:
                   list_concat:
                     - {get_attr: [ContrailBase, role_data, contrail_base_volumes]}
-                    - - /var/run:/var/run
+                    - - /var/run:/var/run:z
                 environment:
                   list_concat:
                     - get_attr: [ContrailBase, role_data, contrail_base_env]
@@ -1003,11 +1028,11 @@ outputs:
                 volumes:
                   list_concat:
                     - {get_attr: [ContrailBase, role_data, contrail_base_volumes]}
-                    - - /var/run:/var/run
-                      - /run/runc:/run/runc
-                      - /sys/fs/cgroup:/sys/fs/cgroup
-                      - /sys/fs/selinux:/sys/fs/selinux
-                      - /var/lib/containers:/var/lib/containers
+                    - - /var/run:/var/run:z
+                      - /run/runc:/run/runc:z
+                      - /sys/fs/cgroup:/sys/fs/cgroup:z
+                      - /sys/fs/selinux:/sys/fs/selinux:z
+                      - /var/lib/containers:/var/lib/containers:z
                 environment:
                   list_concat:
                     - {get_attr: [ContrailBase, role_data, contrail_base_env]}
@@ -1074,7 +1099,7 @@ outputs:
                     volumes:
                       list_concat:
                         - {get_attr: [ContrailBase, role_data, contrail_base_volumes]}
-                        - - /var/run:/var/run
+                        - - /var/run:/var/run:z
                     environment:
                       list_concat:
                         - get_attr: [ContrailBase, role_data, contrail_base_env]
@@ -1090,7 +1115,7 @@ outputs:
                     volumes:
                       list_concat:
                         - {get_attr: [ContrailBase, role_data, contrail_base_volumes]}
-                        - - /var/run:/var/run
+                        - - /var/run:/var/run:z
                     environment:
                       list_concat:
                         - get_attr: [ContrailBase, role_data, contrail_base_env]

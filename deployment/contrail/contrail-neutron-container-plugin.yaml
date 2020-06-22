@@ -99,7 +99,7 @@ outputs:
             image: &contrail_neutron_plugin_image {get_attr: [DockerContrailNeutronPluginImageNormalize, contrail_image]}
             net: none
             volumes:
-              - /var/lib/contrail/plugin_contrail_neutron:/opt/plugin
+              - /var/lib/contrail/plugin_contrail_neutron:/opt/plugin:z
             environment:
               get_attr: [ContrailBase, role_data, contrail_base_env]
             env_file:

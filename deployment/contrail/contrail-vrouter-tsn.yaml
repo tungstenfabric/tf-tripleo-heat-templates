@@ -137,7 +137,7 @@ outputs:
                 volumes:
                   list_concat:
                     - {get_attr: [ContrailBase, role_data, contrail_base_volumes]}
-                    - - /var/run:/var/run
+                    - - /var/run:/var/run:z
                 environment:
                   get_attr: [ContrailBase, role_data, contrail_base_env]
                 env_file:
@@ -154,11 +154,11 @@ outputs:
                 volumes:
                   list_concat:
                     - {get_attr: [ContrailBase, role_data, contrail_base_volumes]}
-                    - - /dev:/dev
-                      - /etc/sysconfig/network-scripts:/etc/sysconfig/network-scripts
-                      - /lib/modules:/lib/modules
-                      - /var/run:/var/run
-                      - /var/lib/contrail:/var/lib/contrail
+                    - - /dev:/dev:z
+                      - /etc/sysconfig/network-scripts:/etc/sysconfig/network-scripts:z
+                      - /lib/modules:/lib/modules:z
+                      - /var/run:/var/run:z
+                      - /var/lib/contrail:/var/lib/contrail:z
                 environment:
                   list_concat:
                     - {get_attr: [ContrailBase, role_data, contrail_base_env]}
