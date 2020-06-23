@@ -1,0 +1,27 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "2c776254_38c779ab",
+        "filename": "deployment/contrail/contrail-analytics-kafka.yaml",
+        "patchSetId": 3
+      },
+      "lineNbr": 104,
+      "author": {
+        "id": 437
+      },
+      "writtenOn": "2020-06-23T10:17:35Z",
+      "side": 1,
+      "message": "not needed\nit is already list\nlist_concat:\n  - \u003cdelim\u003e\n  - - item1 of list1\n    - item2 of list1\n\ncheck other places as well",
+      "range": {
+        "startLine": 104,
+        "startChar": 16,
+        "endLine": 104,
+        "endChar": 17
+      },
+      "revId": "d04b3fac49d6d22448cd2a35cc1a0379ea76463c",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    }
+  ]
+}
