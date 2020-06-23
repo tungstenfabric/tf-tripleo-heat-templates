@@ -1,0 +1,27 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "6eaf3325_1680face",
+        "filename": "deployment/contrail/contrail-analytics-kafka.yaml",
+        "patchSetId": 4
+      },
+      "lineNbr": 103,
+      "author": {
+        "id": 437
+      },
+      "writtenOn": "2020-06-23T11:18:17Z",
+      "side": 1,
+      "message": ":z",
+      "range": {
+        "startLine": 103,
+        "startChar": 20,
+        "endLine": 103,
+        "endChar": 63
+      },
+      "revId": "e71462a397a765316e6210c313910e40935f5263",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    }
+  ]
+}
