@@ -25,6 +25,30 @@
     },
     {
       "key": {
+        "uuid": "a74d79f6_700a92c8",
+        "filename": "deployment/contrail/contrail-analytics-kafka.yaml",
+        "patchSetId": 2
+      },
+      "lineNbr": 122,
+      "author": {
+        "id": 844
+      },
+      "writtenOn": "2020-06-23T09:54:58Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "fa0cb23c_470e9f37",
+      "range": {
+        "startLine": 122,
+        "startChar": 20,
+        "endLine": 122,
+        "endChar": 69
+      },
+      "revId": "981e37657bf7e38acf7024415bad76aeac11207d",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "8371d70e_e606c59b",
         "filename": "deployment/contrail/contrail-issu.yaml",
         "patchSetId": 2
@@ -39,6 +63,24 @@
       "revId": "981e37657bf7e38acf7024415bad76aeac11207d",
       "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
       "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "ff6eec53_26aeb29b",
+        "filename": "deployment/contrail/contrail-issu.yaml",
+        "patchSetId": 2
+      },
+      "lineNbr": 727,
+      "author": {
+        "id": 844
+      },
+      "writtenOn": "2020-06-23T09:54:58Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "8371d70e_e606c59b",
+      "revId": "981e37657bf7e38acf7024415bad76aeac11207d",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": false
     }
   ]
 }
