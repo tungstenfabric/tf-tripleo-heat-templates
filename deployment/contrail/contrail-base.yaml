@@ -768,6 +768,8 @@ outputs:
                       (allow container_t spc_t (fifo_file (write ioctl getattr setattr)))
                       (allow container_t mount_var_run_t (dir ( openat read write )))
                       (allow container_t container_var_run_t (file ( openat open read write )))
+                      (allow chronyd_t container_file_t (lnk_file ( read )))
+                      (allow chronyd_t spc_t (unix_dgram_socket ( sendto )))
                       )
 
                 - name: create selinux module from file /tmp/contrail_container.cil
