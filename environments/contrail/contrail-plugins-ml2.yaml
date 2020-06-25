@@ -13,7 +13,7 @@ parameter_defaults:
   # core_plugin
   NeutronCorePlugin: 'ml2'
   # service_plugins
-  # NeutronServicePlugins: 'opencontrail-router'  
+  # NeutronServicePlugins: 'opencontrail-router'
   NeutronServicePlugins: 'neutron.services.l3_router.l3_router_plugin.L3RouterPlugin'
   NeutronServiceProviders: ['L3_ROUTER_NAT:TF:networking_opencontrail.l3.service_provider.TFL3ServiceProvider']
 
@@ -35,15 +35,16 @@ parameter_defaults:
     - 'PYTHONPATH=/opt/plugin/site-packages:/usr/lib/python2.7/site-packages'
 
   install_contrail_puppet: true
-  
+
   OvercloudControllerFlavor: 'control'
   OvercloudComputeFlavor: 'compute'
 
   ControllerCount: 1
   ComputeCount: 1
 
-  ContrailRegistry: 'satellite.englab.juniper.net:5443'
-  ContrailImageTag: 'queens-5.0-104-rhel-queens'
+  ContrailRegistry: '192.168.24.10:8787'
+  ContrailImageTag: 'latest'
+  ContrailRegistryInsecure: true
 
   # Address of Contrail Config API in format: ip1,ip2
   ContrailConfigIPs: ''
