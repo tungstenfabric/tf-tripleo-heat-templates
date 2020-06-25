@@ -389,7 +389,14 @@ outputs:
           - listen_options: *haproxy_config_settings_listen_options
           - if:
             - public_tls_enabled
-            - *haproxy_config_settings_tls
+            - map_merge:
+              - *haproxy_config_settings_tls
+              - listen_options:
+                  yaql:
+                    expression: $.data.reduce($1.listen_options.mergeWith($2))
+                    data:
+                      - *haproxy_config_settings_tls
+                      - *haproxy_config_settings_listen_options
             - public_virtual_ip: "%{hiera('public_virtual_ip')}"
               mode: 'tcp'
               member_options: *haproxy_config_settings_member_options
