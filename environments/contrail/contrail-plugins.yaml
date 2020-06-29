@@ -52,22 +52,22 @@ parameter_defaults:
   NeutronServicePlugins: ''
   NeutronTunnelTypes: ''
   NeutronApiOptVolumes:
-    - '/var/lib/contrail/plugin_contrail_neutron:/opt/plugin'
-    - '/etc/contrail/ssl:/etc/contrail/ssl'
+    - '/var/lib/contrail/plugin_contrail_neutron:/opt/plugin:ro'
+    - '/etc/contrail/ssl:/etc/contrail/ssl:z'
   NeutronApiOptEnvVars:
       PYTHONPATH: '/opt/plugin/python3/site-packages'
   NovaComputeOptEnvVars:
       PATH: '/sbin:/bin:/usr/sbin:/usr/bin:/usr/local/bin/:/opt/plugin/bin'
   NovaComputeOptVolumes:
-    - /var/lib/contrail/vrouter_port_control:/opt/plugin/bin
-    - /var/lib/contrail:/var/lib/contrail
-    - /var/lib/contrail/vif_nova_contrail:/usr/lib/python3.6/site-packages/nova_contrail_vif
-    - /var/lib/contrail/vif_nova_contrail_egg:/usr/lib/python3.6/site-packages/nova_contrail_vif-0.1-py2.7.egg-info
-    - /var/lib/contrail/vif_plug_vrouter:/usr/lib/python3.6/site-packages/vif_plug_vrouter
-    - /var/lib/contrail/vif_plug_contrail_vrouter:/usr/lib/python3.6/site-packages/vif_plug_contrail_vrouter
+    - /var/lib/contrail/vrouter_port_control:/opt/plugin/bin:ro
+    - /var/lib/contrail:/var/lib/contrail:z
+    - /var/lib/contrail/vif_nova_contrail:/usr/lib/python3.6/site-packages/nova_contrail_vif:ro
+    - /var/lib/contrail/vif_nova_contrail_egg:/usr/lib/python3.6/site-packages/nova_contrail_vif-0.1-py2.7.egg-info:ro
+    - /var/lib/contrail/vif_plug_vrouter:/usr/lib/python3.6/site-packages/vif_plug_vrouter:ro
+    - /var/lib/contrail/vif_plug_contrail_vrouter:/usr/lib/python3.6/site-packages/vif_plug_contrail_vrouter:ro
   HeatEngineOptVolumes:
-    - '/etc/contrail/ssl:/etc/contrail/ssl'
-    - '/var/lib/contrail/plugin_contrail_heat:/opt/plugin'
+    - '/etc/contrail/ssl:/etc/contrail/ssl:z'
+    - '/var/lib/contrail/plugin_contrail_heat:/opt/plugin:ro'
   HeatEngineOptEnvVars:
       PYTHONPATH: '/opt/plugin/python3/site-packages'
   HeatEnginePluginDirs:

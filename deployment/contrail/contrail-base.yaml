@@ -769,7 +769,11 @@ outputs:
                       (allow container_t mount_var_run_t (dir ( openat read write )))
                       (allow container_t container_var_run_t (file ( openat open read write )))
                       (allow chronyd_t container_file_t (lnk_file ( read )))
-                      (allow chronyd_t spc_t (unix_dgram_socket ( sendto )))
+                      (allow chronyd_t spc_t ( unix_dgram_socket ( sendto )))
+                      (allow chronyd_t cloud_init_t ( unix_dgram_socket ( sendto )))
+                      (allow certmonger_t sudo_exec_t ( file ( execute execute_no_trans open read )))
+                      (allow certmonger_t container_file_t ( dir ( search open read getattr setattr add_name remove_name create )))
+                      (allow certmonger_t container_file_t ( file ( getattr read write append ioctl lock map open create setattr unlink )))
                       )
 
                 - name: create selinux module from file /tmp/contrail_container.cil
