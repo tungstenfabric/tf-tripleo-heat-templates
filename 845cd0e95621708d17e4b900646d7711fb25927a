@@ -1,0 +1,119 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "15a83df6_2ef8e71c",
+        "filename": "README.md",
+        "patchSetId": 1
+      },
+      "lineNbr": 237,
+      "author": {
+        "id": 437
+      },
+      "writtenOn": "2020-06-30T12:03:24Z",
+      "side": 1,
+      "message": "rhel8.2\n\nis there special 8.2? or just rhel8 is ok?",
+      "range": {
+        "startLine": 237,
+        "startChar": 13,
+        "endLine": 237,
+        "endChar": 19
+      },
+      "revId": "845cd0e95621708d17e4b900646d7711fb25927a",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "374a3c7d_adf83119",
+        "filename": "README.md",
+        "patchSetId": 1
+      },
+      "lineNbr": 360,
+      "author": {
+        "id": 437
+      },
+      "writtenOn": "2020-06-30T12:03:24Z",
+      "side": 1,
+      "message": "rhel",
+      "range": {
+        "startLine": 360,
+        "startChar": 15,
+        "endLine": 360,
+        "endChar": 18
+      },
+      "revId": "845cd0e95621708d17e4b900646d7711fb25927a",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "f583269f_f00c3887",
+        "filename": "README.md",
+        "patchSetId": 1
+      },
+      "lineNbr": 473,
+      "author": {
+        "id": 437
+      },
+      "writtenOn": "2020-06-30T12:03:24Z",
+      "side": 1,
+      "message": "osp16",
+      "range": {
+        "startLine": 473,
+        "startChar": 8,
+        "endLine": 473,
+        "endChar": 13
+      },
+      "revId": "845cd0e95621708d17e4b900646d7711fb25927a",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "e540621a_23c2e957",
+        "filename": "README.md",
+        "patchSetId": 1
+      },
+      "lineNbr": 709,
+      "author": {
+        "id": 437
+      },
+      "writtenOn": "2020-06-30T12:03:24Z",
+      "side": 1,
+      "message": "YOUR_REDHAT_POOL_ID",
+      "range": {
+        "startLine": 709,
+        "startChar": 20,
+        "endLine": 709,
+        "endChar": 52
+      },
+      "revId": "845cd0e95621708d17e4b900646d7711fb25927a",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "9d4e84c3_7ada1c06",
+        "filename": "README.md",
+        "patchSetId": 1
+      },
+      "lineNbr": 715,
+      "author": {
+        "id": 437
+      },
+      "writtenOn": "2020-06-30T12:03:24Z",
+      "side": 1,
+      "message": "OSP16",
+      "range": {
+        "startLine": 715,
+        "startChar": 5,
+        "endLine": 715,
+        "endChar": 10
+      },
+      "revId": "845cd0e95621708d17e4b900646d7711fb25927a",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    }
+  ]
+}
