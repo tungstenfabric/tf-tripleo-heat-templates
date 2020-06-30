@@ -25,6 +25,30 @@
     },
     {
       "key": {
+        "uuid": "fe668fb9_7dc13cf7",
+        "filename": "README.md",
+        "patchSetId": 1
+      },
+      "lineNbr": 237,
+      "author": {
+        "id": 844
+      },
+      "writtenOn": "2020-06-30T16:14:27Z",
+      "side": 1,
+      "message": "rhel8.0 hasn\u0027t worked. It caused error: \u0027Distro \u0027rhel8\u0027 does not exist in our dictionary\u0027",
+      "parentUuid": "15a83df6_2ef8e71c",
+      "range": {
+        "startLine": 237,
+        "startChar": 13,
+        "endLine": 237,
+        "endChar": 19
+      },
+      "revId": "845cd0e95621708d17e4b900646d7711fb25927a",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "374a3c7d_adf83119",
         "filename": "README.md",
         "patchSetId": 1
@@ -48,6 +72,30 @@
     },
     {
       "key": {
+        "uuid": "8558a1e8_e96cb61d",
+        "filename": "README.md",
+        "patchSetId": 1
+      },
+      "lineNbr": 360,
+      "author": {
+        "id": 844
+      },
+      "writtenOn": "2020-06-30T16:14:27Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "374a3c7d_adf83119",
+      "range": {
+        "startLine": 360,
+        "startChar": 15,
+        "endLine": 360,
+        "endChar": 18
+      },
+      "revId": "845cd0e95621708d17e4b900646d7711fb25927a",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "f583269f_f00c3887",
         "filename": "README.md",
         "patchSetId": 1
@@ -68,6 +116,30 @@
       "revId": "845cd0e95621708d17e4b900646d7711fb25927a",
       "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
       "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "8f7e5044_b7895735",
+        "filename": "README.md",
+        "patchSetId": 1
+      },
+      "lineNbr": 473,
+      "author": {
+        "id": 844
+      },
+      "writtenOn": "2020-06-30T16:14:27Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "f583269f_f00c3887",
+      "range": {
+        "startLine": 473,
+        "startChar": 8,
+        "endLine": 473,
+        "endChar": 13
+      },
+      "revId": "845cd0e95621708d17e4b900646d7711fb25927a",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": false
     },
     {
       "key": {
