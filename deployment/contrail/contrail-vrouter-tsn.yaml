@@ -132,6 +132,7 @@ outputs:
                 image: {get_attr: [ContrailBase, role_data, contrail_nodemgr_image_name]}
                 net: host
                 detach: true
+                privileged: true
                 user: root
                 restart: always
                 volumes:
