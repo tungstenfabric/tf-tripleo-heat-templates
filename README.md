@@ -3,26 +3,10 @@ Currently the following combinations of Operating System/OpenStack/Deployer/Cont
 
 | Operating System  | OpenStack         | Deployer              | Contrail               |
 | ----------------- | ----------------- | --------------------- | ---------------------- |
-| RHEL 7.5          | OSP13             | OSPd13                | Contrail 5.0.1, 5.1    |
-| CentOS 7.5        | RDO queens/stable | tripleo queens/stable | Tungsten Fabric latest |
+| RHEL 8.2          | OSP16             | tf-devstack           | Tungsten Fabric latest |
 
 
 # Contrail Versions Notes
-
-5.0 and 5.1 have different incompatible containers layout.
-Starting from 5.1:
-- Analytics Query Engine is deployed on Analytics Database node,
-- There are new TripleO::Service types:
-  - ContrailAnalyticsAlarm: includes Analytics Alarm, Kafka and Analytics Zookeeper
-  - ContrailAnalyticsSnmp:  Analytics Snmp Collector and Analitics Topology
-These 2 news services byt default are included into ContrailAnalytics role, they could be
-moved to separate Role if needed.
-
-Note: The templates choose the layout based on containers tag and containers name:
-parameter ContrailImageTag and parameters like DockerContrail...ImageName.
-It lookup substring '5.0' in the tag and container names to detect old layout.
-
-
 # Configuration elements
 1. Infrastructure
 2. Undercloud
@@ -250,7 +234,7 @@ for role in ${role_list[@]}; do
 --virt-type kvm \
 --cpu host \
 --import \
---os-variant rhel7 \
+--os-variant rhl8.2 \
 --serial pty \
 --console pty,target_type=virtio \
 --graphics vnc \
@@ -287,22 +271,15 @@ This is an example of a full list across three KVM hosts:
 This list will be needed on the undercloud VM later on.
 With that the control plane VM KVM host preparation is done.
 
-## create undercloud VM on KVM host hosting the undercloud
-### CentOS 7.5
 ```
-mkdir images
-curl https://cloud.centos.org/centos/7/images/CentOS-7-x86_64-GenericCloud-1802.qcow2.xz -o images/CentOS-7-x86_64-GenericCloud-1802.qcow2.xz
-zx -d images/CentOS-7-x86_64-GenericCloud-1802.qcow2.xz
-cloud_image=images/CentOS-7-x86_64-GenericCloud-1804_02.qcow2
-```
-### RHEL 7.5
+### RHEL 8.2
 
 ```
 mkdir ~/images
 ```
-Download rhel-server-7.5-update-1-x86_64-kvm.qcow2 from RedHat portal to ~/images
+Download rhel-server-8.2-update-1-x86_64-kvm.qcow2 from RedHat portal to ~/images
 ```
-cloud_image=~/images/rhel-server-7.5-update-1-x86_64-kvm.qcow2
+cloud_image=~/images/rhel-server-8.2-update-1-x86_64-kvm.qcow2
 ```
 
 ## customize the undercloud VM image
@@ -340,7 +317,7 @@ virt-install --name ${undercloud_name} \
   --network network=br0,model=virtio,portgroup=overcloud \
   --virt-type kvm \
   --import \
-  --os-variant rhel7 \
+  --os-variant rhl8.2 \
   --graphics vnc \
   --serial pty \
   --noautoconsole \
@@ -380,7 +357,7 @@ virt-install --name ${freeipa_name} \
   --network network=br0,model=virtio,portgroup=overcloud \
   --virt-type kvm \
   --import \
-  --os-variant rhel7 \
+  --os-variant rhl8.2 \
   --graphics vnc \
   --serial pty \
   --noautoconsole \
@@ -482,18 +459,18 @@ Get the undercloud ip and set the correct entries in /etc/hosts, ie (assuming th
 undercloud_ip=`ip addr sh dev eth0 |grep "inet " |awk '{print $2}' |awk -F"/" '{print $1}'`
 echo ${undercloud_ip} ${undercloud_name}.${undercloud_suffix} ${undercloud_name} >> /etc/hosts
 ```
-### tripleo queens/current
+### tripleo queens/current (TODO)
 ```
 tripeo_repos=`python -c 'import requests;r = requests.get("https://trunk.rdoproject.org/centos7-queens/current"); print r.text ' |grep python2-tripleo-repos|awk -F"href=\"" '{print $2}'|awk -F"\"" '{print $1}'`
 yum install -y https://trunk.rdoproject.org/centos7-queens/current/${tripeo_repos}
 tripleo-repos -b queens current
 ```
 
-### OSP13
+### OSP16
 Register with Satellite (can be done with CDN as well)
 ```css
 satellite_fqdn=satellite.englab.juniper.net
-act_key=osp13
+act_key=osp16
 org=Juniper
 yum localinstall -y http://${satellite_fqdn}/pub/katello-ca-consumer-latest.noarch.rpm
 subscription-manager register --activationkey=${act_key} --org=${org}
@@ -529,6 +506,28 @@ ipa_otp: "$FREE_IPA_OTP"
 EOF
 
 ```
+
+### create file containers-prepare-parameter.yaml
+
+```
+parameter_defaults:
+  ContainerImagePrepare:
+  - push_destination: true
+    excludes:
+      - ceph
+    set:
+      name_prefix: openstack-
+      name_suffix: ''
+      namespace: registry.redhat.io/rhosp-rhel8
+      neutron_driver: ovn
+      rhel_containers: false
+      tag: '16.0'
+    tag_from_label: '{version}-{release}'
+  ContainerImageRegistryCredentials:
+    registry.redhat.io:
+      YOUR_REDHAT_LOGIN: 'YOUR_REDHAT_PASSWORD'
+```
+
 ### install undercloud
 ```
 openstack undercloud install
@@ -578,10 +577,10 @@ tar xvf ironic-python-agent.tar
 tar xvf overcloud-full.tar
 ```
 
-### OSP13
+### OSP16
 ```
 sudo yum install -y rhosp-director-images rhosp-director-images-ipa
-for i in /usr/share/rhosp-director-images/overcloud-full-latest-13.0.tar /usr/share/rhosp-director-images/ironic-python-agent-latest-13.0.tar ; do tar -xvf $i; done
+for i in /usr/share/rhosp-director-images/overcloud-full-latest-16.0.tar /usr/share/rhosp-director-images/ironic-python-agent-latest-16.0.tar ; do tar -xvf $i; done
 ```
 
 ```
@@ -672,61 +671,73 @@ contrail-analytics-database; do
   openstack flavor create $i --ram 4096 --vcpus 1 --disk 40
   openstack flavor set --property "capabilities:boot_option"="local" \
                        --property "capabilities:profile"="${i}" ${i}
+  openstack flavor set --property resources:CUSTOM_BAREMETAL=1 --property resources:DISK_GB='0' 
+                       --property resources:MEMORY_MB='0' 
+                       --property resources:VCPU='0' ${i}
 done
 ```
 
 ## create tht template copy
 ```
 cp -r /usr/share/openstack-tripleo-heat-templates/ tripleo-heat-templates
-git clone https://github.com/tungstenfabric/tf-tripleo-heat-templates -b stable/queens
+git clone https://github.com/tungstenfabric/tf-tripleo-heat-templates -b stable/train
 cp -r contrail-tripleo-heat-templates/* tripleo-heat-templates/
 ```
 
 ## Tripleo container management
 
 ```
-newgrp docker
-exit
 su - stack
 source stackrc
 ```
 
-### Get and upload the containers
-#### tripleo
-```
-openstack overcloud container image prepare \
-  --namespace docker.io/tripleoqueens \
-  --tag current-tripleo \
-  --tag-from-label rdo_version \
-  --output-env-file=~/overcloud_images.yaml
+### Create file rhsm.yaml with redhat credentials
 
-tag=`grep "docker.io/tripleoqueens" docker_registry.yaml |tail -1 |awk -F":" '{print $3}'`
+parameter_defaults:
+  RhsmVars:
+    rhsm_repos:
+      - fast-datapath-for-rhel-8-x86_64-rpms
+      - openstack-16-for-rhel-8-x86_64-rpms
+      - satellite-tools-6.5-for-rhel-8-x86_64-rpms
+      - ansible-2.8-for-rhel-8-x86_64-rpms
+      - rhel-8-for-x86_64-highavailability-rpms
+      - rhel-8-for-x86_64-appstream-rpms
+      - rhel-8-for-x86_64-baseos-rpms
+    rhsm_username: "YOUR_REDHAT_LOGIN"
+    rhsm_password: "YOUR_REDHAT_PASSWORD"
+    rhsm_org_id: "YOUR_REDHAT_ID"
+    rhsm_pool_ids: "YOUR_REDHAT_POOL_ID"
 
-openstack overcloud container image prepare \
-  --namespace docker.io/tripleoqueens \
-  --tag ${tag} \
-  --push-destination 192.168.24.1:8787 \
-  --output-env-file=~/overcloud_images.yaml \
-  --output-images-file=~/local_registry_images.yaml
-```
+
+
+### Get and upload the containers into local registry
 
 #### OSP13
+
 ```
-openstack overcloud container image prepare \
- --push-destination=192.168.24.1:8787  \
- --tag-from-label {version}-{release} \
- --output-images-file ~/local_registry_images.yaml  \
- --namespace=registry.access.redhat.com/rhosp13  \
- --prefix=openstack-  \
- --tag-from-label {version}-{release}  \
- --output-env-file ~/overcloud_images.yaml
+sudo openstack tripleo container image prepare \
+  -e ~/containers-prepare-parameter.yaml 
+  -e ~/rhsm.yaml > ~/overcloud_containers.yaml
+
+sudo openstack overcloud container image upload --config-file ~/overcloud_containers.yaml
+
+```
+#### tripleo
+
+```
+registry=${CONTAINER_REGISTRY:-'docker.io/tungstenfabric'}
+tag=${CONTRAIL_CONTAINER_TAG:-'latest'}
+
+~/contrail-tripleo-heat-templates/tools/contrail/import_contrail_container.sh \
+    -f ~/contrail_containers.yaml -r $registry -t $tag
+
+#Check file ~/contrail_containers.yaml and fix registry ip if needed
+#sed -i ~/contrail_containers.yaml -e "s/192.168.24.1/192.168.24.2/"
+
+sudo openstack overcloud container image upload --config-file ~/contrail_containers.yaml
+
 ```
 
-#### Upload openstack containers
-```
-openstack overcloud container image upload --config-file ~/local_registry_images.yaml
-```
-The last command takes a while.
 
 #### Optional: create Contrail container upload file for uploading Contrail containers to undercloud registry
 In case the Contrail containers must be stored in the undercloud registry
@@ -796,7 +807,7 @@ that is generated during that processing
 ```
 
 ## deploy the stack
-### tripleo upstream queens
+### tripleo upstream train
 ```
 openstack overcloud deploy --templates ~/tripleo-heat-templates \
   -e ~/overcloud_images.yaml \
@@ -807,30 +818,46 @@ openstack overcloud deploy --templates ~/tripleo-heat-templates \
   -e ~/tripleo-heat-templates/environments/contrail/contrail-net.yaml \
   --roles-file ~/tripleo-heat-templates/roles_data_contrail_aio.yaml
 ```
-### OSP13
+### OSP16
 ```
-openstack overcloud deploy --templates ~/tripleo-heat-templates \
-  -e ~/overcloud_images.yaml \
-  -e ~/tripleo-heat-templates/environments/network-isolation.yaml \
-  -e ~/tripleo-heat-templates/environments/contrail/contrail-plugins.yaml \
-  -e ~/tripleo-heat-templates/environments/contrail/contrail-services.yaml \
-  -e ~/tripleo-heat-templates/environments/contrail/contrail-net.yaml \
-  --roles-file ~/tripleo-heat-templates/roles_data_contrail_aio.yaml
+openstack overcloud deploy --templates tripleo-heat-templates/ \
+  --stack overcloud --libvirt-type kvm \
+  --roles-file $role_file \
+  -e tripleo-heat-templates/environments/rhsm.yaml \
+  -e tripleo-heat-templates/environments/contrail/contrail-services.yaml \
+  -e tripleo-heat-templates/environments/contrail/contrail-net-single.yaml \
+  -e tripleo-heat-templates/environments/contrail/contrail-plugins.yaml \
+  -e misc_opts.yaml \
+  -e contrail-parameters.yaml \
+  -e containers-prepare-parameter.yaml \
+  -e rhsm.yaml
 ```
-### OSP13 for TLS everwhere with RedHat IDM (FreeIPA) case
+### OSP16 for TLS everwhere with RedHat IDM (FreeIPA) case
 ```
-openstack overcloud deploy --templates ~/tripleo-heat-templates \
-  -e ~/overcloud_images.yaml \
-  -e ~/tripleo-heat-templates/environments/network-isolation.yaml \
-  -e ~/tripleo-heat-templates/environments/contrail/contrail-plugins.yaml \
-  -e ~/tripleo-heat-templates/environments/contrail/contrail-services.yaml \
-  -e ~/tripleo-heat-templates/environments/contrail/contrail-net.yaml \
-  -e ~/tripleo-heat-templates/environments/contrail/contrail-tls.yaml \
-  -e ~/tripleo-heat-templates/environments/ssl/enable-internal-tls.yaml \
-  -e ~/tripleo-heat-templates/environments/ssl/tls-everywhere-endpoints-dns.yaml \
-  -e ~/tripleo-heat-templates/environments/services/haproxy-internal-tls-certmonger.yaml \
-  -e ~/tripleo-heat-templates/environments/services/haproxy-public-tls-certmonger.yaml \  
-  --roles-file ~/tripleo-heat-templates/roles_data_contrail_aio.yaml
+python3 tripleo-heat-templates/tools/process-templates.py --clean \
+  -r $role_file \
+  -p tripleo-heat-templates/
+
+python3 tripleo-heat-templates/tools/process-templates.py \
+  -r $role_file \
+  -p tripleo-heat-templates/
+
+openstack overcloud deploy --templates tripleo-heat-templates/ \
+  --stack overcloud --libvirt-type kvm \
+  --roles-file $role_file \
+  -e tripleo-heat-templates/environments/rhsm.yaml \
+  -e tripleo-heat-templates/environments/contrail/contrail-services.yaml \
+  -e tripleo-heat-templates/environments/contrail/contrail-net-single.yaml \
+  -e tripleo-heat-templates/environments/contrail/contrail-plugins.yaml \
+  -e tripleo-heat-templates/environments/contrail/contrail-tls.yaml \
+  -e tripleo-heat-templates/environments/ssl/tls-everywhere-endpoints-dns.yaml \
+  -e tripleo-heat-templates/environments/services/haproxy-public-tls-certmonger.yaml \
+  -e tripleo-heat-templates/environments/ssl/enable-internal-tls.yaml \
+  -e misc_opts.yaml \
+  -e contrail-parameters.yaml \
+  -e containers-prepare-parameter.yaml \
+  -e rhsm.yaml
+
 ```
 
 # quick VM start
