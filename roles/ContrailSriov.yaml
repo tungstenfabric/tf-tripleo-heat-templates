@@ -4,7 +4,8 @@
 - name: ContrailSriov
   description: |
     Contrail Sriov Node role
-  CountDefault: 1
+  disable_constraints: False
+  CountDefault: 0
   tags:
     - contrailsriov
   networks:
@@ -16,17 +17,21 @@
   ServicesDefault:
     - OS::TripleO::Services::Aide
     - OS::TripleO::Services::AuditD
+    - OS::TripleO::Services::AgilioVrouter
     - OS::TripleO::Services::CACerts
     - OS::TripleO::Services::CephClient
     - OS::TripleO::Services::CephExternal
     - OS::TripleO::Services::CertmongerUser
     - OS::TripleO::Services::Collectd
+    - OS::TripleO::Services::ContrailCertmongerUser
     - OS::TripleO::Services::ContrailSriov
     - OS::TripleO::Services::ComputeCeilometerAgent
     - OS::TripleO::Services::ComputeNeutronL3Agent
     - OS::TripleO::Services::ComputeNeutronMetadataAgent
+    - OS::TripleO::Services::ContrailIssuCompute
     - OS::TripleO::Services::Docker
     - OS::TripleO::Services::Fluentd
+    - OS::TripleO::Services::IpaClient
     - OS::TripleO::Services::Ipsec
     - OS::TripleO::Services::Iscsid
     - OS::TripleO::Services::Kernel
