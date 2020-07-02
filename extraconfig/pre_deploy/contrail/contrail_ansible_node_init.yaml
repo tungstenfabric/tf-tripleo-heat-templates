@@ -117,12 +117,12 @@
         registry: "{{ _CONTRAIL_NODE_INIT_IMAGE_ | dirname | dirname }}"
 
     - name: Setup podman insecure registry
-      replace:
+      ini_file:
         path: /etc/containers/registries.conf
-        after: 'registries.insecure'
-        before: 'registries.block'
-        regexp: '^registries = .*$'
-        replace: "registries = ['{{ registry }}']"
+        section: 'registries.insecure'
+        option: 'registries'
+        value: "[ '{{ registry }}' ]"
+      when: registry != ""
     ######## TODO: move this into firstboot/contrail/contrail_container_registry.yaml
 
     - name: prepare podman volume args
