@@ -111,19 +111,13 @@
         - ssl_enable
         - _SERVER_CA_ == 'IPA'
 
-    ######## TODO: move this into firstboot/contrail/contrail_container_registry.yaml
-    - name: Get registry from _CONTRAIL_NODE_INIT_IMAGE_
-      set_fact:
-        registry: "{{ _CONTRAIL_NODE_INIT_IMAGE_ | dirname | dirname }}"
-
     - name: Setup podman insecure registry
       ini_file:
         path: /etc/containers/registries.conf
         section: 'registries.insecure'
         option: 'registries'
-        value: "[ '{{ registry }}' ]"
-      when: registry != ""
-    ######## TODO: move this into firstboot/contrail/contrail_container_registry.yaml
+        value: "[ '{{ _CONTRAIL_REGISTRY_ }}' ]"
+      when: _CONTRAIL_REGISTRY_ != ""
 
     - name: prepare podman volume args
       set_fact:
