@@ -271,7 +271,6 @@ This is an example of a full list across three KVM hosts:
 This list will be needed on the undercloud VM later on.
 With that the control plane VM KVM host preparation is done.
 
-```
 ### RHEL 8.2
 
 ```
@@ -478,7 +477,7 @@ subscription-manager register --activationkey=${act_key} --org=${org}
 ```
 
 ## for TLS with RedHat IDM (FreeIPA) case
-### install IDM according to RH documentaion 
+### install IDM according to RH documentaion
 https://access.redhat.com/documentation/en-us/red_hat_enterprise_linux/7/html/linux_domain_identity_authentication_and_policy_guide/install-server
 
 ## Install the undercloud
@@ -496,7 +495,7 @@ An exmaple:
 FREE_IPA_OTP="<otp>"
 ### !!! Adjust this IP to your setup
 prov_freeipa_ip=10.87.64.4
-The following parameters need to be set within [DEFAULT] section 
+The following parameters need to be set within [DEFAULT] section
 ###
 cat << EOF >> ~/undercloud.conf
 undercloud_hostname: ${undercloud_name}.${undercloud_suffix}
@@ -672,8 +671,8 @@ contrail-analytics-database; do
   openstack flavor create $i --ram 4096 --vcpus 1 --disk 40
   openstack flavor set --property "capabilities:boot_option"="local" \
                        --property "capabilities:profile"="${i}" ${i}
-  openstack flavor set --property resources:CUSTOM_BAREMETAL=1 --property resources:DISK_GB='0' 
-                       --property resources:MEMORY_MB='0' 
+  openstack flavor set --property resources:CUSTOM_BAREMETAL=1 --property resources:DISK_GB='0'
+                       --property resources:MEMORY_MB='0'
                        --property resources:VCPU='0' ${i}
 done
 ```
@@ -693,6 +692,7 @@ source stackrc
 ```
 
 ### Create file rhsm.yaml with redhat credentials
+```
 
 parameter_defaults:
   RhsmVars:
@@ -708,6 +708,7 @@ parameter_defaults:
     rhsm_password: "YOUR_REDHAT_PASSWORD"
     rhsm_org_id: "YOUR_REDHAT_ID"
     rhsm_pool_ids: "YOUR_REDHAT_POOL_ID"
+```
 
 
 
@@ -717,7 +718,7 @@ parameter_defaults:
 
 ```
 sudo openstack tripleo container image prepare \
-  -e ~/containers-prepare-parameter.yaml 
+  -e ~/containers-prepare-parameter.yaml
   -e ~/rhsm.yaml > ~/overcloud_containers.yaml
 
 sudo openstack overcloud container image upload --config-file ~/overcloud_containers.yaml
@@ -799,7 +800,7 @@ EOF
 vi tripleo-heat-templates/environments/contrail/contrail-net.yaml
 ```
 #### process templates to generate file for OS::TripleO::{{role}}ServiceServerMetadataHook definitions
-These files are used by the file  ~/tripleo-heat-templates/environments/ssl/enable-internal-tls.yaml 
+These files are used by the file  ~/tripleo-heat-templates/environments/ssl/enable-internal-tls.yaml
 that is generated during that processing
 ```
   python ~/tripleo-heat-templates/tools/process-templates.py  --safe \
