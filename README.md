@@ -271,7 +271,6 @@ This is an example of a full list across three KVM hosts:
 This list will be needed on the undercloud VM later on.
 With that the control plane VM KVM host preparation is done.
 
-```
 ### RHEL 8.2
 
 ```
@@ -693,6 +692,7 @@ source stackrc
 ```
 
 ### Create file rhsm.yaml with redhat credentials
+```
 
 parameter_defaults:
   RhsmVars:
@@ -708,6 +708,7 @@ parameter_defaults:
     rhsm_password: "YOUR_REDHAT_PASSWORD"
     rhsm_org_id: "YOUR_REDHAT_ID"
     rhsm_pool_ids: "YOUR_REDHAT_POOL_ID"
+```
 
 
 
