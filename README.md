@@ -250,6 +250,8 @@ EOF
   done
 done
 ```
+In case '--os-variant rhel8.2' doesn't work for you please install libosinfo and use command 'osinfo-query os' for the list of appropriate distros.
+
 There will be one ironic_list file per KVM host. The ironic_list files of all KVM hosts
 has to be combined on the overcloud.
 This is an example of a full list across three KVM hosts:
@@ -459,12 +461,8 @@ Get the undercloud ip and set the correct entries in /etc/hosts, ie (assuming th
 undercloud_ip=`ip addr sh dev eth0 |grep "inet " |awk '{print $2}' |awk -F"/" '{print $1}'`
 echo ${undercloud_ip} ${undercloud_name}.${undercloud_suffix} ${undercloud_name} >> /etc/hosts
 ```
-### tripleo queens/current (TODO)
-```
-tripeo_repos=`python -c 'import requests;r = requests.get("https://trunk.rdoproject.org/centos7-queens/current"); print r.text ' |grep python2-tripleo-repos|awk -F"href=\"" '{print $2}'|awk -F"\"" '{print $1}'`
-yum install -y https://trunk.rdoproject.org/centos7-queens/current/${tripeo_repos}
-tripleo-repos -b queens current
-```
+### Install undercloud according Red Hat documentation
+https://access.redhat.com/documentation/en-us/red_hat_openstack_platform/16.0/html/director_installation_and_usage/director_installation_and_configuration
 
 ### OSP16
 Register with Satellite (can be done with CDN as well)
@@ -478,17 +476,17 @@ subscription-manager register --activationkey=${act_key} --org=${org}
 
 ## for TLS with RedHat IDM (FreeIPA) case
 ### install IDM according to RH documentaion
-https://access.redhat.com/documentation/en-us/red_hat_enterprise_linux/7/html/linux_domain_identity_authentication_and_policy_guide/install-server
+https://access.redhat.com/documentation/en-us/red_hat_enterprise_linux/8/html/installing_identity_management/index
 
 ## Install the undercloud
 ### prepare config for undercloud installation
 ```
 yum install -y python-tripleoclient tmux
 su - stack
-cp /usr/share/instack-undercloud/undercloud.conf.sample ~/undercloud.conf
+cp /usr/share/python-tripleoclient/undercloud.conf.sample ~/undercloud.conf
 ```
 ### for TLS with RedHat IDM (FreeIPA) case update config
-#### (see details in RH documentaion https://access.redhat.com/documentation/en-us/red_hat_openstack_platform/13/html-single/advanced_overcloud_customization/#sect-Enabling_Internal_SSLTLS_on_the_Overcloud)
+#### (see details in RH documentaion https://access.redhat.com/documentation/en-us/red_hat_openstack_platform/16.0/html/advanced_overcloud_customization/sect-enabling_ssltls_on_the_overcloud)
 An exmaple:
 ```
 ### !!! Set to OTP that was saved from IDM VM from the file ~/undercloud_otp
@@ -568,14 +566,6 @@ mkdir images
 cd images
 ```
 
-### tripleo current
-
-```
-curl -O https://images.rdoproject.org/queens/rdo_trunk/current-tripleo-rdo/ironic-python-agent.tar
-curl -O https://images.rdoproject.org/queens/rdo_trunk/current-tripleo-rdo/overcloud-full.tar
-tar xvf ironic-python-agent.tar
-tar xvf overcloud-full.tar
-```
 
 ### OSP16
 ```
@@ -681,7 +671,7 @@ done
 ```
 cp -r /usr/share/openstack-tripleo-heat-templates/ tripleo-heat-templates
 git clone https://github.com/tungstenfabric/tf-tripleo-heat-templates -b stable/train
-cp -r contrail-tripleo-heat-templates/* tripleo-heat-templates/
+cp -r tf-tripleo-heat-templates/* tripleo-heat-templates/
 ```
 
 ## Tripleo container management
@@ -714,7 +704,7 @@ parameter_defaults:
 
 ### Get and upload the containers into local registry
 
-#### OSP13
+#### OSP16
 
 ```
 sudo openstack tripleo container image prepare \
@@ -730,7 +720,7 @@ sudo openstack overcloud container image upload --config-file ~/overcloud_contai
 registry=${CONTAINER_REGISTRY:-'docker.io/tungstenfabric'}
 tag=${CONTRAIL_CONTAINER_TAG:-'latest'}
 
-~/contrail-tripleo-heat-templates/tools/contrail/import_contrail_container.sh \
+~/tf-tripleo-heat-templates/tools/contrail/import_contrail_container.sh \
     -f ~/contrail_containers.yaml -r $registry -t $tag
 
 #Check file ~/contrail_containers.yaml and fix registry ip if needed
@@ -744,7 +734,7 @@ sudo openstack overcloud container image upload --config-file ~/contrail_contain
 #### Optional: create Contrail container upload file for uploading Contrail containers to undercloud registry
 In case the Contrail containers must be stored in the undercloud registry
 ```
-cd ~/tripleo-heat-templates/tools/contrail
+cd ~/tf-heat-templates/tools/contrail
 ./import_contrail_container.sh -f container_outputfile -r registry -t tag [-i insecure] [-u username] [-p password] [-c certificate path]
 ```
 
@@ -777,7 +767,6 @@ tripleo-heat-templates/network/config/contrail/compute-nic-config.yaml
 tripleo-heat-templates/network/config/contrail/contrail-controller-nic-config.yaml
 tripleo-heat-templates/network/config/contrail/controller-nic-config.yaml
 ```
-[Advanced Network Configuration](docu/interfaces.md)
 ### overcloud network config
 ```
 tripleo-heat-templates/environments/contrail/contrail-net.yaml
