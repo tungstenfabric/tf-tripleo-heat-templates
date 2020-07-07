@@ -85,7 +85,7 @@ conditions:
 
   rabbitmq_log_keep_default: {equals : [{get_param: DockerContrailRabbitmqLogPath}, '']}
 
-  is_more_than_2001_or_latest:
+  is_latest:
     or:
       - yaql:
           expression: $.data.matches(".*dev.*")
@@ -96,9 +96,22 @@ conditions:
       - yaql:
           expression: $.data.matches(".*master.*")
           data: {get_param: ContrailImageTag}
-      - yaql:
-          expression: $.data.split(".").select($.split("-")).flatten().where($.matches("^[0-9]+$")).where(int($) >= 2001).any()
-          data: {get_param: ContrailImageTag}
+
+  is_more_than_2001_or_latest:
+    or:
+      - is_latest
+      - not:
+          yaql:
+            expression: $.data.split(".").select($.split("-")).flatten().where($.matches("^[0-9]{3,}$")).where(int($) < 2001).any()
+            data: {get_param: ContrailImageTag}
+
+  is_2008_or_latest:
+    or:
+      - is_latest
+      - not:
+          yaql:
+            expression: $.data.split(".").select($.split("-")).flatten().where($.matches("^[0-9]{3,}$")).where(int($) < 2008).any()
+            data: {get_param: ContrailImageTag}
 
 resources:
   DockerContrailCassandraImageNormalize:
@@ -125,6 +138,7 @@ resources:
       DefaultPasswords: {get_param: DefaultPasswords}
       RoleName: {get_param: RoleName}
       RoleParameters: {get_param: RoleParameters}
+      contrail_env_name: 'config_database'
 
 outputs:
   role_data:
@@ -147,10 +161,17 @@ outputs:
                   - 8112
                   - 9041
                   - 9161
+                  - 15673
                   - 25673
+                  - '25684-25694'
       service_config_settings: {get_attr: [ContrailBase, role_data, service_config_settings]}
       contrail_env_file: &contrail_env_file
         "/etc/contrail/common_config_database.env"
+      contrail_rabbit_internal_log_path: &contrail_rabbit_internal_log_path
+        if:
+          - is_2008_or_latest
+          - '/var/log/rabbitmq'
+          - '/var/log/contrail/rabbitmq'
       docker_config:
         step_2:
           get_attr: [ContrailBase, role_data, docker_config, step_2]
@@ -167,6 +188,8 @@ outputs:
             environment:
               list_concat:
                 - get_attr: [ContrailBase, role_data, contrail_base_env]
+                - - 'RABBITMQ_CTL_DIST_PORT_MIN=25684'
+                  - 'RABBITMQ_CTL_DIST_PORT_MAX=25694'
                 - if:
                   - rabbitmq_log_keep_default
                   - []
@@ -322,6 +345,7 @@ outputs:
                 - "ZOOKEEPER_PORTS=2888:3888"
                 - "ZOOKEEPER_PORT=2181"
                 - "ZOOKEEPER_NODES={{ contrail_config_db_cassandra_service_nodes_string }}"
+          - {get_attr: [ContrailBase, role_data, contrail_config_volume_prep]}
 
       metadata_settings:
         get_attr: [ContrailBase, role_data, metadata_settings]

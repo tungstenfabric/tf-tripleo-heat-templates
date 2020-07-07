@@ -34,6 +34,7 @@
         - /var/lib/contrail/analytics_cassandra_data
         - /var/lib/contrail/analytics_cassandra_commitlog
         - /var/lib/contrail/contrail_control_dns
+        - /var/lib/contrail/loadbalancer
         - /var/log/containers/contrail
         - /var/log/containers/contrail/database
         - /var/log/containers/contrail/config-database
