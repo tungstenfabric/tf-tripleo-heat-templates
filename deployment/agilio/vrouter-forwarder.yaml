@@ -56,14 +56,14 @@ resources:
     type: ../containers-common.yaml
 
   AgilioVrouterImageNameNormalized:
-    type: ../../../tools/contrail/contrail-image-normalize.yaml
+    type: ../../tools/contrail/contrail-image-normalize.yaml
     properties:
       ContrailRegistry: {get_param: AgilioRegistry}
       ContrailImageTag: {get_param: AgilioImageTag}
       GenericImageName: {get_param: DockerAgilioVrouterImageName}
 
   AgilioVirtIoForwarderImageNameNormalized:
-    type: ../../../tools/contrail/contrail-image-normalize.yaml
+    type: ../../tools/contrail/contrail-image-normalize.yaml
     properties:
       ContrailRegistry: {get_param: AgilioRegistry}
       ContrailImageTag: {get_param: AgilioImageTag}

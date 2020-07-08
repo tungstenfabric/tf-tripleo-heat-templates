@@ -145,7 +145,7 @@ resources:
         if:
           - deployment_actions_empty
           - []
-          - ['CREATE'] # Only do this on CREATE
+          - ['CREATE', 'UPDATE']
       input_values:
         _IS_DPDK_: "True"
 

@@ -183,7 +183,7 @@ resources:
         if:
           - deployment_actions_empty
           - []
-          - ['CREATE'] # Only do this on CREATE
+          - ['CREATE', 'UPDATE']
       input_values:
         _CONTRAIL_SRIOV_NUM_VFS_: {get_attr: [ContrailSettingsRoleParametersValue, value, sriov_num]}
         _IS_DPDK_: {if: [is_dpdk, 'True', '']}
