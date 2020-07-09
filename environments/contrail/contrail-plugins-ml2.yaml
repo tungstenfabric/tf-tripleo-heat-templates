@@ -32,7 +32,7 @@ parameter_defaults:
   NeutronApiOptVolumes:
     - 'opt_plugin:/opt/plugin'
   NeutronApiOptEnvVars:
-    - 'PYTHONPATH=/opt/plugin/site-packages:/usr/lib/python2.7/site-packages'
+    PYTHONPATH: '/opt/plugin/python3/site-packages'
 
   install_contrail_puppet: true
 

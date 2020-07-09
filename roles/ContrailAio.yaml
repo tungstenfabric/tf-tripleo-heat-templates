@@ -4,7 +4,7 @@
 - name: ContrailAio
   description: |
     All-in-one role serving both as a controller, contrail controller and a compute.
-  disable_constraints: True
+  disable_constraints: False
   CountDefault: 0
   tags:
     - primary
@@ -22,7 +22,7 @@
       subnet: tenant_subnet
   # For systems with both IPv4 and IPv6, you may specify a gateway network for
   # each, such as ['ControlPlane', 'External']
-  default_route_networks: ['External']
+  default_route_networks: ['ControlPlane']
   HostnameFormatDefault: '%stackname%-contrailaio-%index%'
   # Deprecated & backward-compatible values (FIXME: Make parameters consistent)
   # Set uses_deprecated_params to True if any deprecated params are used.
