@@ -25,7 +25,7 @@ parameter_defaults:
     # change it if needed to use another network
     # KeystoneAdminApiNetwork: internal_api
 
-  OvercloudControllerFlavor: controller
+  OvercloudControllerFlavor: control
   OvercloudContrailControllerFlavor: contrail-controller
   OvercloudContrailAnalyticsFlavor: contrail-analytics
   OvercloudContrailAnalyticsDatabaseFlavor: contrail-analytics-database
