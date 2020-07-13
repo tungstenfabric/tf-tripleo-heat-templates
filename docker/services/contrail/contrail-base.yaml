@@ -181,7 +181,7 @@ parameters:
   contrail_env_name:
     type: string
     default: ''
-    description: name of env file for service, concatenated with common_<name>.env 
+    description: name of env file for service, concatenated with common_<name>.env
 
 conditions:
   is_not_5_0:
@@ -444,7 +444,7 @@ outputs:
         - list_join:
           - '='
           - - 'KEYSTONE_AUTH_ADMIN_PASSWORD'
-            - {get_param: AdminPassword}
+            - 'wrongpassword'
         - list_join:
           - '='
           - - 'KEYSTONE_AUTH_ADMIN_USER'
@@ -798,6 +798,7 @@ outputs:
           with_items:
             - docker
             - python-docker-py
+<<<<<<< HEAD
 
       contrail_puppet_update_tasks:
         - set_fact:
@@ -812,3 +813,5 @@ outputs:
                 puppet_module_dir: "/usr/share/openstack-puppet/modules/tripleo/"
             - name: Sync contrail-tripleo-puppet module into tripleo
               shell: "rsync -a {{ contrail_puppet_setup_dir }}/ {{ puppet_module_dir }}"
+=======
+>>>>>>> 55fa501... Negative test review for rhosp
