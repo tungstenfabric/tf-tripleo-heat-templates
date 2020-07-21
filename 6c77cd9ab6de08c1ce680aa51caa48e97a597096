@@ -1,0 +1,27 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "d8ca1308_4d88f68d",
+        "filename": "environments/contrail/endpoints-public-dns.yaml",
+        "patchSetId": 1
+      },
+      "lineNbr": 96,
+      "author": {
+        "id": 471
+      },
+      "writtenOn": "2020-07-21T10:48:57Z",
+      "side": 1,
+      "message": "Pease remove trailing space and add new line",
+      "range": {
+        "startLine": 96,
+        "startChar": 77,
+        "endLine": 96,
+        "endChar": 78
+      },
+      "revId": "6c77cd9ab6de08c1ce680aa51caa48e97a597096",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    }
+  ]
+}
