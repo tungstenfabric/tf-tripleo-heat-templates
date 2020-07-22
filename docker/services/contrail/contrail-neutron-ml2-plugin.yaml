@@ -53,7 +53,16 @@ parameters:
   ContrailDmIntegration:
     description: Device Manager integration
     type: boolean
-    default: false
+    default: true
+  ContrailManagementPortTags:
+    default: ''
+    description:  List tags for the ports that are connected to management RHOSP networks (
+                  provisioning(ctlplane), internal api, external, storage, storagemgmt)
+    type: comma_delimited_list
+  ContrailDataPortTags:
+    default: ''
+    description: List tags for the ports that are connected to RHOSP data networks (tenant)
+    type: comma_delimited_list
 
 conditions:
   contrail_config_ips_unset: {equals: [{get_param: ContrailConfigIPs}, '']}
@@ -98,6 +107,8 @@ outputs:
           - get_attr: [NeutronBase, role_data, config_settings]
           - get_attr: [ContrailBase, role_data, config_settings]
           - contrail_dm_integration: {get_param: ContrailDmIntegration}
+            contrail_management_port_tags: {get_param: ContrailManagementPortTags}
+            contrail_data_port_tags: {get_param: ContrailDataPortTags}
           - if:
               - contrail_config_ips_unset
               - null
