@@ -110,6 +110,18 @@ parameter_defaults:
   ContrailConfigIPs: ''
   ContrailConfigPort: '8082'
 
+  # Tags for ML2 plugin to differentiate ports in RHOSP networks
+  # (should be same as used in servers discovery in Contrail Command)
+  # !!! Ajust if other values are used in Contrail Command during servers discovery
+  ContrailManagementPortTags:
+    - 'rhosp-provisioning'
+    - 'rhosp-external'
+    - 'rhosp-storage'
+    - 'rhosp-internal'
+    - 'rhosp-storage-mgmt'
+  ContrailDataPortTags:
+    - 'rhosp-data'
+
   # Enable/Disable Device Manager integration
   ContrailDmIntegration: true
 
