@@ -171,7 +171,7 @@ outputs:
                     volumes:
                       get_attr: [ContrailBase, role_data, contrail_base_volumes]
                     environment:
-                      list_concat:
+                      map_merge:
                         - {get_attr: [ContrailBase, role_data, contrail_base_env]}
                         - {get_attr: [ContrailBase, role_data, contrail_defaults_env]}
                     env_file:

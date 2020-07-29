@@ -216,10 +216,10 @@ outputs:
                   volumes:
                     get_attr: [ContrailBase, role_data, contrail_base_volumes]
                   environment:
-                    list_concat:
+                    map_merge:
                       - {get_attr: [ContrailBase, role_data, contrail_base_env]}
                       - {get_attr: [ContrailBase, role_data, contrail_defaults_env]}
-                      - - 'NODE_TYPE=control'
+                      - NODE_TYPE: 'control'
                   env_file: *contrail_issu_control_env_file
               - null
             - contrail_control_nodemgr:
@@ -234,9 +234,9 @@ outputs:
                     - {get_attr: [ContrailBase, role_data, contrail_base_volumes]}
                     - - /var/run:/var/run:z
                 environment:
-                  list_concat:
-                    - get_attr: [ContrailBase, role_data, contrail_base_env]
-                    - - 'NODE_TYPE=control'
+                  map_merge:
+                    - {get_attr: [ContrailBase, role_data, contrail_base_env]}
+                    - NODE_TYPE: 'control'
                 env_file: *contrail_issu_control_env_file
               contrail_control_control:
                 image: &contrail_control_control_image {get_attr: [DockerContrailControlControlImageNormalize, contrail_image]}

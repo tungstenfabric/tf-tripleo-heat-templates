@@ -45,20 +45,39 @@ resource_registry:
   OS::TripleO::ContrailSriovExtraConfigPre: ../../extraconfig/pre_deploy/contrail/contrail-init.yaml
   OS::TripleO::ContrailTsnExtraConfigPre: ../../extraconfig/pre_deploy/contrail/contrail-init.yaml
   OS::TripleO::ContrailAioExtraConfigPre: ../../extraconfig/pre_deploy/contrail/contrail-init.yaml
-  # by default disabled
+
+  # Agilio by default is disabled
   OS::TripleO::Services::AgilioVrouter: OS::Heat::None
-  # by AIO in non-ha, for ha use commented lines
-  # OS::TripleO::Tasks::ContrailAioPreConfig: ../extraconfig/tasks/pre_puppet_pacemaker.yaml
-  # OS::TripleO::Tasks::ContrailAioPostConfig: ../extraconfig/tasks/post_puppet_pacemaker.yaml
-  # OS::TripleO::Tasks::ContrailAioPostPuppetRestart: ../extraconfig/tasks/post_puppet_pacemaker_restart.yaml
-  OS::TripleO::Tasks::ContrailAioPreConfig: OS::Heat::None
-  OS::TripleO::Tasks::ContrailAioPostConfig: OS::Heat::None
-  OS::TripleO::Tasks::ContrailAioPostPuppetRestart: OS::Heat::None
+
+  # Disable OVN services
+  OS::TripleO::Services::OVNController: OS::Heat::None
+  OS::TripleO::Services::OVNDBs: OS::Heat::None
+  OS::TripleO::Services::OVNMetadataAgent: OS::Heat::None
+  OS::TripleO::Network::Ports::OVNDBsVipPort: ../../network/ports/noop.yaml
+
+  # Disabling Neutron services
+  OS::TripleO::Docker::NeutronMl2PluginBase: OS::Heat::None
+  OS::TripleO::Services::NeutronOvsAgent: OS::Heat::None
+  OS::TripleO::Services::ComputeNeutronOvsAgent: OS::Heat::None
+  OS::TripleO::Services::NeutronL3Agent: OS::Heat::None
+  OS::TripleO::Services::NeutronMetadataAgent: OS::Heat::None
+  OS::TripleO::Services::ComputeNeutronL3Agent: OS::Heat::None
+  OS::TripleO::Services::ComputeNeutronMetadataAgent: OS::Heat::None
+  OS::TripleO::Services::NeutronDhcpAgent: OS::Heat::None
 
 parameter_defaults:
   NeutronCorePlugin: neutron_plugin_contrail.plugins.opencontrail.contrail_plugin.NeutronPluginContrailCoreV2
   NeutronServicePlugins: ''
   NeutronTunnelTypes: ''
+  NeutronMechanismDrivers: ''
+  NeutronTypeDrivers: ''
+  NeutronNetworkType: ''
+  NeutronPluginExtensions: ''
+  NeutronFlatNetworks: ''
+  NeutronTunnelIdRanges: ''
+  NeutronNetworkVLANRanges: ''
+  NeutronVniRanges: ''
+
   NeutronApiOptVolumes:
     - '/var/lib/contrail/plugin_contrail_neutron:/opt/plugin:ro'
     - '/etc/contrail/ssl:/etc/contrail/ssl:z'

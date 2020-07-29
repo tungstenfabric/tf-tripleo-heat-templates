@@ -74,7 +74,7 @@ parameter_defaults:
   ContrailDefaults:
 # if APPLY_DEFAULTS is set to false - provisioner container will be started, but
 # provisioning will not be executed.
-    - "APPLY_DEFAULTS=true"
+    APPLY_DEFAULTS: "True"
 # Custome Contrail container configuration settings
   ContrailSettings:
     VROUTER_GATEWAY: 10.0.0.1
