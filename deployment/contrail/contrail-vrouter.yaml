@@ -159,7 +159,7 @@ outputs:
                     volumes:
                       get_attr: [ContrailBase, role_data, contrail_base_volumes]
                     environment:
-                      list_concat:
+                      map_merge:
                         - {get_attr: [ContrailBase, role_data, contrail_base_env]}
                         - {get_attr: [ContrailBase, role_data, contrail_defaults_env]}
                     env_file:
@@ -201,12 +201,9 @@ outputs:
                       - /var/run:/var/run:z
                       - /var/lib/contrail:/var/lib/contrail:z
                 environment:
-                  list_concat:
+                  map_merge:
                     - {get_attr: [ContrailBase, role_data, contrail_base_env]}
-                    - - list_join:
-                          - '='
-                          - - VROUTER_MODULE_OPTIONS
-                            - {get_param: ContrailVrouterModuleOptions}
+                    - VROUTER_MODULE_OPTIONS: {get_param: ContrailVrouterModuleOptions}
                 env_file:
                   list_concat:
                     - {get_attr: [ContrailBase, role_data, contrail_base_env_file]}
