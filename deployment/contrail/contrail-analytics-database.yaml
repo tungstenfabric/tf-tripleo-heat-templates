@@ -216,15 +216,12 @@ outputs:
                       - /sys/fs/selinux:/sys/fs/selinux
                       - /var/lib/containers:/var/lib/containers:shared
                 environment:
-                  list_concat:
+                  map_merge:
                     - {get_attr: [ContrailBase, role_data, contrail_base_env]}
                     - if:
                       - contrail_analyticsdb_min_disk_gb_unset
-                      - []
-                      - - list_join:
-                          - ''
-                          - - 'DATABASE_NODEMGR__DEFAULTS__minimum_diskGB='
-                            - {get_param: ContrailAnalyticsDBMinDiskGB}
+                      - {}
+                      - DATABASE_NODEMGR__DEFAULTS__minimum_diskGB: {get_param: ContrailAnalyticsDBMinDiskGB}
                 env_file:
                   list_concat:
                     - {get_attr: [ContrailBase, role_data, contrail_base_env_file]}
@@ -240,7 +237,7 @@ outputs:
                     volumes:
                       get_attr: [ContrailBase, role_data, contrail_base_volumes]
                     environment:
-                      list_concat:
+                      map_merge:
                         - {get_attr: [ContrailBase, role_data, contrail_base_env]}
                         - {get_attr: [ContrailBase, role_data, contrail_defaults_env]}
                     env_file:

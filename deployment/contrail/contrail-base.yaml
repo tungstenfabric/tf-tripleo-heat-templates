@@ -94,8 +94,8 @@ parameters:
     description: Contrail Service settings
     type: json
   ContrailDefaults:
-    default: []
-    description: List of env variables for provisioner container
+    default: {}
+    description: Dict of env variables for provisioner container
     type: json
   ContrailImageTag:
     default: 'latest'
@@ -428,162 +428,88 @@ outputs:
                   - 'ro'
             - null
       contrail_general_base_env: &contrail_general_base_env
-        - 'CLOUD_ORCHESTRATOR=openstack'
-        - 'OPENSTACK_VERSION=train'
-        - list_join:
-          - '='
-          - - 'AAA_MODE'
-            - {get_attr: [RoleParametersValue, value, 'contrail::aaa_mode']}
-        - str_replace:
-            template: REDIS_SERVER_PORT=_REDIS_SERVER_PORT_
-            params:
-              _REDIS_SERVER_PORT_: {get_param: ContrailRedisPort}
+        CLOUD_ORCHESTRATOR: 'openstack'
+        OPENSTACK_VERSION: 'train'
+        AAA_MODE: {get_attr: [RoleParametersValue, value, 'contrail::aaa_mode']}
+        REDIS_SERVER_PORT: {get_param: ContrailRedisPort}
       contrail_auth_base_env: &contrail_auth_base_env
-        - 'AUTH_MODE=keystone'
-        - 'KEYSTONE_AUTH_URL_VERSION=/v3'
-        - list_join:
-          - '='
-          - - 'KEYSTONE_AUTH_ADMIN_PASSWORD'
-            - {get_param: AdminPassword}
-        - list_join:
-          - '='
-          - - 'KEYSTONE_AUTH_ADMIN_USER'
-            - {get_param: AdminUser}
-        - list_join:
-          - '='
-          - - 'KEYSTONE_AUTH_ADMIN_TENANT'
-            - {get_param: AdminTenantName}
-        - list_join:
-          - '='
-          - - 'KEYSTONE_AUTH_REGION_NAME'
-            - {get_param: KeystoneRegion}
-        - list_join:
-          - '='
-          - - 'KEYSTONE_AUTH_PROJECT_DOMAIN_NAME'
-            - {get_param: KeystoneProjectDomainName}
-        - list_join:
-          - '='
-          - - 'KEYSTONE_AUTH_USER_DOMAIN_NAME'
-            - {get_param: KeystoneUserDomainName}
+        AUTH_MODE: 'keystone'
+        KEYSTONE_AUTH_URL_VERSION: '/v3'
+        KEYSTONE_AUTH_ADMIN_PASSWORD: {get_param: AdminPassword}
+        KEYSTONE_AUTH_ADMIN_USER: {get_param: AdminUser}
+        KEYSTONE_AUTH_ADMIN_TENANT: {get_param: AdminTenantName}
+        KEYSTONE_AUTH_REGION_NAME: {get_param: KeystoneRegion}
+        KEYSTONE_AUTH_PROJECT_DOMAIN_NAME: {get_param: KeystoneProjectDomainName}
+        KEYSTONE_AUTH_USER_DOMAIN_NAME: {get_param: KeystoneUserDomainName}
       contrail_auth_admin_env: &contrail_auth_admin_env
-        - list_join:
-          - '='
-          - - 'KEYSTONE_AUTH_HOST'
-            - {get_param: [EndpointMap, KeystoneAdmin, host] }
-        - list_join:
-          - '='
-          - - 'KEYSTONE_AUTH_ADMIN_PORT'
-            - {get_param: [EndpointMap, KeystoneAdmin, port] }
-        - list_join:
-          - '='
-          - - 'KEYSTONE_AUTH_PROTO'
-            - {get_param: [EndpointMap, KeystoneAdmin, protocol] }
+        KEYSTONE_AUTH_HOST: {get_param: [EndpointMap, KeystoneAdmin, host]}
+        KEYSTONE_AUTH_ADMIN_PORT: {get_param: [EndpointMap, KeystoneAdmin, port]}
+        KEYSTONE_AUTH_PROTO: {get_param: [EndpointMap, KeystoneAdmin, protocol]}
       contrail_auth_internal_env: &contrail_auth_internal_env
-        - list_join:
-          - '='
-          - - 'KEYSTONE_AUTH_HOST'
-            - {get_param: [EndpointMap, KeystoneInternal, host] }
-        - list_join:
-          - '='
-          - - 'KEYSTONE_AUTH_ADMIN_PORT'
-            - {get_param: [EndpointMap, KeystoneInternal, port] }
-        - list_join:
-          - '='
-          - - 'KEYSTONE_AUTH_PROTO'
-            - {get_param: [EndpointMap, KeystoneInternal, protocol] }
+        KEYSTONE_AUTH_HOST: {get_param: [EndpointMap, KeystoneInternal, host]}
+        KEYSTONE_AUTH_ADMIN_PORT: {get_param: [EndpointMap, KeystoneInternal, port]}
+        KEYSTONE_AUTH_PROTO: {get_param: [EndpointMap, KeystoneInternal, protocol]}
       contrail_tls_env: &contrail_tls_env
         if:
           - contrail_tls_enabled
-          - list_concat:
-              - - "SSL_ENABLE=True"
-                - "XMPP_SSL_ENABLE=True"
-                - "SANDESH_SSL_ENABLE=True"
-                - "INTROSPECT_SSL_ENABLE=True"
-                - if:
+          - map_merge:
+              - SSL_ENABLE: "True"
+                XMPP_SSL_ENABLE: "True"
+                SANDESH_SSL_ENABLE: "True"
+                INTROSPECT_SSL_ENABLE: "True"
+                SERVER_CERTFILE: {get_param: ContrailServiceCertFile}
+                SERVER_KEYFILE: {get_param: ContrailServiceKeyFile}
+                SERVER_CA_CERTFILE: {get_param: ContrailCaCertFile}
+                SERVER_CA_KEYFILE: {get_param: ContrailCaKeyFile}
+              - if:
                   - contrail_ipa_ca
-                  - 'INTROSPECT_SSL_INSECURE=False'
-                  - 'INTROSPECT_SSL_INSECURE=True'
-                - list_join:
-                    - '='
-                    - - 'SERVER_CERTFILE'
-                      - {get_param: ContrailServiceCertFile}
-                - list_join:
-                    - '='
-                    - - 'SERVER_KEYFILE'
-                      - {get_param: ContrailServiceKeyFile}
-                - list_join:
-                    - '='
-                    - - 'SERVER_CA_CERTFILE'
-                      - {get_param: ContrailCaCertFile}
-                - list_join:
-                    - '='
-                    - - 'SERVER_CA_KEYFILE'
-                      - {get_param: ContrailCaKeyFile}
+                  - INTROSPECT_SSL_INSECURE: 'False'
+                  - INTROSPECT_SSL_INSECURE: 'True'
               - if:
                   - is_not_5_0
-                  - - "KAFKA_SSL_ENABLE=True"
-                    - "CASSANDRA_SSL_ENABLE=True"
-                    - "RABBITMQ_USE_SSL=True"
-                  - - "KAFKA_SSL_ENABLE=False"
-                    - "CASSANDRA_SSL_ENABLE=False"
-                    - "RABBITMQ_USE_SSL=False"
+                  - KAFKA_SSL_ENABLE: "True"
+                    CASSANDRA_SSL_ENABLE: "True"
+                    RABBITMQ_USE_SSL: "True"
+                  - KAFKA_SSL_ENABLE: "False"
+                    CASSANDRA_SSL_ENABLE: "False"
+                    RABBITMQ_USE_SSL: "False"
 
-          - []
+          - {}
       contrail_auth_tls_env: &contrail_auth_tls_env
         if:
           - internal_tls_enabled
-          - list_concat:
-              - - list_join:
-                    - '='
-                    - - 'KEYSTONE_AUTH_CERTFILE'
-                      - {get_param: ContrailServiceCertFile}
-                - list_join:
-                    - '='
-                    - - 'KEYSTONE_AUTH_KEYFILE'
-                      - {get_param: ContrailServiceKeyFile}
+          - map_merge:
+              - KEYSTONE_AUTH_CERTFILE: {get_param: ContrailServiceCertFile}
+                KEYSTONE_AUTH_KEYFILE: {get_param: ContrailServiceKeyFile}
               - if:
                 - internal_ipa_ca
-                - - 'KEYSTONE_AUTH_INSECURE=False'
-                  - list_join:
-                      - '='
-                      - - 'KEYSTONE_AUTH_CA_CERTFILE'
-                        - {get_param: InternalTLSCAFile}
-                - - 'KEYSTONE_AUTH_INSECURE=True'
-          - []
+                - KEYSTONE_AUTH_INSECURE: 'False'
+                  KEYSTONE_AUTH_CA_CERTFILE: {get_param: InternalTLSCAFile}
+                - KEYSTONE_AUTH_INSECURE: 'True'
+          - {}
       metadata_tls_env: &metadata_tls_env
         if:
           - internal_tls_enabled
-          - - 'METADATA_SSL_ENABLE=True'
-            - list_join:
-                - '='
-                - - 'METADATA_SSL_CERTFILE'
-                  - {get_param: ContrailServiceCertFile}
-            - list_join:
-                - '='
-                - - 'METADATA_SSL_KEYFILE'
-                  - {get_param: ContrailServiceKeyFile}
-            - list_join:
-                - '='
-                - - 'METADATA_SSL_CA_CERTFILE'
-                  - {get_param: InternalTLSCAFile}
-          - []
+          - METADATA_SSL_ENABLE: 'True'
+            METADATA_SSL_CERTFILE: {get_param: ContrailServiceCertFile}
+            METADATA_SSL_KEYFILE: {get_param: ContrailServiceKeyFile}
+            METADATA_SSL_CA_CERTFILE: {get_param: InternalTLSCAFile}
+          - {}
       contrail_common_base_env: &contrail_common_base_env
-        list_concat:
+        map_merge:
           - *contrail_general_base_env
           - *contrail_tls_env
           - *contrail_auth_tls_env
           - *metadata_tls_env
       contrail_base_env: &contrail_base_env
-        list_concat:
+        map_merge:
           - *contrail_auth_base_env
           - *contrail_auth_admin_env
-          - null
       contrail_defaults_env: &contrail_defaults_env {get_param: ContrailDefaults}
       contrail_base_auth_internal_env: &contrail_base_auth_internal_env
-        list_concat:
+        map_merge:
           - *contrail_auth_base_env
           - *contrail_auth_internal_env
-          - null
       docker_config:
         step_2: {}
       contrail_common_env_file: &contrail_common_env_file
@@ -615,10 +541,9 @@ outputs:
               lineinfile:
                 dest: *contrail_common_env_file
                 state: present
-                line: "{{ item }}"
-                regexp: "^{{ item.split('=')[0] }}.*"
-              with_items: "{{ contrail_base_env_params }}"
-
+                regexp: "^{{ item.key }}.*"
+                line: "{{ item.key }}={{ item.value }}"
+              with_dict: "{{ contrail_base_env_params }}"
             - name: node ips (names) param name
               set_fact:
                 contrail_nodes_param_name: {list_join: ["_", ["contrail_config", {get_param: contrail_nodes_param_suffux}]]}

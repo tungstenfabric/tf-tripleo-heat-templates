@@ -626,16 +626,16 @@ outputs:
                         - - {get_param: DockerContrailRabbitmqLogPath}
                           - *contrail_rabbit_internal_log_path
             environment:
-              list_concat:
+              map_merge:
                 - get_attr: [ContrailBase, role_data, contrail_base_env]
-                - - 'NODE_TYPE=config-database'
-                  - 'RABBITMQ_CTL_DIST_PORT_MIN=25684'
-                  - 'RABBITMQ_CTL_DIST_PORT_MAX=25694'
+                - NODE_TYPE: 'config-database'
+                  RABBITMQ_CTL_DIST_PORT_MIN: 25684
+                  RABBITMQ_CTL_DIST_PORT_MAX: 25694
                 - if:
                   - rabbitmq_log_keep_default
-                  - []
-                  - - 'RABBITMQ_LOGS=/var/log/rabbitmq/rabbitmq.log'
-                    - 'RABBITMQ_SASL_LOGS=/var/log/rabbitmq/rabbitmq_sasl.log'
+                  - {}
+                  - RABBITMQ_LOGS: '/var/log/rabbitmq/rabbitmq.log'
+                    RABBITMQ_SASL_LOGS: '/var/log/rabbitmq/rabbitmq_sasl.log'
             env_file:  *contrail_issu_env_file
           contrail_config_zookeeper:
             image: &contrail_config_zookeeper_image {get_attr: [DockerContrailZookeeperImageNormalize, contrail_image]}
@@ -652,15 +652,15 @@ outputs:
                       - - {get_param: DockerContrailConfigZookeeperVolume}
                         - '/data'
                         - z
-              - - list_join:
+                - - list_join:
                     - ':'
                     - - {get_param: DockerContrailZookeeperLogPath}
                       - /var/log/zookeeper
                       - z
             environment:
-              list_concat:
+              map_merge:
                 - get_attr: [ContrailBase, role_data, contrail_base_env]
-                - - 'NODE_TYPE=config-database'
+                - NODE_TYPE: 'config-database'
             env_file: *contrail_issu_env_file
         step_4:
           map_merge:
@@ -675,7 +675,7 @@ outputs:
                     volumes:
                       get_attr: [ContrailBase, role_data, contrail_base_volumes]
                     environment:
-                      list_concat:
+                      map_merge:
                         - {get_attr: [ContrailBase, role_data, contrail_base_env]}
                         - {get_attr: [ContrailBase, role_data, contrail_defaults_env]}
                     env_file:
@@ -699,15 +699,12 @@ outputs:
                       - /sys/fs/selinux:/sys/fs/selinux
                       - /var/lib/containers:/var/lib/containers:shared
                 environment:
-                  list_concat:
+                  map_merge:
                     - {get_attr: [ContrailBase, role_data, contrail_base_env]}
                     - if:
                       - contrail_configdb_min_disk_gb_unset
-                      - []
-                      - - list_join:
-                          - ''
-                          - - 'CONFIG_DATABASE_NODEMGR__DEFAULTS__minimum_diskGB='
-                            - {get_param: ContrailConfigDBMinDiskGB}
+                      - {}
+                      - CONFIG_DATABASE_NODEMGR__DEFAULTS__minimum_diskGB: {get_param: ContrailConfigDBMinDiskGB}
                 env_file:
                   - *contrail_issu_env_file
                   - *contrail_issu_configdb_env_file
@@ -765,12 +762,12 @@ outputs:
                         - /var/log/kafka
                         - z
                 environment:
-                  list_concat:
+                  map_merge:
                     - get_attr: [ContrailBase, role_data, contrail_base_env]
                     - if:
                       - is_not_5_0_issu
-                      - - 'NODE_TYPE=analytics-alarm'
-                      - - 'NODE_TYPE=database'
+                      - NODE_TYPE: 'analytics-alarm'
+                      - NODE_TYPE: 'database'
                 env_file: *contrail_issu_env_file
               contrail_analytics_database:
                 image: &contrail_analytics_database_image {get_attr: [DockerContrailCassandraImageNormalize, contrail_image]}
@@ -826,10 +823,10 @@ outputs:
                     volumes:
                       get_attr: [ContrailBase, role_data, contrail_base_volumes]
                     environment:
-                      list_concat:
+                      map_merge:
                         - get_attr: [ContrailBase, role_data, contrail_base_env]
                         - get_attr: [ContrailBase, role_data, contrail_defaults_env]
-                        - - 'NODE_TYPE=config'
+                        - NODE_TYPE: 'config'
                     env_file: *contrail_issu_env_file
                   contrail_analytics_provisioner:
                     image: *contrail_provisioner_image_name
@@ -840,10 +837,10 @@ outputs:
                     volumes:
                       get_attr: [ContrailBase, role_data, contrail_base_volumes]
                     environment:
-                      list_concat:
+                      map_merge:
                         - get_attr: [ContrailBase, role_data, contrail_base_env]
                         - get_attr: [ContrailBase, role_data, contrail_defaults_env]
-                        - - 'NODE_TYPE=analytics'
+                        - NODE_TYPE: 'analytics'
                     env_file: *contrail_issu_env_file
                   contrail_analytics_database_provisioner:
                     image: *contrail_provisioner_image_name
@@ -856,16 +853,13 @@ outputs:
                         - {get_attr: [ContrailBase, role_data, contrail_base_volumes]}
                         - - /var/run:/var/run:z
                     environment:
-                      list_concat:
+                      map_merge:
                         - {get_attr: [ContrailBase, role_data, contrail_base_env]}
                         - {get_attr: [ContrailBase, role_data, contrail_defaults_env]}
                         - if:
                           - contrail_analyticsdb_min_disk_gb_unset
-                          - []
-                          - - list_join:
-                              - ''
-                              - - 'DATABASE_NODEMGR__DEFAULTS__minimum_diskGB='
-                                - {get_param: ContrailAnalyticsDBMinDiskGB}
+                          - {}
+                          - DATABASE_NODEMGR__DEFAULTS__minimum_diskGB: {get_param: ContrailAnalyticsDBMinDiskGB}
                     env_file:
                       - *contrail_issu_env_file
                       - *contrail_issu_analyticsdb_env_file
@@ -878,10 +872,10 @@ outputs:
                     volumes:
                       get_attr: [ContrailBase, role_data, contrail_base_volumes]
                     environment:
-                      list_concat:
+                      map_merge:
                         - get_attr: [ContrailBase, role_data, contrail_base_env]
                         - get_attr: [ContrailBase, role_data, contrail_defaults_env]
-                        - - 'NODE_TYPE=analytics-snmp'
+                        - NODE_TYPE: 'analytics-snmp'
                     env_file: *contrail_issu_env_file
                   contrail_analytics_alarm_provisioner:
                     image: *contrail_provisioner_image_name
@@ -892,10 +886,10 @@ outputs:
                     volumes:
                       get_attr: [ContrailBase, role_data, contrail_base_volumes]
                     environment:
-                      list_concat:
+                      map_merge:
                         - get_attr: [ContrailBase, role_data, contrail_base_env]
                         - get_attr: [ContrailBase, role_data, contrail_defaults_env]
-                        - - 'NODE_TYPE=analytics-alarm'
+                        - NODE_TYPE: 'analytics-alarm'
                     env_file: *contrail_issu_env_file
                 - null
             - contrail_config_nodemgr:
@@ -910,9 +904,9 @@ outputs:
                     - {get_attr: [ContrailBase, role_data, contrail_base_volumes]}
                     - - /var/run:/var/run:z
                 environment:
-                  list_concat:
+                  map_merge:
                     - get_attr: [ContrailBase, role_data, contrail_base_env]
-                    - - 'NODE_TYPE=config'
+                    - NODE_TYPE: 'config'
                 env_file: *contrail_issu_env_file
               contrail_config_api:
                 image: &contrail_config_api_image {get_attr: [DockerContrailConfigApiImageNormalize, contrail_image]}
@@ -974,9 +968,9 @@ outputs:
                     - {get_attr: [ContrailBase, role_data, contrail_base_volumes]}
                     - - /var/run:/var/run:z
                 environment:
-                  list_concat:
+                  map_merge:
                     - get_attr: [ContrailBase, role_data, contrail_base_env]
-                    - - 'NODE_TYPE=analytics'
+                    - NODE_TYPE: 'analytics'
                 env_file: *contrail_issu_env_file
               contrail_analytics_api:
                 image: &contrail_analytics_api_image {get_attr: [DockerContrailAnalyticsApiImageNormalize, contrail_image]}
@@ -1012,12 +1006,12 @@ outputs:
                 volumes:
                   get_attr: [ContrailBase, role_data, contrail_base_volumes]
                 environment:
-                  list_concat:
+                  map_merge:
                     - get_attr: [ContrailBase, role_data, contrail_base_env]
                     - if:
                       - is_not_5_0_issu
-                      - - 'NODE_TYPE=analytics-snmp'
-                      - - 'NODE_TYPE=analytics'
+                      - NODE_TYPE: 'analytics-snmp'
+                      - NODE_TYPE: 'analytics'
                 env_file: *contrail_issu_env_file
               contrail_analytics_snmp_collector:
                 image: &contrail_analytics_snmp_collector_image {get_attr: [DockerContrailAnalyticsSnmpCollectorImageNormalize, contrail_image]}
@@ -1029,12 +1023,12 @@ outputs:
                 volumes:
                   get_attr: [ContrailBase, role_data, contrail_base_volumes]
                 environment:
-                  list_concat:
+                  map_merge:
                     - get_attr: [ContrailBase, role_data, contrail_base_env]
                     - if:
                       - is_not_5_0_issu
-                      - - 'NODE_TYPE=analytics-snmp'
-                      - - 'NODE_TYPE=analytics'
+                      - NODE_TYPE: 'analytics-snmp'
+                      - NODE_TYPE: 'analytics'
                 env_file: *contrail_issu_env_file
               contrail_analytics_queryengine:
                 image: &contrail_analytics_queryengine_image {get_attr: [DockerContrailAnalyticsQueryEngineImageNormalize, contrail_image]}
@@ -1046,12 +1040,12 @@ outputs:
                 volumes:
                   get_attr: [ContrailBase, role_data, contrail_base_volumes]
                 environment:
-                  list_concat:
+                  map_merge:
                     - get_attr: [ContrailBase, role_data, contrail_base_env]
                     - if:
                       - is_not_5_0_issu
-                      - - 'NODE_TYPE=database'
-                      - - 'NODE_TYPE=analytics'
+                      - NODE_TYPE: 'database'
+                      - NODE_TYPE: 'analytics'
                 env_file: *contrail_issu_env_file
               contrail_analytics_database_nodemgr:
                 image: *contrail_nodemgr_image_name
@@ -1070,15 +1064,12 @@ outputs:
                       - /sys/fs/selinux:/sys/fs/selinux
                       - /var/lib/containers:/var/lib/containers:shared
                 environment:
-                  list_concat:
+                  map_merge:
                     - {get_attr: [ContrailBase, role_data, contrail_base_env]}
                     - if:
                       - contrail_analyticsdb_min_disk_gb_unset
-                      - []
-                      - - list_join:
-                          - ''
-                          - - 'DATABASE_NODEMGR__DEFAULTS__minimum_diskGB='
-                            - {get_param: ContrailAnalyticsDBMinDiskGB}
+                      - {}
+                      - DATABASE_NODEMGR__DEFAULTS__minimum_diskGB: {get_param: ContrailAnalyticsDBMinDiskGB}
                 env_file:
                   - *contrail_issu_env_file
                   - *contrail_issu_analyticsdb_env_file
@@ -1092,12 +1083,12 @@ outputs:
                 volumes:
                   get_attr: [ContrailBase, role_data, contrail_base_volumes]
                 environment:
-                  list_concat:
+                  map_merge:
                     - get_attr: [ContrailBase, role_data, contrail_base_env]
                     - if:
                       - is_not_5_0_issu
-                      - - 'NODE_TYPE=analytics-alarm'
-                      - - 'NODE_TYPE=database'
+                      - NODE_TYPE: 'analytics-alarm'
+                      - NODE_TYPE: 'database'
                 env_file: *contrail_issu_env_file
               contrail_webui_web:
                 image: &contrail_webui_web_image {get_attr: [DockerContrailWebuiWebImageNormalize, contrail_image]}
@@ -1137,9 +1128,9 @@ outputs:
                         - {get_attr: [ContrailBase, role_data, contrail_base_volumes]}
                         - - /var/run:/var/run:z
                     environment:
-                      list_concat:
+                      map_merge:
                         - get_attr: [ContrailBase, role_data, contrail_base_env]
-                        - - 'NODE_TYPE=analytics-snmp'
+                        - NODE_TYPE: 'analytics-snmp'
                     env_file: *contrail_issu_env_file
                   contrail_analytics_alarm_nodemgr:
                     image: *contrail_nodemgr_image_name
@@ -1153,9 +1144,9 @@ outputs:
                         - {get_attr: [ContrailBase, role_data, contrail_base_volumes]}
                         - - /var/run:/var/run:z
                     environment:
-                      list_concat:
+                      map_merge:
                         - get_attr: [ContrailBase, role_data, contrail_base_env]
-                        - - 'NODE_TYPE=analytics-alarm'
+                        - NODE_TYPE: 'analytics-alarm'
                     env_file: *contrail_issu_env_file
                 - null
 
