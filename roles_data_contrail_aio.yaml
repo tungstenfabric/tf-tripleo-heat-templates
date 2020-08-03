@@ -62,12 +62,19 @@
     - OS::TripleO::Services::CinderApi
     - OS::TripleO::Services::CinderBackendDellPs
     - OS::TripleO::Services::CinderBackendDellSc
+    - OS::TripleO::Services::CinderBackendDellEMCPowermax
+    - OS::TripleO::Services::CinderBackendDellEMCSc
     - OS::TripleO::Services::CinderBackendDellEMCUnity
     - OS::TripleO::Services::CinderBackendDellEMCVMAXISCSI
     - OS::TripleO::Services::CinderBackendDellEMCVNX
+    - OS::TripleO::Services::CinderBackendDellEMCVxFlexOS
+    - OS::TripleO::Services::CinderBackendDellEMCXtremio
+    - OS::TripleO::Services::CinderBackendDellEMCXTREMIOISCSI
     - OS::TripleO::Services::CinderBackendNetApp
+    - OS::TripleO::Services::CinderBackendPure
     - OS::TripleO::Services::CinderBackendScaleIO
     - OS::TripleO::Services::CinderBackendVRTSHyperScale
+    - OS::TripleO::Services::CinderBackendNVMeOF
     - OS::TripleO::Services::CinderBackup
     - OS::TripleO::Services::CinderHPELeftHandISCSI
     - OS::TripleO::Services::CinderScheduler
@@ -171,6 +178,8 @@
     - OS::TripleO::Services::SaharaApi
     - OS::TripleO::Services::SaharaEngine
     - OS::TripleO::Services::Securetty
+    - OS::TripleO::Services::SkydiveAgent
+    - OS::TripleO::Services::SkydiveAnalyzer
     - OS::TripleO::Services::Snmp
     - OS::TripleO::Services::Sshd
     - OS::TripleO::Services::SwiftProxy
@@ -191,6 +200,9 @@
   description: |
     Basic Compute Node role
   CountDefault: 0
+  # # Create external Neutron bridge (unset if using ML2/OVS without DVR)
+  # tags:
+  #   - external_bridge
   networks:
     InternalApi:
       subnet: internal_api_subnet
@@ -199,8 +211,12 @@
     Storage:
       subnet: storage_subnet
   HostnameFormatDefault: '%stackname%-novacompute-%index%'
+  RoleParametersDefault:
+    TunedProfileName: "virtual-host"
   # Deprecated & backward-compatible values (FIXME: Make parameters consistent)
   # Set uses_deprecated_params to True if any deprecated params are used.
+  # These deprecated_params only need to be used for existing roles and not for
+  # composable roles.
   uses_deprecated_params: True
   deprecated_param_image: 'NovaImage'
   deprecated_param_extraconfig: 'NovaComputeExtraConfig'
@@ -209,7 +225,7 @@
   deprecated_param_ips: 'NovaComputeIPs'
   deprecated_server_resource_name: 'NovaCompute'
   deprecated_nic_config_name: 'compute.yaml'
-  update_serial: 1
+  update_serial: 25
   ServicesDefault:
     - OS::TripleO::Services::Aide
     - OS::TripleO::Services::AuditD
@@ -223,6 +239,8 @@
     - OS::TripleO::Services::ComputeNeutronCorePlugin
     - OS::TripleO::Services::ComputeNeutronL3Agent
     - OS::TripleO::Services::ComputeNeutronMetadataAgent
+    - OS::TripleO::Services::ComputeNeutronOvsAgent
+    - OS::TripleO::Services::ContrailCertmongerUser
     - OS::TripleO::Services::ContrailIssuCompute
     - OS::TripleO::Services::Docker
     - OS::TripleO::Services::IpaClient
@@ -242,19 +260,23 @@
     - OS::TripleO::Services::NovaLibvirtGuests
     - OS::TripleO::Services::NovaMigrationTarget
     - OS::TripleO::Services::ContainersLogrotateCrond
-    - OS::TripleO::Services::ContrailCertmongerUser
     - OS::TripleO::Services::Podman
     - OS::TripleO::Services::Rear
     - OS::TripleO::Services::Rhsm
+    - OS::TripleO::Services::Rsyslog
     - OS::TripleO::Services::RsyslogSidecar
     - OS::TripleO::Services::Securetty
+    - OS::TripleO::Services::SkydiveAgent
     - OS::TripleO::Services::Snmp
     - OS::TripleO::Services::Sshd
+    - OS::TripleO::Services::Timesync
     - OS::TripleO::Services::Timezone
     - OS::TripleO::Services::TripleoFirewall
     - OS::TripleO::Services::TripleoPackages
     - OS::TripleO::Services::Tuned
     - OS::TripleO::Services::Vpp
+    - OS::TripleO::Services::OVNController
+    - OS::TripleO::Services::OVNMetadataAgent
 ###############################################################################
 # Role: ContrailController                                                    #
 ###############################################################################
@@ -288,6 +310,7 @@
     - OS::TripleO::Services::ContainersLogrotateCrond
     - OS::TripleO::Services::Snmp
     - OS::TripleO::Services::Sshd
+    - OS::TripleO::Services::Timesync
     - OS::TripleO::Services::Timezone
     - OS::TripleO::Services::TripleoPackages
     - OS::TripleO::Services::ContrailAnalytics
@@ -324,6 +347,7 @@
     - OS::TripleO::Services::CertmongerUser
     - OS::TripleO::Services::Collectd
     - OS::TripleO::Services::Docker
+    - OS::TripleO::Services::Podman
     - OS::TripleO::Services::Ec2Api
     - OS::TripleO::Services::IpaClient
     - OS::TripleO::Services::Ipsec
@@ -334,6 +358,7 @@
     - OS::TripleO::Services::ContrailControlOnly
     - OS::TripleO::Services::Snmp
     - OS::TripleO::Services::Sshd
+    - OS::TripleO::Services::Timesync
     - OS::TripleO::Services::Timezone
     - OS::TripleO::Services::TripleoPackages
     - OS::TripleO::Services::TripleoFirewall
@@ -372,6 +397,7 @@
     - OS::TripleO::Services::ContrailIssuCompute
     - OS::TripleO::Services::ContainersLogrotateCrond
     - OS::TripleO::Services::Docker
+    - OS::TripleO::Services::Podman
     - OS::TripleO::Services::IpaClient
     - OS::TripleO::Services::Ipsec
     - OS::TripleO::Services::Iscsid
@@ -387,6 +413,7 @@
     - OS::TripleO::Services::SkydiveAgent
     - OS::TripleO::Services::Snmp
     - OS::TripleO::Services::Sshd
+    - OS::TripleO::Services::Timesync
     - OS::TripleO::Services::Timezone
     - OS::TripleO::Services::TripleoFirewall
     - OS::TripleO::Services::TripleoPackages
@@ -427,6 +454,7 @@
     - OS::TripleO::Services::ComputeNeutronMetadataAgent
     - OS::TripleO::Services::ContrailIssuCompute
     - OS::TripleO::Services::Docker
+    - OS::TripleO::Services::Podman
     - OS::TripleO::Services::IpaClient
     - OS::TripleO::Services::Ipsec
     - OS::TripleO::Services::Iscsid
@@ -443,6 +471,7 @@
     - OS::TripleO::Services::SkydiveAgent
     - OS::TripleO::Services::Snmp
     - OS::TripleO::Services::Sshd
+    - OS::TripleO::Services::Timesync
     - OS::TripleO::Services::Timezone
     - OS::TripleO::Services::TripleoFirewall
     - OS::TripleO::Services::TripleoPackages
@@ -482,6 +511,7 @@
     - OS::TripleO::Services::ComputeNeutronMetadataAgent
     - OS::TripleO::Services::ContrailIssuCompute
     - OS::TripleO::Services::Docker
+    - OS::TripleO::Services::Podman
     - OS::TripleO::Services::IpaClient
     - OS::TripleO::Services::Ipsec
     - OS::TripleO::Services::Iscsid
@@ -498,6 +528,7 @@
     - OS::TripleO::Services::SkydiveAgent
     - OS::TripleO::Services::Snmp
     - OS::TripleO::Services::Sshd
+    - OS::TripleO::Services::Timesync
     - OS::TripleO::Services::Timezone
     - OS::TripleO::Services::TripleoFirewall
     - OS::TripleO::Services::TripleoPackages
@@ -522,6 +553,7 @@
     - OS::TripleO::Services::CertmongerUser
     - OS::TripleO::Services::Collectd
     - OS::TripleO::Services::Docker
+    - OS::TripleO::Services::Podman
     - OS::TripleO::Services::Ec2Api
     - OS::TripleO::Services::IpaClient
     - OS::TripleO::Services::Ipsec
@@ -530,6 +562,7 @@
     - OS::TripleO::Services::ContainersLogrotateCrond
     - OS::TripleO::Services::Snmp
     - OS::TripleO::Services::Sshd
+    - OS::TripleO::Services::Timesync
     - OS::TripleO::Services::Timezone
     - OS::TripleO::Services::TripleoPackages
     - OS::TripleO::Services::ContrailIssu
