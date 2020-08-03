@@ -784,3 +784,17 @@ outputs:
           with_items:
             - podman
             - python-podman-api
+
+      contrail_puppet_post_update_tasks:
+        - set_fact:
+            contrail_puppet_setup_dir: "/usr/share/contrail-tripleo-puppet"
+        - name: Check contrail tripleo puppet module was installed.
+          stat:
+            path: "{{ contrail_puppet_setup_dir }}"
+          register: file_details
+        - when: file_details.stat.exists
+          block:
+            - set_fact:
+                puppet_module_dir: "/usr/share/openstack-puppet/modules/tripleo/"
+            - name: Sync contrail-tripleo-puppet module into tripleo
+              shell: "rsync -a {{ contrail_puppet_setup_dir }}/ {{ puppet_module_dir }}"
