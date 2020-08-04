@@ -122,7 +122,7 @@ outputs:
       post_upgrade_tasks:
         get_attr: [ContrailNeutronIssu, role_data, post_upgrade_tasks]
 
-      update_tasks: []
+      update_tasks:
+        get_attr: [ContrailBase, role_data, contrail_puppet_update_tasks]
 
-      post_update_tasks:
-        get_attr: [ContrailBase, role_data, contrail_puppet_post_update_tasks]
+      post_update_tasks: []
