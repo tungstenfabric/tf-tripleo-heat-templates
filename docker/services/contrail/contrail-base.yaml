@@ -799,7 +799,7 @@ outputs:
             - docker
             - python-docker-py
 
-      contrail_puppet_post_update_tasks:
+      contrail_puppet_update_tasks:
         - set_fact:
             contrail_puppet_setup_dir: "/usr/share/contrail-tripleo-puppet"
         - name: Check contrail tripleo puppet module was installed.
