@@ -816,7 +816,7 @@ openstack overcloud deploy --templates tripleo-heat-templates/ \
   --roles-file $role_file \
   -e tripleo-heat-templates/environments/rhsm.yaml \
   -e tripleo-heat-templates/environments/contrail/contrail-services.yaml \
-  -e tripleo-heat-templates/environments/contrail/contrail-net-single.yaml \
+  -e tripleo-heat-templates/environments/contrail/contrail-net.yaml \
   -e tripleo-heat-templates/environments/contrail/contrail-plugins.yaml \
   -e containers-prepare-parameter.yaml \
   -e rhsm.yaml
@@ -836,7 +836,7 @@ openstack overcloud deploy --templates tripleo-heat-templates/ \
   --roles-file $role_file \
   -e tripleo-heat-templates/environments/rhsm.yaml \
   -e tripleo-heat-templates/environments/contrail/contrail-services.yaml \
-  -e tripleo-heat-templates/environments/contrail/contrail-net-single.yaml \
+  -e tripleo-heat-templates/environments/contrail/contrail-net.yaml \
   -e tripleo-heat-templates/environments/contrail/contrail-plugins.yaml \
   -e tripleo-heat-templates/environments/contrail/contrail-tls.yaml \
   -e tripleo-heat-templates/environments/ssl/tls-everywhere-endpoints-dns.yaml \
