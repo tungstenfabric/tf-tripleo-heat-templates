@@ -1,0 +1,50 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "a4906715_380bffac",
+        "filename": "deployment/contrail/contrail-config-database.yaml",
+        "patchSetId": 1
+      },
+      "lineNbr": 197,
+      "author": {
+        "id": 437
+      },
+      "writtenOn": "2020-08-10T11:14:00Z",
+      "side": 1,
+      "message": "it is to be map.\ndatatype is changed in rhosp16",
+      "range": {
+        "startLine": 197,
+        "startChar": 13,
+        "endLine": 197,
+        "endChar": 24
+      },
+      "revId": "94f7d5f28e5d9381c37bce168656ac5f363f71ef",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "03717e91_73a6e93b",
+        "filename": "deployment/contrail/contrail-config-database.yaml",
+        "patchSetId": 1
+      },
+      "lineNbr": 206,
+      "author": {
+        "id": 437
+      },
+      "writtenOn": "2020-08-10T11:14:00Z",
+      "side": 1,
+      "message": "please , check code in stable/queens\n\nGoal is to backport logic from queens, with taking in mind that datatype is now dict here.",
+      "range": {
+        "startLine": 202,
+        "startChar": 0,
+        "endLine": 206,
+        "endChar": 78
+      },
+      "revId": "94f7d5f28e5d9381c37bce168656ac5f363f71ef",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    }
+  ]
+}
