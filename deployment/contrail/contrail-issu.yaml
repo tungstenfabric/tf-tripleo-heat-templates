@@ -626,16 +626,16 @@ outputs:
                         - - {get_param: DockerContrailRabbitmqLogPath}
                           - *contrail_rabbit_internal_log_path
             environment:
-              map_merge:
+             list_concat:
                 - get_attr: [ContrailBase, role_data, contrail_base_env]
-                - NODE_TYPE: 'config-database'
-                  RABBITMQ_CTL_DIST_PORT_MIN: 25684
-                  RABBITMQ_CTL_DIST_PORT_MAX: 25694
+                - - 'NODE_TYPE=config-database'
+                  - 'RABBITMQ_CTL_DIST_PORT_MIN=25684'
+                  - 'RABBITMQ_CTL_DIST_PORT_MAX=25694'
                 - if:
                   - rabbitmq_log_keep_default
-                  - {}
-                  - RABBITMQ_LOGS: '/var/log/rabbitmq/rabbitmq.log'
-                    RABBITMQ_SASL_LOGS: '/var/log/rabbitmq/rabbitmq_sasl.log'
+                  - []
+                  - - 'RABBITMQ_LOGS=/var/log/rabbitmq/rabbitmq.log'
+                    - 'RABBITMQ_SASL_LOGS=/var/log/rabbitmq/rabbitmq_sasl.log'
             env_file:  *contrail_issu_env_file
           contrail_config_zookeeper:
             image: &contrail_config_zookeeper_image {get_attr: [DockerContrailZookeeperImageNormalize, contrail_image]}
