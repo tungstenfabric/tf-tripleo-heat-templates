@@ -184,7 +184,15 @@ outputs:
             user: root
             restart: always
             volumes:
-              get_attr: [ContrailBase, role_data, contrail_base_volumes]
+              list_concat:
+                - get_attr: [ContrailBase, role_data, contrail_base_volumes]
+                - if:
+                  - rabbitmq_log_keep_default
+                  - []
+                  - - list_join:
+                        - ':'
+                        - - {get_param: DockerContrailRabbitmqLogPath}
+                          - *contrail_rabbit_internal_log_path
             environment:
               map_merge:
                 - get_attr: [ContrailBase, role_data, contrail_base_env]
@@ -193,8 +201,16 @@ outputs:
                 - if:
                   - rabbitmq_log_keep_default
                   - {}
-                  - RABBITMQ_LOGS: '/var/log/rabbitmq/rabbitmq.log'
-                    RABBITMQ_SASL_LOGS: '/var/log/rabbitmq/rabbitmq_sasl.log'
+                  - RABBITMQ_LOGS:
+                      list_join:
+                        - ''
+                        - - *contrail_rabbit_internal_log_path
+                          - '/rabbitmq.log'
+                    RABBITMQ_SASL_LOGS:
+                      list_join:
+                        - ''
+                        - - *contrail_rabbit_internal_log_path
+                          - '/rabbitmq_sasl.log'
             env_file:
               list_concat:
                 - {get_attr: [ContrailBase, role_data, contrail_base_env_file]}
