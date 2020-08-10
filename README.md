@@ -462,7 +462,7 @@ undercloud_ip=`ip addr sh dev eth0 |grep "inet " |awk '{print $2}' |awk -F"/" '{
 echo ${undercloud_ip} ${undercloud_name}.${undercloud_suffix} ${undercloud_name} >> /etc/hosts
 ```
 ### Install undercloud according Red Hat documentation
-https://access.redhat.com/documentation/en-us/red_hat_openstack_platform/16.0/html/director_installation_and_usage/director_installation_and_configuration
+https://access.redhat.com/documentation/en-us/red_hat_openstack_platform/16.1/html/director_installation_and_usage/director_installation_and_configuration
 
 ### OSP16
 Register with Satellite (can be done with CDN as well)
@@ -486,7 +486,7 @@ su - stack
 cp /usr/share/python-tripleoclient/undercloud.conf.sample ~/undercloud.conf
 ```
 ### for TLS with RedHat IDM (FreeIPA) case update config
-#### (see details in RH documentaion https://access.redhat.com/documentation/en-us/red_hat_openstack_platform/16.0/html/advanced_overcloud_customization/sect-enabling_ssltls_on_the_overcloud)
+#### (see details in RH documentaion https://access.redhat.com/documentation/en-us/red_hat_openstack_platform/16.1/html/advanced_overcloud_customization/sect-enabling_ssltls_on_the_overcloud)
 An exmaple:
 ```
 ### !!! Set to OTP that was saved from IDM VM from the file ~/undercloud_otp
@@ -519,7 +519,7 @@ parameter_defaults:
       namespace: registry.redhat.io/rhosp-rhel8
       neutron_driver: ovn
       rhel_containers: false
-      tag: '16.0'
+      tag: '16.1'
     tag_from_label: '{version}-{release}'
   ContainerImageRegistryCredentials:
     registry.redhat.io:
@@ -570,7 +570,7 @@ cd images
 ### OSP16
 ```
 sudo yum install -y rhosp-director-images rhosp-director-images-ipa
-for i in /usr/share/rhosp-director-images/overcloud-full-latest-16.0.tar /usr/share/rhosp-director-images/ironic-python-agent-latest-16.0.tar ; do tar -xvf $i; done
+for i in /usr/share/rhosp-director-images/overcloud-full-latest-16.1.tar /usr/share/rhosp-director-images/ironic-python-agent-latest-16.1.tar ; do tar -xvf $i; done
 ```
 
 ```
@@ -688,9 +688,9 @@ parameter_defaults:
   RhsmVars:
     rhsm_repos:
       - fast-datapath-for-rhel-8-x86_64-rpms
-      - openstack-16-for-rhel-8-x86_64-rpms
+      - openstack-16.1-for-rhel-8-x86_64-rpms
       - satellite-tools-6.5-for-rhel-8-x86_64-rpms
-      - ansible-2.8-for-rhel-8-x86_64-rpms
+      - ansible-for-rhel-8-x86_64-rpms
       - rhel-8-for-x86_64-highavailability-rpms
       - rhel-8-for-x86_64-appstream-rpms
       - rhel-8-for-x86_64-baseos-rpms
