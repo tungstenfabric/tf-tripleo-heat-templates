@@ -798,23 +798,13 @@ that is generated during that processing
 ```
 
 ## deploy the stack
-### tripleo upstream train
-```
-openstack overcloud deploy --templates ~/tripleo-heat-templates \
-  -e ~/overcloud_images.yaml \
-  -e ~/tripleo-heat-templates/environments/network-isolation.yaml \
-  -e ~/tripleo-heat-templates/environments/docker.yaml \
-  -e ~/tripleo-heat-templates/environments/contrail/contrail-plugins.yaml \
-  -e ~/tripleo-heat-templates/environments/contrail/contrail-services.yaml \
-  -e ~/tripleo-heat-templates/environments/contrail/contrail-net.yaml \
-  --roles-file ~/tripleo-heat-templates/roles_data_contrail_aio.yaml
-```
 ### OSP16
 ```
 openstack overcloud deploy --templates tripleo-heat-templates/ \
   --stack overcloud --libvirt-type kvm \
   --roles-file $role_file \
   -e tripleo-heat-templates/environments/rhsm.yaml \
+  -e tripleo-heat-templates/environments/network-isolation.yaml \
   -e tripleo-heat-templates/environments/contrail/contrail-services.yaml \
   -e tripleo-heat-templates/environments/contrail/contrail-net.yaml \
   -e tripleo-heat-templates/environments/contrail/contrail-plugins.yaml \
@@ -835,6 +825,7 @@ openstack overcloud deploy --templates tripleo-heat-templates/ \
   --stack overcloud --libvirt-type kvm \
   --roles-file $role_file \
   -e tripleo-heat-templates/environments/rhsm.yaml \
+  -e tripleo-heat-templates/environments/network-isolation.yaml \
   -e tripleo-heat-templates/environments/contrail/contrail-services.yaml \
   -e tripleo-heat-templates/environments/contrail/contrail-net.yaml \
   -e tripleo-heat-templates/environments/contrail/contrail-plugins.yaml \
