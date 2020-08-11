@@ -19,6 +19,10 @@ parameters:
     description: image
     type: string
     default: "contrail-status"
+  DockerContrailToolsImageName:
+    description: image
+    type: string
+    default: "contrail-tools"
 
 resources:
   ContrailTlsInit:

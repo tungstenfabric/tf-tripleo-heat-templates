@@ -79,6 +79,7 @@
         node_init_env_vars:
           INSTALL_PUPPET: "{{ _INSTALL_PUPPET_ }}"
           CONTRAIL_STATUS_IMAGE: "{{ _CONTRAIL_STATUS_IMAGE_ }}"
+          CONTRAIL_TOOLS_IMAGE: "{{ _CONTRAIL_TOOLS_IMAGE_ }}"
 
     - name: Add SSL folder for self-signed cert management
       block:

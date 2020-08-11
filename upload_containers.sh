@@ -112,6 +112,7 @@ contrail-openstack-compute-init \
 contrail-openstack-heat-init \
 contrail-openstack-neutron-init \
 contrail-status \
+contrail-tools \
 contrail-vrouter-agent \
 contrail-vrouter-kernel-init $provisioner \
 do
