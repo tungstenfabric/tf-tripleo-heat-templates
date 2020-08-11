@@ -82,12 +82,32 @@ is_less_2002=$(awk '{
   print 0;
 }' <<< $tag)
 
+# Check if tag contains numbers less than 2008
+is_less_2008=$(awk '{
+  n = split($0, arr, "-");
+  for (i = 0; ++i <= n;){
+      k = split(arr[i], arr_inner, ".");
+      for (j=0; ++j <= k;){
+        if(match(arr_inner[j], /^[0-9]{3,}$/) && arr_inner[j] < 2008){
+          print 1;
+          exit 0;
+        }
+      }
+  };
+  print 0;
+}' <<< $tag)
+
 provisioner=""
 # if tag is latest or contrail version >= 2002 add provisioner container
 if [[ "$is_less_2002" == 0 || "$tag" =~ "latest" || "$tag" =~ "master" || "$tag" =~ "dev" ]]; then
   provisioner="contrail-provisioner"
 fi
 	
+contrail_tools=""
+# if tag is latest or contrail version >= 2008 add contrail-tools container
+if [[ "$is_less_2008" == 0 || "$tag" =~ "latest" || "$tag" =~ "master" || "$tag" =~ "dev" ]]; then
+  contrail_tools="contrail-tools"
+fi
 
 for image in contrail-analytics-alarm-gen \
 contrail-analytics-api \
@@ -111,7 +131,7 @@ contrail-nodemgr \
 contrail-openstack-compute-init \
 contrail-openstack-heat-init \
 contrail-openstack-neutron-init \
-contrail-status \
+contrail-status $contrail_tools \
 contrail-vrouter-agent \
 contrail-vrouter-kernel-init $provisioner \
 do
