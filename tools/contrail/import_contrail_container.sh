@@ -139,6 +139,7 @@ DockerContrailRabbitmqImageName:contrail-external-rabbitmq
 DockerContrailRedisImageName:contrail-external-redis
 DockerContrailStunnelImageName:contrail-external-stunnel
 DockerContrailStatusImageName:contrail-status
+DockerContrailToolsImageName:contrail-tools
 DockerContrailVrouterAgentContainerName:contrail-vrouter-agent
 DockerContrailVrouterAgentDpdkContainerName:contrail-vrouter-agent-dpdk
 DockerContrailVrouterAgentImageName:contrail-vrouter-agent

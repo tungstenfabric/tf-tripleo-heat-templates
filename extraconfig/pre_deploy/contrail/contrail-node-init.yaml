@@ -19,6 +19,10 @@ parameters:
     description: image
     type: string
     default: "contrail-status"
+  DockerContrailToolsImageName:
+    description: image
+    type: string
+    default: "contrail-tools"
   ContrailSslEnabled:
     description:  Flag to identify is SSL should be used in internal Contrail
                   services communications (sandesh, introspect, xmpp, ..).
@@ -67,6 +71,13 @@ resources:
       ContrailImageTag: {get_param: ContrailImageTag}
       ContrailRegistry: {get_param: ContrailRegistry}
 
+  DockerContrailToolsImageNormalize:
+    type: ../../../tools/contrail/contrail-image-normalize.yaml
+    properties:
+      GenericImageName: {get_param: DockerContrailToolsImageName}
+      ContrailImageTag: {get_param: ContrailImageTag}
+      ContrailRegistry: {get_param: ContrailRegistry}
+
   ContrailNodeInitConfig:
     type: OS::Heat::SoftwareConfig
     properties:
@@ -76,6 +87,7 @@ resources:
         - name: _CONTRAIL_NODE_INIT_IMAGE_
         - name: _CONTRAIL_NODE_INIT_IMAGE_NAME_
         - name: _CONTRAIL_STATUS_IMAGE_
+        - name: _CONTRAIL_TOOLS_IMAGE_
         - name: _SERVER_CA_
         - name: _SERVER_CA_CERTFILE_
         - name: _SERVER_CA_KEYFILE_
@@ -100,6 +112,7 @@ resources:
         _CONTRAIL_NODE_INIT_IMAGE_: {get_attr: [DockerContrailNodeImageNormalize, contrail_image]}
         _CONTRAIL_NODE_INIT_IMAGE_NAME_: {get_attr: [DockerContrailNodeImageNormalize, contrail_image_only]}
         _CONTRAIL_STATUS_IMAGE_: {get_attr: [DockerContrailStatusImageNormalize, contrail_image]}
+        _CONTRAIL_TOOLS_IMAGE_: {get_attr: [DockerContrailToolsImageNormalize, contrail_image]}
         _SERVER_CA_: {get_param: ContrailCA}
         _SERVER_CA_CERTFILE_: {get_param: ContrailCaCertFile}
         _SERVER_CA_KEYFILE_: {get_param: ContrailCaKeyFile}
@@ -111,6 +124,7 @@ resources:
     depends_on:
       - DockerContrailNodeImageNormalize
       - DockerContrailStatusImageNormalize
+      - DockerContrailToolsImageNormalize
 
 
 outputs:
