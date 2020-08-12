@@ -199,7 +199,7 @@ conditions:
   internal_tls_enabled: {equals: [{get_param: EnableInternalTLS}, true]}
   internal_ipa_ca: {equals: [{get_param: CertmongerCA}, 'IPA']}
   contrail_tls_enabled: {equals: [{get_param: ContrailSslEnabled}, true]}
-  contrail_ipa_ca: {equals: [{get_param: ContrailCA}, 'IPA']}
+  contrail_ipa_ca: {equals: [{get_param: ContrailCA}, 'local']}
   bind_contrail_ca_file:
     and:
       - contrail_tls_enabled
@@ -519,6 +519,9 @@ outputs:
           - is_not_5_0
           - 'contrail_analytics_alarm'
           - 'contrail_analytics_database'
+      contrail_cert_file: &contrail_cert_file {get_param: ContrailServiceCertFile}
+      contrail_certkey_file: &contrail_certkey_file {get_param: ContrailServiceKeyFile}
+      contrail_ipa_ca_flag: &contrail_ipa_ca_flag {if: [contrail_ipa_ca, 'true', 'false']}
       contrail_base_env_file: &contrail_base_env_file
         - *contrail_common_env_file
       contrail_host_prep_tasks_base:
@@ -699,6 +702,26 @@ outputs:
                   shell: "/bin/semodule_package -o /tmp/contrail_nodemgr.pp -m /tmp/contrail_nodemgr.mod"
                 - name: install contrail nodemgr selinux policy package
                   shell: "/sbin/semodule -i /tmp/contrail_nodemgr.pp"
+            # WA: until move node-init into host-prep
+            # rerun it to create self-signed certs. Node-init starts too early
+            # before network config is applied
+            - name: contrail_ipa_ca_flag
+              set_fact:
+                contrail_ipa_ca_flag: *contrail_ipa_ca_flag
+            - name: Re-create Contrail self-signed certs
+              when: "{{ contrail_ipa_ca_flag | bool }}"
+              block:
+                - name: contrail cert file
+                  set_fact:
+                    contrail_cert_file: *contrail_cert_file
+                - name: contrail key file
+                  set_fact:
+                    contrail_certkey_file: *contrail_certkey_file
+                - name: remove current cert files
+                  shell: rm -f {{ contrail_cert_file }} {{ contrail_certkey_file }}
+                - name: re-run node-init container
+                  shell: podman start -i contrail-node-init
+
             - name: create selinux module for unprivileged contrail containers
               block:
                 - name: create selinux module file /tmp/contrail_container.cil
@@ -738,7 +761,6 @@ outputs:
                       (allow system_dbusd_t container_file_t (lnk_file (read)))
                       (allow systemd_logind_t container_file_t (lnk_file (read)))
                       )
-
                 - name: create selinux module from file /tmp/contrail_container.cil
                   shell: "/sbin/semodule -i /tmp/contrail_container.cil"
 
