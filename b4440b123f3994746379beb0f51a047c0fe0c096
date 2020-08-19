@@ -1,0 +1,73 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "c0c1464d_757d6e15",
+        "filename": "deployment/contrail/contrail-base.yaml",
+        "patchSetId": 2
+      },
+      "lineNbr": 202,
+      "author": {
+        "id": 437
+      },
+      "writtenOn": "2020-08-19T14:17:13Z",
+      "side": 1,
+      "message": "Wrong change, check comment below.",
+      "range": {
+        "startLine": 202,
+        "startChar": 55,
+        "endLine": 202,
+        "endChar": 60
+      },
+      "revId": "b4440b123f3994746379beb0f51a047c0fe0c096",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "e36e178d_3df580a9",
+        "filename": "deployment/contrail/contrail-base.yaml",
+        "patchSetId": 2
+      },
+      "lineNbr": 524,
+      "author": {
+        "id": 437
+      },
+      "writtenOn": "2020-08-19T14:17:13Z",
+      "side": 1,
+      "message": "replace with:\ncontrail_selfsigned_ca_flag: \u0026contrail_selfsigned_ca_flag {if: [contrail_ipa_ca, \u0027false\u0027, \u0027true\u0027]}",
+      "range": {
+        "startLine": 524,
+        "startChar": 6,
+        "endLine": 524,
+        "endChar": 90
+      },
+      "revId": "b4440b123f3994746379beb0f51a047c0fe0c096",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "5eb9c71c_80e59f8d",
+        "filename": "deployment/contrail/contrail-base.yaml",
+        "patchSetId": 2
+      },
+      "lineNbr": 712,
+      "author": {
+        "id": 437
+      },
+      "writtenOn": "2020-08-19T14:17:13Z",
+      "side": 1,
+      "message": "replace with contrail_selfsigned_ca_flag",
+      "range": {
+        "startLine": 712,
+        "startChar": 24,
+        "endLine": 712,
+        "endChar": 44
+      },
+      "revId": "b4440b123f3994746379beb0f51a047c0fe0c096",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    }
+  ]
+}
