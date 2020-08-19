@@ -1,0 +1,27 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "3a014bf3_c109094c",
+        "filename": "deployment/contrail/contrail-base.yaml",
+        "patchSetId": 3
+      },
+      "lineNbr": 524,
+      "author": {
+        "id": 437
+      },
+      "writtenOn": "2020-08-19T14:33:30Z",
+      "side": 1,
+      "message": "please check comment again.\n\"\nreplace with:\ncontrail_selfsigned_ca_flag: \u0026contrail_selfsigned_ca_flag {if: [contrail_ipa_ca, \u0027false\u0027, \u0027true\u0027]}\n\"\n\nNote, self signed flag is to be  TRUE when contrail_ipa_ca is FALSE.",
+      "range": {
+        "startLine": 524,
+        "startChar": 6,
+        "endLine": 524,
+        "endChar": 104
+      },
+      "revId": "e6d76159e6557eba337659b7bbb8570849f931c5",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    }
+  ]
+}
