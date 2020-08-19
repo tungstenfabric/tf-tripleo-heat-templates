@@ -134,7 +134,7 @@
       loop: "{{ node_init_env_vars | dict2items}}"
 
     - name: create node-init container
-      shell: podman run -t --network host --name "{{ _CONTRAIL_NODE_INIT_IMAGE_NAME_ }}" --privileged -u root {{ init_volumes_args }} {{ init_env_args }} {{  _CONTRAIL_NODE_INIT_IMAGE_ }}
+      shell: podman run -t --network host --name "contrail-node-init" --privileged -u root {{ init_volumes_args }} {{ init_env_args }} {{  _CONTRAIL_NODE_INIT_IMAGE_ }}
 
     - set_fact:
         install_puppet: "{{ _INSTALL_PUPPET_ }} | bool"
