@@ -22,6 +22,30 @@
       "revId": "e6d76159e6557eba337659b7bbb8570849f931c5",
       "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
       "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "d7067744_0da8e9a2",
+        "filename": "deployment/contrail/contrail-base.yaml",
+        "patchSetId": 3
+      },
+      "lineNbr": 524,
+      "author": {
+        "id": 844
+      },
+      "writtenOn": "2020-08-19T14:42:50Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "3a014bf3_c109094c",
+      "range": {
+        "startLine": 524,
+        "startChar": 6,
+        "endLine": 524,
+        "endChar": 104
+      },
+      "revId": "e6d76159e6557eba337659b7bbb8570849f931c5",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": false
     }
   ]
 }
