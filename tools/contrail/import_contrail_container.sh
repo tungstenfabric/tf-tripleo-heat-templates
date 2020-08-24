@@ -125,7 +125,7 @@ is_less_2008=$(awk '{
 
 provisioner=""
 # if tag is latest or contrail version >= 2002 add provisioner container
-if [[ "$is_less_2002" == 0 || "$tag" =~ "latest" || "$tag" =~ "master" || "$tag" =~ "dev" ]]; then
+if [[ "$is_less_2002" == 0 || "$tag" =~ "latest" || "$tag" =~ "master" || "$tag" =~ "dev" || "$tag" == "nightly-r1912-rhel7" ]]; then
   provisioner="DockerContrailProvisionerImageName:contrail-provisioner"
 fi
 
@@ -203,7 +203,13 @@ for line in `echo ${CONTAINER_MAP[*]}`
 do
   thtImageName=`echo ${line} |awk -F":" '{print $1}'`
   contrailImageName=`echo ${line} |awk -F":" '{print $2}'`
-  echo "- imagename: ${registry}/${contrailImageName}:${tag}" >> ${output_file}
+  if [[ $contrailImageName == "contrail-provisioner" && $tag == *"-r1912"* ]]; then
+    provisonerTag=${tag//"-r1912"/}
+    echo "- imagename: ${registry}/${contrailImageName}:${provisonerTag}" >> ${output_file}
+  else
+    echo "- imagename: ${registry}/${contrailImageName}:${tag}" >> ${output_file}
+  fi
+
   echo "  push_destination: 192.168.24.1:8787" >> ${output_file}
 done
 
