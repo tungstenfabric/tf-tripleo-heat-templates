@@ -99,9 +99,10 @@ is_less_2002=$(awk '{
   for (i = 0; ++i <= n;){
       k = split(arr[i], arr_inner, ".");
       for (j=0; ++j <= k;){
-        if(match(arr_inner[j], /^[0-9]{3,}$/) && arr_inner[j] < 2002){
-          print 1;
-          exit 0;
+        if(match(arr_inner[j], /^r?[0-9]{4}$/) &&
+           substr(arr_inner[j], length(arr_inner[j])-3) < 2002){
+            print 1;
+            exit 0;
         }
       }
   };
@@ -114,10 +115,11 @@ is_less_2008=$(awk '{
   for (i = 0; ++i <= n;){
       k = split(arr[i], arr_inner, ".");
       for (j=0; ++j <= k;){
-        if(match(arr_inner[j], /^[0-9]{3,}$/) && arr_inner[j] < 2008){
-          print 1;
-          exit 0;
-        }
+          if(match(arr_inner[j], /^r?[0-9]{4}$/) &&
+             substr(arr_inner[j], length(arr_inner[j])-3) < 2008){
+              print 1;
+              exit 0;
+          }
       }
   };
   print 0;
