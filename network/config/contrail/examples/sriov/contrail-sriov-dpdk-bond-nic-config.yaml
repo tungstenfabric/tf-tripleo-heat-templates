@@ -133,7 +133,7 @@ resources:
                 name: vhost0
                 use_dhcp: false
                 driver: uio_pci_generic
-                cpu_list: 0x03
+                cpu_list: 0x01
                 bond_mode: 4
                 bond_policy: layer2+3
                 members:
