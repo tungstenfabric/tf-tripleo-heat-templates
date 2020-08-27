@@ -60,9 +60,6 @@ parameter_defaults:
 # set contrail image tag
   ContrailImageTag: latest
 
-# Enable 1 GB hugepages for dpdk mode if needed
-#  ContrailDpdkHugepages1GB: 10
-
 # Enable hugepages for vrouter kernel mode by default - 2GB of total size
 # (to disable just put empty value '')
 # KernelArgs for nodes can be changed here

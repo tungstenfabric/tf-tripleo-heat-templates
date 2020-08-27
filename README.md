@@ -797,6 +797,21 @@ that is generated during that processing
     -p ~/tripleo-heat-templates/
 ```
 
+### for dpdk nodes enable hugepages and iommu in kernel args, optionally provide additional parameters, e.g.:
+```
+vi tripleo-heat-templates/environments/contrail/contrail-services.yaml
+```
+```
+  ContrailDpdkParameters:
+    KernelArgs: "intel_iommu=on iommu=pt default_hugepagesz=1GB hugepagesz=1G hugepages=60"
+    ContrailDpdkOptions: "--vr_mempool_sz 131072 --dpdk_txd_sz 2048 --dpdk_rxd_sz 2048 --vr_flow_entries=4000000"
+    TunedProfileName: "cpu-partitioning"
+    IsolCpusList: "1-16"
+    ContrailSettings:
+        SERVICE_CORE_MASK: "0x0F"
+        DPDK_CTRL_THREAD_MASK: "0xF0"
+```
+
 ## deploy the stack
 ### OSP16
 ```
