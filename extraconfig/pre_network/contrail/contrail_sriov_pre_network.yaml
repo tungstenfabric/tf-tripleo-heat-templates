@@ -38,10 +38,6 @@ parameters:
       Example "eth1:4096,eth2:128"
     type: comma_delimited_list
     default: ""
-  ContrailDpdkDriver:
-    default: 'uio_pci_generic'
-    description: DPDK Nic Driver
-    type: string
   ContrailDpdkOptions:
     default: ''
     description: >
@@ -149,7 +145,6 @@ resources:
               hugepages_2mb: ContrailSriovHugepages2MB
               hugepages_1gb: ContrailSriovHugepages1GB
               vrouter_module_opts: ContrailVrouterModuleOptions
-              dpdk_driver: ContrailDpdkDriver
               dpdk_options: ContrailDpdkOptions
             - values: {get_param: [RoleParameters]}
           - values:
@@ -158,7 +153,6 @@ resources:
               ContrailSriovHugepages2MB: {get_param: ContrailSriovHugepages2MB}
               ContrailSriovHugepages1GB: {get_param: ContrailSriovHugepages1GB}
               ContrailVrouterModuleOptions: {get_param: ContrailVrouterModuleOptions}
-              ContrailDpdkDriver: {get_param: ContrailDpdkDriver}
               ContrailDpdkOptions: {get_param: ContrailDpdkOptions}
 
   SriovHostParametersConfig:

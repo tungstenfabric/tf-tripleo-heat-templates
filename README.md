@@ -797,19 +797,70 @@ that is generated during that processing
     -p ~/tripleo-heat-templates/
 ```
 
-### for dpdk nodes enable hugepages and iommu in kernel args, optionally provide additional parameters, e.g.:
+### for dpdk nodes
 ```
 vi tripleo-heat-templates/environments/contrail/contrail-services.yaml
 ```
+#### enable hugepages and iommu in kernel args (use suitable values for your setup), e.g.
 ```
+  # For Intel CPU
   ContrailDpdkParameters:
     KernelArgs: "intel_iommu=on iommu=pt default_hugepagesz=1GB hugepagesz=1G hugepages=60"
-    ContrailDpdkOptions: "--vr_mempool_sz 131072 --dpdk_txd_sz 2048 --dpdk_rxd_sz 2048 --vr_flow_entries=4000000"
+```
+```
+  # For AMD CPU
+  ContrailDpdkParameters:
+    KernelArgs: "amd_iommu=on iommu=pt default_hugepagesz=1GB hugepagesz=1G hugepages=60"
+```
+#### adjust performance settings according to your setup, e.g.
+```
+  ContrailDpdkParameters:
     TunedProfileName: "cpu-partitioning"
     IsolCpusList: "1-16"
     ContrailSettings:
-        SERVICE_CORE_MASK: "0x0F"
-        DPDK_CTRL_THREAD_MASK: "0xF0"
+      # service threads pinning
+      # SERVICE_CORE_MASK: 3,4
+      # dpdk ctrl threads pinning
+      # DPDK_CTRL_THREAD_MASK: 5,6
+      # others params for ContrailSettings as role based are not merged with global
+      VROUTER_GATEWAY: 10.0.0.1
+      BGP_ASN: 64512
+      BGP_AUTO_MESH: true
+```
+#### set cpu_list options in NIC file accordingly for forwarding threads
+```
+vi tripleo-heat-templates/network/config/contrail/contrail-dpdk-nic-config.yaml
+```
+```
+  - type: contrail_vrouter_dpdk
+    name: vhost0
+    cpu_list: 0x03
+```
+#### optionally provide additional parameters
+```
+  ContrailDpdkParameters:
+    ContrailDpdkOptions: "--vr_mempool_sz 131072 --dpdk_txd_sz 2048 --dpdk_rxd_sz 2048 --vr_flow_entries=4000000"
+```
+#### modify NIC file to set network params and DPDK driver according to your setup, e.g.
+```
+vi tripleo-heat-templates/network/config/contrail/contrail-dpdk-nic-config.yaml
+```
+```
+  - type: contrail_vrouter_dpdk
+    name: vhost0
+    driver: "vfio-pci"
+    bond_mode: 4
+    bond_policy: layer2+3
+    members:
+    - type: interface
+      name: nic3
+    - type: interface
+      name: nic4
+    mtu:
+      get_param: TenantMtu
+    addresses:
+    - ip_netmask:
+        get_param: TenantIpSubnet
 ```
 
 ## deploy the stack

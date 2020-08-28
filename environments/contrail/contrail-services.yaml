@@ -84,8 +84,8 @@ parameter_defaults:
 #    LACP_RATE: 0
 #    NIC_OFFLOAD_ENABLE: true
 # DPDK options:
-#    SERVICE_CORE_MASK: 0x0f
-#    DPDK_CTRL_THREAD_MASK=0x0f
+#    SERVICE_CORE_MASK: 3,4
+#    DPDK_CTRL_THREAD_MASK: 5,6
 # Other environment variables for containers may be set here if needed.
 #    KEY1: value1
 #    KEY2: value2
@@ -103,8 +103,7 @@ parameter_defaults:
 # (for now it is not needed)
 # DockerContrailVrouterPluginInitImageName: contrail-vrouter-plugin-mellanox-init-redhat
 #
-# Mellanox with DPDK mode requries the paramter to be set:
-#  ContrailDpdkDriver: mlnx
+# Note: Mellanox with DPDK mode requries to set 'driver: mlnx' in the appropriate NIC file
 
 # Tuned-d profile configuration
 #   TunedProfileName -  Name of tuned profile
@@ -119,8 +118,8 @@ parameter_defaults:
 #    TunedProfileName: "cpu-partitioning"
 #    IsolCpusList: "3-20"
 #      ContrailSettings:
-#         SERVICE_CORE_MASK: 0x0f
-#         DPDK_CTRL_THREAD_MASK: 0x0f
+#         SERVICE_CORE_MASK: 0x03
+#         DPDK_CTRL_THREAD_MASK: 0x03
 #  ContrailSriovParameters:
 #    TunedProfileName: "cpu-partitioning"
 #    IsolCpusList: "3-20"

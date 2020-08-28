@@ -21,10 +21,6 @@ parameters:
       toplevel DeploymentServerBlacklist parameter's value.
   server:
     type: string
-  ContrailDpdkDriver:
-    default: 'uio_pci_generic'
-    description: DPDK Nic Driver
-    type: string
   ContrailDpdkOptions:
     default: ''
     description: >
@@ -78,10 +74,6 @@ description: >
   os-net-config takes over.
 
 conditions:
-  is_kernel_config_required:
-    or:
-      - {equals: [{get_param: ContrailDpdkDriver}, "vfio-pci"]}
-      - {equals: [{get_param: [RoleParameters, ContrailDpdkDriver]}, "vfio-pci"]}
   deployment_actions_empty:
     equals:
       - {get_param: deployment_actions}
@@ -116,12 +108,10 @@ resources:
         map_replace:
           - map_replace:
             - contrail_settings: ContrailSettings
-              dpdk_driver: ContrailDpdkDriver
               dpdk_options: ContrailDpdkOptions
             - values: {get_param: [RoleParameters]}
           - values:
               ContrailSettings: {get_param: ContrailSettings}
-              ContrailDpdkDriver: {get_param: ContrailDpdkDriver}
               ContrailDpdkOptions: {get_param: ContrailDpdkOptions}
 
   DpdkHostParametersConfig:
@@ -203,18 +193,14 @@ resources:
 
 outputs:
   result:
-    condition: is_kernel_config_required
     value:
       get_attr: [DpdkContainerParametersDeployment, result]
   stdout:
-    condition: is_kernel_config_required
     value:
       get_attr: [DpdkContainerParametersDeployment, deploy_stdout]
   stderr:
-    condition: is_kernel_config_required
     value:
       get_attr: [DpdkContainerParametersDeployment, deploy_stderr]
   status_code:
-    condition: is_kernel_config_required
     value:
       get_attr: [DpdkContainerParametersDeployment, deploy_status_code]
