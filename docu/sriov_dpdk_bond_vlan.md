@@ -136,7 +136,7 @@ parameters:
                 name: vhost0
                 use_dhcp: false
                 driver: uio_pci_generic
-                cpu_list: 0x01
+                cpu_list: 0x03
                 vlan_id:
                   get_param: TenantNetworkVlanID
                 bond_mode: 4
