@@ -81,7 +81,7 @@ outputs:
             image: &contrail_heat_plugin_image {get_attr: [DockerHeatConfigImageNormalize, contrail_image]}
             net: none
             volumes:
-              {get_param: HeatEngineOptVolumes}
+              - '/var/lib/contrail/plugin_contrail_heat:/opt/plugin:z'
             environment:
               get_attr: [ContrailBase, role_data, contrail_base_env]
             env_file:
