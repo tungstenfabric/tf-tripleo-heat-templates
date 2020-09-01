@@ -1,0 +1,73 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "5c7938df_6130faf0",
+        "filename": "docker/services/contrail/contrail-issu-control.yaml",
+        "patchSetId": 15
+      },
+      "lineNbr": 123,
+      "author": {
+        "id": 437
+      },
+      "writtenOn": "2020-09-01T16:51:05Z",
+      "side": 1,
+      "message": "ContrailIssuImageTag",
+      "range": {
+        "startLine": 123,
+        "startChar": 30,
+        "endLine": 123,
+        "endChar": 46
+      },
+      "revId": "785d785f04653da6a8c446e14585e5f98a6ad195",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "ca2b492b_6a2f4abc",
+        "filename": "docker/services/contrail/contrail-issu.yaml",
+        "patchSetId": 15
+      },
+      "lineNbr": 288,
+      "author": {
+        "id": 437
+      },
+      "writtenOn": "2020-09-01T16:51:05Z",
+      "side": 1,
+      "message": "ContrailIssuImageTag",
+      "range": {
+        "startLine": 288,
+        "startChar": 30,
+        "endLine": 288,
+        "endChar": 46
+      },
+      "revId": "785d785f04653da6a8c446e14585e5f98a6ad195",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "a6b7df30_52874b4c",
+        "filename": "docker/services/contrail/contrail-issu.yaml",
+        "patchSetId": 15
+      },
+      "lineNbr": 300,
+      "author": {
+        "id": 437
+      },
+      "writtenOn": "2020-09-01T16:51:05Z",
+      "side": 1,
+      "message": "ContrailIssuImageTag",
+      "range": {
+        "startLine": 300,
+        "startChar": 30,
+        "endLine": 300,
+        "endChar": 46
+      },
+      "revId": "785d785f04653da6a8c446e14585e5f98a6ad195",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    }
+  ]
+}
