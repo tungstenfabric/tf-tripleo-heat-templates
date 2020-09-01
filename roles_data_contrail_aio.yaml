@@ -289,6 +289,8 @@
     - primary
     - contrailcontroller
   networks:
+    External:
+      subnet: external_subnet
     InternalApi:
       subnet: internal_api_subnet
     Tenant:
