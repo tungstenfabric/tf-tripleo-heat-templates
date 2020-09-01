@@ -16,6 +16,10 @@ parameters:
       default: 'latest'
       description: Agilio Frowarder images tag
       type: string
+  AgilioForwarderCpuMask:
+      default: '1,2'
+      description: Agilio Forwarder CPU mask
+      type: string
   DockerAgilioVrouterImageName:
     description: Agilio Vrouter image name
     type: string
@@ -113,6 +117,11 @@ outputs:
                   - /usr/bin/vif:/usr/bin/vif
                   - /var/run:/var/run
                   - /:/host
+            environment:
+              - list_join:
+                - '='
+                - - 'VIRTIOFWD_CORE_MASK'
+                  - {get_param: AgilioForwarderCpuMask}
           virtio_forwarder:
             image: {get_attr: [AgilioVirtIoForwarderImageNameNormalized, contrail_image]}
             net: host
