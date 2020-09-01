@@ -1,0 +1,27 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "41d83e15_be32ec17",
+        "filename": "docker/services/contrail/contrail-analytics.yaml",
+        "patchSetId": 12
+      },
+      "lineNbr": 69,
+      "author": {
+        "id": 437
+      },
+      "writtenOn": "2020-09-01T14:05:44Z",
+      "side": 1,
+      "message": "{3,1} - it was done especially sometime ago. I dont remember exact case but there was a customer\u0027s situation where we need 3 digits",
+      "range": {
+        "startLine": 69,
+        "startChar": 99,
+        "endLine": 69,
+        "endChar": 100
+      },
+      "revId": "0f277e89cf3d5a1505f49eac19dfe12e21dbd923",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    }
+  ]
+}
