@@ -797,6 +797,31 @@ that is generated during that processing
     -p ~/tripleo-heat-templates/
 ```
 
+### for compute nodes hugepages are enabled by default
+To disable edit and remove/modify related to hugepages settings
+```
+vi tripleo-heat-templates/environments/contrail/contrail-services.yaml
+```
+```
+  ComputeParameters:
+    KernelArgs: "default_hugepagesz=1GB hugepagesz=1G hugepages=2"
+    ExtraSysctlSettings:
+      # must be equal to value from kernel args: hugepages=2
+      vm.nr_hugepages:
+        value: 2
+      vm.max_map_count:
+        value: 128960
+      net.ipv4.tcp_keepalive_time:
+        value: 5
+      net.ipv4.tcp_keepalive_probes:
+        value: 5
+      net.ipv4.tcp_keepalive_intvl:
+        value: 1
+      net.ipv4.conf.all.log_martians:
+        value: 1
+```
+
+
 ### for dpdk nodes
 ```
 vi tripleo-heat-templates/environments/contrail/contrail-services.yaml
@@ -805,12 +830,40 @@ vi tripleo-heat-templates/environments/contrail/contrail-services.yaml
 ```
   # For Intel CPU
   ContrailDpdkParameters:
-    KernelArgs: "intel_iommu=on iommu=pt default_hugepagesz=1GB hugepagesz=1G hugepages=60"
+    KernelArgs: "intel_iommu=on iommu=pt default_hugepagesz=1GB hugepagesz=1G hugepages=2"
+    ExtraSysctlSettings:
+      # must be equal to value from kernel args: hugepages=2
+      vm.nr_hugepages:
+        value: 2
+      vm.max_map_count:
+        value: 128960
+      net.ipv4.tcp_keepalive_time:
+        value: 5
+      net.ipv4.tcp_keepalive_probes:
+        value: 5
+      net.ipv4.tcp_keepalive_intvl:
+        value: 1
+      net.ipv4.conf.all.log_martians:
+        value: 1
 ```
 ```
   # For AMD CPU
   ContrailDpdkParameters:
-    KernelArgs: "amd_iommu=on iommu=pt default_hugepagesz=1GB hugepagesz=1G hugepages=60"
+    KernelArgs: "amd_iommu=on iommu=pt default_hugepagesz=1GB hugepagesz=1G hugepages=2"
+    ExtraSysctlSettings:
+      # must be equal to value from kernel args: hugepages=2
+      vm.nr_hugepages:
+        value: 2
+      vm.max_map_count:
+        value: 128960
+      net.ipv4.tcp_keepalive_time:
+        value: 5
+      net.ipv4.tcp_keepalive_probes:
+        value: 5
+      net.ipv4.tcp_keepalive_intvl:
+        value: 1
+      net.ipv4.conf.all.log_martians:
+        value: 1
 ```
 #### adjust performance settings according to your setup, e.g.
 ```
