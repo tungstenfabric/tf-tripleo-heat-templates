@@ -64,7 +64,13 @@ parameter_defaults:
 # (to disable just put empty value '')
 # KernelArgs for nodes can be changed here
   ComputeParameters:
-    KernelArgs: "default_hugepagesz=1GB hugepagesz=1G hugepages=2 hugepagesz=2M hugepages=1024"
+    KernelArgs: "default_hugepagesz=1GB hugepagesz=1G hugepages=2"
+    ExtraSysctlSettings:
+      # must be equal to value from 1G kernel args: hugepages=2
+      vm.nr_hugepages:
+        value: 2
+      vm.max_map_count:
+        value: 128960
 
 # ContrailDefaults - environment passed to provisione container
 # Pass all params as a list of strings
@@ -111,12 +117,29 @@ parameter_defaults:
 #                       It is mandatory to provide isolated cpus for tuned to achive optimal performance.
 #                       Example: "3-8,12-15,18"
 # These paramters are to be set per a role, e.g.:
-#  ComputeParameters:
-#    TunedProfileName: "cpu-partitioning"
-#    IsolCpusList: "3-8,12-15,20"
-#  ContrailDpdkParameters:
+  ContrailDpdkParameters:
 #    TunedProfileName: "cpu-partitioning"
 #    IsolCpusList: "3-20"
-#  ContrailSriovParameters:
+#    ContrailSettings:
+#      SERVICE_CORE_MASK: '0x03'
+#      DPDK_CTRL_THREAD_MASK: '0x03'
+    KernelArgs: "default_hugepagesz=1GB hugepagesz=1G hugepages=4"
+    ExtraSysctlSettings:
+      # must be equal to value from 1G kernel args: hugepages=2
+      vm.nr_hugepages:
+        value: 2
+      vm.max_map_count:
+        value: 128960
+  ContrailSriovParameters:
 #    TunedProfileName: "cpu-partitioning"
 #    IsolCpusList: "3-20"
+#    ContrailSettings:
+#      SERVICE_CORE_MASK: '0x03'
+#      DPDK_CTRL_THREAD_MASK: '0x03'
+    KernelArgs: "default_hugepagesz=1GB hugepagesz=1G hugepages=4"
+    ExtraSysctlSettings:
+      # must be equal to value from 1G kernel args: hugepages=2
+      vm.nr_hugepages:
+        value: 2
+      vm.max_map_count:
+        value: 128960
