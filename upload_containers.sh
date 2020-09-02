@@ -77,6 +77,10 @@ is_less_2002=$(awk '{
           print 1;
           exit 0;
         }
+        if(match(arr_inner[j], /^r[0-9]{4}$/) && substr(arr_inner[j], 2) < 2002){
+          print 1;
+	  exit 0;
+	}
       }
   };
   print 0;
@@ -92,6 +96,10 @@ is_less_2008=$(awk '{
           print 1;
           exit 0;
         }
+        if(match(arr_inner[j], /^r[0-9]{4}$/) && substr(arr_inner[j], 2) < 2008){
+          print 1;
+	  exit 0;
+	}
       }
   };
   print 0;
