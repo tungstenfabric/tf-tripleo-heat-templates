@@ -224,6 +224,7 @@ conditions:
       - is_not_5_0
       - contrail_tls_enabled
 
+  # !! ported from queens - maybe not needed anynmore
   # tripleo-heat-templates/docker/services/haproxy.yaml:
   # NOTE(jaosorior): We disable the CRL since we have no way to restart haproxy
   # when this is updated

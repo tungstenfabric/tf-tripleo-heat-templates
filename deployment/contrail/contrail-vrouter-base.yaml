@@ -40,11 +40,11 @@ parameters:
     type: string
     default: "contrail-vrouter-kernel-init"
   ContrailVrouterHugepages2MB:
-    default: '1024'
+    default: ''
     description: Number of 2MB hugepages
     type: string
   ContrailVrouterHugepages1GB:
-    default: ''
+    default: '2'
     description: Number of 1GB hugepages
     type: string
 

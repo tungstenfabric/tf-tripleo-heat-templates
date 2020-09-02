@@ -24,10 +24,16 @@ parameter_defaults:
   # instead of setting it here to avoid overwritting
   ComputeParameters:
     # IOMMU
-    KernelArgs: " intel_iommu=on iommu=pt isolcpus=1,2 " 
+    KernelArgs: " intel_iommu=on iommu=pt isolcpus=1,2 default_hugepagesz=1GB hugepagesz=1G hugepages=4 hugepagesz=2M hugepages=1024 "
+    ExtraSysctlSettings:
+      # must be equal to value from 1G kernel args: hugepages=4
+      vm.nr_hugepages:
+        value: 4
+      vm.max_map_count:
+        value: 128960
 
     # Hugepages
-    ContrailVrouterHugepages2MB: "2048"
+    ContrailVrouterHugepages1G: "2"
 
     # Fabric interface
     # NOTE: the same name for physical interface is to be set in approvpriate
