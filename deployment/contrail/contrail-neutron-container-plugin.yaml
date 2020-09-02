@@ -85,6 +85,20 @@ outputs:
             #neutron::service_plugins: {get_param: NeutronServicePlugins}
             neutron::core_plugin: {get_param: NeutronCorePlugin}
             contrail::vrouter::contrail_extensions: {get_param: ContrailExtensions}
+            # TODO: the firewall rules here is a kind of WA, by some reasone
+            # tripleo is not creating rules for haproxy: https://contrail-jws.atlassian.net/browse/CEM-18908
+            # this is to be removed next release
+            tripleo.contrail_neutron_plugin.firewall_rules:
+              '110 contrail_neutron_plugin':
+                dport:
+                  # config api
+                  - 8082
+                  - 18082
+                  # analytics api
+                  - 8081
+                  - 18081
+                  # web
+                  - 8143
       # BEGIN DOCKER SETTINGS
       puppet_config:
         config_volume: 'neutron'
