@@ -797,6 +797,23 @@ that is generated during that processing
     -p ~/tripleo-heat-templates/
 ```
 
+### for compute nodes hugepages are enabled by default
+To disable edit and remove/modify related to hugepages settings
+```
+vi tripleo-heat-templates/environments/contrail/contrail-services.yaml
+```
+```
+  ComputeParameters:
+    KernelArgs: "default_hugepagesz=1GB hugepagesz=1G hugepages=4"
+    ExtraSysctlSettings:
+      # must be equal to value from kernel args: hugepages=2
+      vm.nr_hugepages:
+        value: 4
+      vm.max_map_count:
+        value: 128960
+```
+
+
 ### for dpdk nodes
 ```
 vi tripleo-heat-templates/environments/contrail/contrail-services.yaml
@@ -805,12 +822,24 @@ vi tripleo-heat-templates/environments/contrail/contrail-services.yaml
 ```
   # For Intel CPU
   ContrailDpdkParameters:
-    KernelArgs: "intel_iommu=on iommu=pt default_hugepagesz=1GB hugepagesz=1G hugepages=60"
+    KernelArgs: "intel_iommu=on iommu=pt default_hugepagesz=1GB hugepagesz=1G hugepages=4 hugepagesz=2M hugepages=1024"
+    ExtraSysctlSettings:
+      # must be equal to value from kernel args: hugepages=4
+      vm.nr_hugepages:
+        value: 4
+      vm.max_map_count:
+        value: 128960
 ```
 ```
   # For AMD CPU
   ContrailDpdkParameters:
-    KernelArgs: "amd_iommu=on iommu=pt default_hugepagesz=1GB hugepagesz=1G hugepages=60"
+    KernelArgs: "amd_iommu=on iommu=pt default_hugepagesz=1GB hugepagesz=1G hugepages=4 hugepagesz=2M hugepages=1024"
+    ExtraSysctlSettings:
+      # must be equal to value from kernel args: hugepages=2
+      vm.nr_hugepages:
+        value: 4
+      vm.max_map_count:
+        value: 128960
 ```
 #### adjust performance settings according to your setup, e.g.
 ```
