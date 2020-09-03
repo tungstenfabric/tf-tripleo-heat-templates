@@ -117,9 +117,6 @@ parameter_defaults:
 #  ContrailDpdkParameters:
 #    TunedProfileName: "cpu-partitioning"
 #    IsolCpusList: "3-20"
-#      ContrailSettings:
-#         SERVICE_CORE_MASK: 0x03
-#         DPDK_CTRL_THREAD_MASK: 0x03
 #  ContrailSriovParameters:
 #    TunedProfileName: "cpu-partitioning"
 #    IsolCpusList: "3-20"

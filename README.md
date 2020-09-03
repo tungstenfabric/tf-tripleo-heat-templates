@@ -834,7 +834,7 @@ vi tripleo-heat-templates/network/config/contrail/contrail-dpdk-nic-config.yaml
 ```
   - type: contrail_vrouter_dpdk
     name: vhost0
-    cpu_list: 0x03
+    cpu_list: '0x03'
 ```
 #### optionally provide additional parameters
 ```
