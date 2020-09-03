@@ -137,7 +137,7 @@ parameters:
                 name: vhost0
                 use_dhcp: false
                 driver: uio_pci_generic
-                cpu_list: 0x03
+                cpu_list: '0x03'
                 members:
                   -
                     type: interface
