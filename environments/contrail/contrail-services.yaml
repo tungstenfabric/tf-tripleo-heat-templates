@@ -101,7 +101,7 @@ parameter_defaults:
 # Note: Mellanox with DPDK mode requries to set 'driver: mlnx' in the appropriate NIC file
 
   ContrailDpdkParameters:
-    KernelArgs: "default_hugepagesz=1GB hugepagesz=1G hugepages=4 hugepagesz=2M hugepages=1024"
+    KernelArgs: "intel_iommu=on iommu=pt default_hugepagesz=1GB hugepagesz=1G hugepages=4 hugepagesz=2M hugepages=1024"
     ExtraSysctlSettings:
       # must be equal to value from 1G kernel args: hugepages=4
       vm.nr_hugepages:
@@ -126,13 +126,16 @@ parameter_defaults:
 
   # !! Adjust to your setup
   ContrailSriovParameters:
-    KernelArgs: "default_hugepagesz=1GB hugepagesz=1G hugepages=4 hugepagesz=2M hugepages=1024"
+    KernelArgs: "intel_iommu=on iommu=pt default_hugepagesz=1GB hugepagesz=1G hugepages=4 hugepagesz=2M hugepages=1024"
     ExtraSysctlSettings:
       # must be equal to value from 1G kernel args: hugepages=4
       vm.nr_hugepages:
         value: 4
       vm.max_map_count:
         value: 128960
+    # vfio_iommu_type1 driver needed for sriov
+    ExtraKernelModules:
+      vfio: {}
     # !! Adjust to your setup
     ContrailSriovNumVFs: ["ens2f1:3"]
     ContrailSriovMode: 'kernel'
