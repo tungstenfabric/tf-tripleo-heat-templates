@@ -10,7 +10,6 @@
         create: yes
         block: |
           module contrail_haproxy 1.0;
-
           require {
                   type ifconfig_t;
                   type user_tmp_t;
@@ -24,7 +23,6 @@
                   class dir { add_name mounton remove_name write };
                   class file { create execute execute_no_trans getattr open read unlink write };
           }
-
           #============= ifconfig_t ==============
           allow ifconfig_t user_tmp_t:dir mounton;
           allow ifconfig_t haproxy_exec_t:file { execute execute_no_trans open read };

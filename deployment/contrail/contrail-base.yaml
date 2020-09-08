@@ -757,10 +757,14 @@ outputs:
                       (allow certmonger_t container_file_t ( lnk_file ( read )))
                       (allow certmonger_t self ( capability ( sys_resource )))
                       (allow certmonger_t self ( netlink_audit_socket ( create )))
-                      (allow certmonger_t sssd_conf_t ( dir ( search )))
+                      (allow certmonger_t sssd_conf_t ( dir ( search openat read write )))
+                      (allow certmonger_t sssd_conf_t ( file ( getattr read open )))
+                      (allow certmonger_t chkpwd_exec_t ( file ( execute )))
+                      (allow certmonger_t self  (process ( setrlimit )))
                       (allow sshd_t container_file_t (lnk_file (read)))
                       (allow system_dbusd_t container_file_t (lnk_file (read)))
                       (allow systemd_logind_t container_file_t (lnk_file (read)))
+                      (allow NetworkManager_t container_file_t (file (read)))
                       )
                 - name: create selinux module from file /tmp/contrail_container.cil
                   shell: "/sbin/semodule -i /tmp/contrail_container.cil"
