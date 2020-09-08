@@ -84,6 +84,7 @@ parameter_defaults:
 
 # Custome Contrail container configuration settings
   ContrailSettings:
+    VROUTER_ENCRYPTION: false
     # !!! Vrouter gateway: adjust yo your setup
     #    VROUTER_GATEWAY: 10.0.0.1
     # 16 bit BGP Autonomous System number for the cluster.
@@ -115,6 +116,7 @@ parameter_defaults:
     # TunedProfileName: "cpu-partitioning"
     # IsolCpusList: "3-20"
     ContrailSettings:
+      VROUTER_ENCRYPTION: false
       BGP_ASN: 64512
       BGP_AUTO_MESH: true
       LACP_RATE: 0
@@ -145,6 +147,7 @@ parameter_defaults:
     # TunedProfileName: "cpu-partitioning"
     # IsolCpusList: "3-20"
     ContrailSettings:
+      VROUTER_ENCRYPTION: false
       BGP_ASN: 64512
       BGP_AUTO_MESH: true
       LACP_RATE: 0
