@@ -72,7 +72,7 @@ parameters:
   ExternalInterfaceDefaultRoute: # Not used by default in this template
     default: '10.0.0.1'
     description: The default route of the external network.
-    type: string
+    type: stringco
   ManagementInterfaceDefaultRoute: # Commented out by default in this template
     default: unset
     description: The default route of the management network.
@@ -83,6 +83,10 @@ parameters:
     type: comma_delimited_list
   EC2MetadataIp: # Override this via parameter_defaults
     description: The IP address of the EC2 metadata server.
+    type: string
+  ContrailDpdkDriver: # Override this via parameter_defaults
+    default: 'uio_pci_generic'
+    description: The default DPDK driver
     type: string
 
 resources:
@@ -132,20 +136,13 @@ resources:
               - type: contrail_vrouter_dpdk
                 name: vhost0
                 use_dhcp: false
-                driver: uio_pci_generic
+                driver:
+                  get_param: ContrailDpdkDriver
                 cpu_list: '0x03'
-                bond_mode: 4
-                bond_policy: layer2+3
-                vlan_id:
-                  get_param: TenantNetworkVlanID
                 members:
                   -
                     type: interface
                     name: nic2
-                    use_dhcp: false
-                  -
-                    type: interface
-                    name: nic3
                     use_dhcp: false
                 addresses:
                 - ip_netmask:
