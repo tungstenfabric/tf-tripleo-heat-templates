@@ -852,6 +852,7 @@ vi tripleo-heat-templates/environments/contrail/contrail-services.yaml
       # dpdk ctrl threads pinning
       # DPDK_CTRL_THREAD_MASK: 5,6
       # others params for ContrailSettings as role based are not merged with global
+      DPDK_UIO_DRIVER: uio_pci_generic
       VROUTER_GATEWAY: 10.0.0.1
       BGP_ASN: 64512
       BGP_AUTO_MESH: true
