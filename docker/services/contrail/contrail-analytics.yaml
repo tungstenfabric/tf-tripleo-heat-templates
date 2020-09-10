@@ -64,15 +64,10 @@ conditions:
       - yaql:
           expression: $.data.matches(".*master.*")
           data: {get_param: ContrailImageTag}
-      - and:
-        - not:
-            yaql:
-              expression: $.data.split(".").select($.split("-")).flatten().where($.matches("^r[0-9]{4}$")).where(int($.substring(-4)) < 2001).any()
-              data: {get_param: ContrailImageTag}
-        - not:
-            yaql:
-              expression: $.data.split(".").select($.split("-")).flatten().where($.matches("^[0-9]{3,}$")).where(int($) < 2001).any()
-              data: {get_param: ContrailImageTag}
+      - not:
+          yaql:
+            expression: $.data.split(".").select($.split("-")).flatten().where($.matches("^[0-9]{3,}$")).where(int($) < 2001).any()
+            data: {get_param: ContrailImageTag}
 
   # check tag by template someprefix-queens-<version>-<build_number>
   analytics_api_supports_ssl:
