@@ -165,6 +165,7 @@
           yum:
             name: "{{ rpm_list }}"
             state: present
+            disable_gpg_check: 'yes'
 
         - set_fact:
             puppet_module_dir: "/usr/share/openstack-puppet/modules/tripleo/"
