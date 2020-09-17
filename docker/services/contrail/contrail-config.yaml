@@ -52,6 +52,11 @@ parameters:
     type: json
 
 conditions:
+  is_not_5_0:
+    not:
+      yaql:
+        expression: $.data.split(":")[-1].matches("5\.0")
+        data: {get_param: ContrailImageTag}
   is_more_than_2001_or_latest:
     or:
       - yaql:
@@ -64,6 +69,7 @@ conditions:
           expression: $.data.matches(".*master.*")
           data: {get_param: ContrailImageTag}
       - and:
+        - is_not_5_0
         - not:
             yaql:
               expression: $.data.split(".").select($.split("-")).flatten().where($.matches("^r[0-9]{4}$")).where(int($.substring(-4)) < 2001).any()

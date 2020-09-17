@@ -85,6 +85,12 @@ conditions:
 
   rabbitmq_log_keep_default: {equals : [{get_param: DockerContrailRabbitmqLogPath}, '']}
 
+  is_not_5_0:
+    not:
+      yaql:
+        expression: $.data.split(":")[-1].matches("5\.0")
+        data: {get_param: ContrailImageTag}
+
   is_latest:
     or:
       - yaql:
@@ -101,6 +107,7 @@ conditions:
     or:
       - is_latest
       - and:
+        - is_not_5_0
         - not:
             yaql:
               expression: $.data.split(".").select($.split("-")).flatten().where($.matches("^r[0-9]{4}$")).where(int($.substring(-4)) < 2001).any()
@@ -114,6 +121,7 @@ conditions:
     or:
       - is_latest
       - and:
+        - is_not_5_0
         - not:
             yaql:
               expression: $.data.split(".").select($.split("-")).flatten().where($.matches("^r[0-9]{4}$")).where(int($.substring(-4)) < 2008).any()
