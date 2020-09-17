@@ -279,6 +279,7 @@ conditions:
     or:
       - is_latest
       - and:
+        - is_not_5_0_issu
         - not:
             yaql:
               expression: $.data.split(".").select($.split("-")).flatten().where($.matches("^r[0-9]{4}$")).where(int($.substring(-4)) < 2001).any()
@@ -292,6 +293,7 @@ conditions:
     or:
       - is_latest
       - and:
+        - is_not_5_0_issu
         - not:
             yaql:
               expression: $.data.split(".").select($.split("-")).flatten().where($.matches("^r[0-9]{4}$")).where(int($.substring(-4)) < 2008).any()

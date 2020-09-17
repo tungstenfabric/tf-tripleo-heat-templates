@@ -93,53 +93,54 @@ if echo "$tag" | grep -q '5\.0' ; then
   topology_name='contrail-analytics-topology'
 fi
 
-# Check if tag contains numbers less than 2002
-is_less_2002=$(awk '{
+function is_less_than() {
+  local tag=$1
+  local val=$2
+  awk -v val="$val" '{
   n = split($0, arr, "-");
   for (i = 0; ++i <= n;){
       k = split(arr[i], arr_inner, ".");
       for (j=0; ++j <= k;){
-        if(match(arr_inner[j], /^[0-9]{4,}$/) && arr_inner[j] < 2002){
-            print 1;
-            exit 0;
+        if(match(arr_inner[j], /^[0-9]{4,}$/) && arr_inner[j] < val){
+          print 1;
+          exit 0;
         }
-        if(match(arr_inner[j], /^r[0-9]{4}$/) && substr(arr_inner[j], 2) < 2002){
+        if(match(arr_inner[j], /^r[0-9]{4}$/) && substr(arr_inner[j], 2) < val){
             print 1;
             exit 0;
         }
       }
+  };
+  print 0;
+}' <<< $tag
+}
+
+# check if not 5.x
+is_5_x=$(awk '{
+  n = split($0, arr, "-");
+  for (i = 0; ++i <= n;){
+    if(match(arr[i], /^5\.[0-2]{1,}/)){
+      print 1;
+      exit 0;
+    }
   };
   print 0;
 }' <<< $tag)
 
+# Check if tag contains numbers less than 2002
+is_less_2002=$(is_less_than $tag 2002)
 # Check if tag contains numbers less than 2008
-is_less_2008=$(awk '{
-  n = split($0, arr, "-");
-  for (i = 0; ++i <= n;){
-      k = split(arr[i], arr_inner, ".");
-      for (j=0; ++j <= k;){
-          if(match(arr_inner[j], /^[0-9]{4,}$/) && arr_inner[j] < 2008){
-              print 1;
-              exit 0;
-          }
-          if(match(arr_inner[j], /^r[0-9]{4}$/) && substr(arr_inner[j], 2) < 2008){
-              print 1;
-              exit 0;
-          }
-      }
-  };
-  print 0;
-}' <<< $tag)
+is_less_2008=$(is_less_than $tag 2008)
 
 provisioner=""
 # if tag is latest or contrail version >= 2002 add provisioner container
-if [[ "$is_less_2002" == 0 || "$tag" =~ "latest" || "$tag" =~ "master" || "$tag" =~ "dev" ]]; then
+if [[ "$is_5_x" == 0 ]] && [[ "$is_less_2002" == 0 || "$tag" =~ "latest" || "$tag" =~ "master" || "$tag" =~ "dev" ]]; then
   provisioner="DockerContrailProvisionerImageName:contrail-provisioner"
 fi
 
 contrail_tools=""
 # if tag is latest or contrail version >= 2008 add contrail-tools container
-if [[ "$is_less_2008" == 0 || "$tag" =~ "latest" || "$tag" =~ "master" || "$tag" =~ "dev" ]]; then
+if [[ "$is_5_x" == 0 ]] && [[ "$is_less_2008" == 0 || "$tag" =~ "latest" || "$tag" =~ "master" || "$tag" =~ "dev" ]]; then
   contrail_tools="DockerContrailToolsImageName:contrail-tools"
 fi
 

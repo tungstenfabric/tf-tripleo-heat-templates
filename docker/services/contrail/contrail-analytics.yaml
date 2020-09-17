@@ -65,6 +65,7 @@ conditions:
           expression: $.data.matches(".*master.*")
           data: {get_param: ContrailImageTag}
       - and:
+        - is_not_5_0
         - not:
             yaql:
               expression: $.data.split(".").select($.split("-")).flatten().where($.matches("^r[0-9]{4}$")).where(int($.substring(-4)) < 2001).any()
