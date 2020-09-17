@@ -285,7 +285,7 @@ conditions:
               data: {get_param: ContrailIssuImageTag}
         - not:
             yaql:
-              expression: $.data.split(".").select($.split("-")).flatten().where($.matches("^[0-9]{3,}$")).where(int($) < 2001).any()
+              expression: $.data.split(".").select($.split("-")).flatten().where($.matches("^[0-9]{4,}$")).where(int($) < 2001).any()
               data: {get_param: ContrailIssuImageTag}
 
   is_2008_or_latest:
@@ -298,7 +298,7 @@ conditions:
               data: {get_param: ContrailIssuImageTag}
         - not:
             yaql:
-              expression: $.data.split(".").select($.split("-")).flatten().where($.matches("^[0-9]{3,}$")).where(int($) < 2008).any()
+              expression: $.data.split(".").select($.split("-")).flatten().where($.matches("^[0-9]{4,}$")).where(int($) < 2008).any()
               data: {get_param: ContrailIssuImageTag}
 
   contrail_tls_enabled: {equals: [{get_param: ContrailSslEnabled}, true]}
