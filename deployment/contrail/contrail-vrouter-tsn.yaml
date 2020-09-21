@@ -123,8 +123,6 @@ outputs:
       vrouter_init_container_name: &vrouter_init_container_name
         {get_attr: [DockerContrailVrouterKernelImageNormalize, contrail_image_only]}
       docker_config:
-        step_2:
-          get_attr: [ContrailBase, role_data, docker_config, step_2]
         step_5:
           map_merge:
             - if:
@@ -207,9 +205,14 @@ outputs:
               set_fact:
                 vrouter_init_container_name_ansible: *vrouter_init_container_name
             - name: Start contrail-vrouter-kernel-init container as post update
-              shell: bash -c "docker start {{ vrouter_init_container_name_ansible }}"
+              shell: >
+                {{ container_cli }} start {{ vrouter_init_container_name_ansible }}
             - name: Restart vhost0 interface
-              shell: bash -c 'ifdown vhost0; ifup vhost0; docker start contrail_vrouter_agent || true'
+              shell: |
+                ifdown vhost0
+                ifup vhost0
+                {{ container_cli }} start contrail_vrouter_agent
+              ignore_errors: yes
 
       fast_forward_upgrade_tasks:
         get_attr: [ContrailVrouterBase, role_data, fast_forward_upgrade_tasks]

@@ -178,12 +178,12 @@ outputs:
       update_tasks:
         - name: Find out current volume name of contrail_vrouter_agent container
           shell: >
-            docker inspect contrail_vrouter_agent | jq -r '.[].Mounts | .[] | select(.Destination =="/var/lib/contrail") | .Name'
+            {{ container_cli }} inspect contrail_vrouter_agent | jq -r '.[].Mounts | .[] | select(.Destination =="/var/lib/contrail") | .Name'
           register:
             agent_container_volume_name
         - name: Find out current volume location of contrail_vrouter_agent container
           shell: >
-            docker inspect contrail_vrouter_agent | jq -r '.[].Mounts | .[] | select(.Destination =="/var/lib/contrail") | .Source'
+            {{ container_cli }} inspect contrail_vrouter_agent | jq -r '.[].Mounts | .[] | select(.Destination =="/var/lib/contrail") | .Source'
           register:
             agent_container_volume_location
         - block:
@@ -220,7 +220,8 @@ outputs:
           set_fact:
             vrouter_init_container_name_ansible: *vrouter_init_container_name
         - name: Start contrail-vrouter-kernel-init container
-          shell: bash -c "docker start {{ vrouter_init_container_name_ansible }}"
+          shell: >
+            {{ container_cli }} start {{ vrouter_init_container_name_ansible }}
 
       fast_forward_upgrade_tasks:
         - name: Stop contrail vrouter dpdk services
@@ -234,7 +235,23 @@ outputs:
       fast_forward_post_upgrade_tasks: []
 
       upgrade_tasks:
-        get_attr: [ContrailVrouterIssu, role_data, upgrade_tasks]
+        list_concat:
+          - {get_attr: [ContrailVrouterIssu, role_data, upgrade_tasks]}
+          - - name: remove custome contrail hugepages mountpoints from fstab
+              tags:
+                - never
+                - system_upgrade
+                - system_upgrade_prepare
+              when:
+                - step|int == 4
+                - upgrade_leapp_enabled
+              block:
+                - name: unmount and remove hugepages entries
+                  mount: path={{ item }} state=absent
+                  ignore_errors: true
+                  with_items:
+                    - /dev/hugepages1G
+                    - /dev/hugepages2M
 
       post_upgrade_tasks:
         get_attr: [ContrailVrouterIssu, role_data, post_upgrade_tasks]
