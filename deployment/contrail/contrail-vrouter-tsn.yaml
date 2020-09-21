@@ -123,8 +123,6 @@ outputs:
       vrouter_init_container_name: &vrouter_init_container_name
         {get_attr: [DockerContrailVrouterKernelImageNormalize, contrail_image_only]}
       docker_config:
-        step_2:
-          get_attr: [ContrailBase, role_data, docker_config, step_2]
         step_5:
           map_merge:
             - if:
@@ -200,16 +198,30 @@ outputs:
       update_tasks:
         get_attr: [ContrailVrouterBase, role_data, update_tasks]
 
+      reinit_vhost_tasks: &reinit_vhost_tasks
+        - name: Set contrail-vrouter-kernel-init container name
+          set_fact:
+            vrouter_init_container_name_ansible: *vrouter_init_container_name
+        - name: Start contrail-vrouter-kernel-init container as post update
+          shell: >
+            {{ container_cli }} start -i {{ vrouter_init_container_name_ansible }}
+        - name: Restart vhost0 interface
+          shell: |
+            exec > >(tee -a /tmp/contrail_reinit_vhost0.log)
+            exec 2>&1
+            ifdown vhost0
+            ifup vhost0
+            {{ container_cli }} start contrail_vrouter_agent
+          async: 60
+          poll: 5
+          ignore_errors: yes
+          args:
+            executable: /bin/bash
+
       post_update_tasks:
         list_concat:
           - {get_attr: [ContrailVrouterBase, role_data, post_update_tasks]}
-          - - name: Set contrail-vrouter-kernel-init container name
-              set_fact:
-                vrouter_init_container_name_ansible: *vrouter_init_container_name
-            - name: Start contrail-vrouter-kernel-init container as post update
-              shell: bash -c "docker start {{ vrouter_init_container_name_ansible }}"
-            - name: Restart vhost0 interface
-              shell: bash -c 'ifdown vhost0; ifup vhost0; docker start contrail_vrouter_agent || true'
+          - *reinit_vhost_tasks
 
       fast_forward_upgrade_tasks:
         get_attr: [ContrailVrouterBase, role_data, fast_forward_upgrade_tasks]
@@ -221,6 +233,9 @@ outputs:
         list_concat:
           - {get_attr: [ContrailBase, role_data, upgrade_tasks_common]}
           - {get_attr: [ContrailVrouterBase, role_data, upgrade_tasks]}
+          - {get_attr: [ContrailVrouterBase, role_data, leapp_vrouter_upgrade_tasks]}
 
       post_upgrade_tasks:
-        get_attr: [ContrailVrouterBase, role_data, post_upgrade_tasks]
+        list_concat:
+          - {get_attr: [ContrailVrouterBase, role_data, post_upgrade_tasks]}
+          - *reinit_vhost_tasks
