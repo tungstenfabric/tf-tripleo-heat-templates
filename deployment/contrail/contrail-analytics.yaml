@@ -176,8 +176,6 @@ outputs:
       contrail_env_file: &contrail_env_file
         "/etc/contrail/common_analytics.env"
       docker_config:
-        step_2:
-          get_attr: [ContrailBase, role_data, docker_config, step_2]
         step_4:
           get_attr: [ContrailRedis, role_data, docker_config, step_4]
         step_5:
@@ -296,3 +294,24 @@ outputs:
 
       upgrade_tasks:
         get_attr: [ContrailBase, role_data, upgrade_tasks_common]
+
+      external_upgrade_tasks:
+        - when: step|int == 1
+          tags:
+            - never
+            - system_upgrade_transfer_data
+            - system_upgrade_stop_services
+          block:
+            - name: Stop analytics containers
+              import_role:
+                name: tripleo-container-stop
+              vars:
+                tripleo_containers_to_stop:
+                  - contrail_analytics_nodemgr
+                  - contrail_analytics_api
+                  - contrail_analytics_collector
+                  - contrail_analytics_provisioner
+                  - contrail_analytics_queryengine
+                  - contrail_redis
+                  - contrail_stunnel
+                tripleo_delegate_to: "{{ groups['contrail_analytics'] | default([]) }}"

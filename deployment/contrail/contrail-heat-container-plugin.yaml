@@ -67,7 +67,6 @@ outputs:
       config_settings:
         map_merge:
           - get_attr: [ContrailBase, role_data, config_settings]
-      # BEGIN DOCKER SETTINGS
       puppet_config:
         config_volume: heat
         puppet_tags: heat_plugin_opencontrail,ini_setting,create_ini_settings,inifile,heat_config,file,concat,file_line

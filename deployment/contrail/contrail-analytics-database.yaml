@@ -156,8 +156,6 @@ outputs:
       contrail_env_file: &contrail_env_file
         "/etc/contrail/common_analytics_database.env"
       docker_config:
-        step_2:
-          get_attr: [ContrailBase, role_data, docker_config, step_2]
         step_3:
           if:
             - is_not_5_0
@@ -172,7 +170,11 @@ outputs:
                 cap_add:
                   - SYS_NICE
                 detach: true
-                user: root
+                # Dont specify user
+                # In case if user specified podman inside nodemgr tries to lookup its id
+                # in /var/lib/containers/overlay/.../merged directory
+                # But it is empty in rhel7=>rhel8 upgrade case
+                # user: root
                 restart: always
                 volumes:
                   list_concat:
@@ -318,3 +320,23 @@ outputs:
 
       upgrade_tasks:
         get_attr: [ContrailBase, role_data, upgrade_tasks_common]
+
+      external_upgrade_tasks:
+        - when: step|int == 1
+          tags:
+            - never
+            - system_upgrade_transfer_data
+            - system_upgrade_stop_services
+          block:
+            - name: Stop analytics database containers
+              import_role:
+                name: tripleo-container-stop
+              vars:
+                tripleo_containers_to_stop:
+                  - contrail_analytics_database
+                  - contrail_analytics_database_nodemgr
+                  - contrail_analytics_database_provisioner
+                  - contrail_analytics_zookeeper
+                  - contrail_analytics_kafka
+                  - contrail_analytics_queryengine
+                tripleo_delegate_to: "{{ groups['contrail_analytics_database'] | default([]) }}"
