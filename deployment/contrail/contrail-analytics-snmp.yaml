@@ -138,8 +138,6 @@ outputs:
       contrail_env_file: &contrail_env_file
         "/etc/contrail/common_analytics_snmp.env"
       docker_config:
-        step_2:
-          get_attr: [ContrailBase, role_data, docker_config, step_2]
         step_5:
           map_merge:
             - contrail_analytics_topology:
@@ -245,3 +243,21 @@ outputs:
 
       upgrade_tasks:
         get_attr: [ContrailBase, role_data, upgrade_tasks_common]
+
+      external_upgrade_tasks:
+        - when: step|int == 1
+          tags:
+            - never
+            - system_upgrade_transfer_data
+            - system_upgrade_stop_services
+          block:
+            - name: Stop analytics snmp containers
+              import_role:
+                name: tripleo-container-stop
+              vars:
+                tripleo_containers_to_stop:
+                  - contrail_analytics_topology
+                  - contrail_analytics_snmp_collector
+                  - contrail_analytics_snmp_nodemgr
+                  - contrail_analytics_snmp_provisioner
+                tripleo_delegate_to: "{{ groups['contrail_analytics_snmp'] | default([]) }}"
