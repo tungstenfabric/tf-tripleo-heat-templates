@@ -39,11 +39,11 @@ parameters:
     default: "/var/log/containers/contrail/config-database"
   DockerContrailConfigDatabaseVolume:
     default: '/var/lib/contrail/config_cassandra'
-    description: Docker volume for contrail config DB service
+    description: Container volume for contrail config DB service
     type: string
   DockerContrailConfigZookeeperVolume:
     default: '/var/lib/contrail/config_zookeeper'
-    description: Docker volume for contrail config zookeeper service
+    description: Container volume for contrail config zookeeper service
     type: string
   DockerContrailZookeeperLogPath:
     default: '/var/log/containers/contrail/zookeeper'

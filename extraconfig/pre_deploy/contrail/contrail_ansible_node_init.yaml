@@ -141,7 +141,7 @@
 
     - name: Setup Contrail Tripleo Puppet
       block:
-        - name: sleep for 5 sec (looks like a race condition between docker execution and next ansible step)
+        - name: sleep for 5 sec (looks like a race condition between container execution and next ansible step)
           shell: "sleep 5"
 
         - name: Lookup Contrail RPM files
