@@ -76,7 +76,7 @@ outputs:
       contrail_common_env_file: &contrail_common_env_file
         get_attr: [ContrailBase, role_data, contrail_common_env_file]
 
-      # task should patch docker config to connect computes to ISSU node
+      # task should patch contrail agent config to connect computes to ISSU node
       host_prep_tasks:
         - name: Contrail Vrouter Issu host prep tasks
           tags: issu
@@ -158,24 +158,24 @@ outputs:
             - name: Unregister Vrouter agent in old control plane with short name if any
               ignore_errors: yes
               shell: >
-                docker exec contrail_vrouter_agent_nodemgr
-                python /opt/contrail/utils/provision_vrouter.py
-                --oper del
-                --host_name $(uname -n)
-                --host_ip {{ contrail_vrouter_ip.stdout }}
-                --api_server_ip  {{ contrail_api_address.stdout }}
-                --api_server_port {{ contrail_api_port.stdout }}
-                --admin_password {{ contrail_admin_password.stdout }}
-                --admin_tenant_name {{ contrail_admin_tenant_name.stdout }}
-                --admin_user {{ contrail_admin_user.stdout }}
+                {{ container_cli }} exec contrail_vrouter_agent_nodemgr
+                  python /opt/contrail/utils/provision_vrouter.py
+                  --oper del
+                  --host_name $(uname -n)
+                  --host_ip {{ contrail_vrouter_ip.stdout }}
+                  --api_server_ip  {{ contrail_api_address.stdout }}
+                  --api_server_port {{ contrail_api_port.stdout }}
+                  --admin_password {{ contrail_admin_password.stdout }}
+                  --admin_tenant_name {{ contrail_admin_tenant_name.stdout }}
+                  --admin_user {{ contrail_admin_user.stdout }}
             - name: Stop contrail_vrouter_agent and contrail_vrouter_agent_nodemgr
               ignore_errors: yes
               shell: >
-                docker stop contrail_vrouter_agent contrail_vrouter_agent_nodemgr
+                {{ container_cli }} stop contrail_vrouter_agent contrail_vrouter_agent_nodemgr
             - name: Remove contrail_vrouter_agent and contrail_vrouter_agent_nodemgr
               ignore_errors: yes
               shell: >
-                docker rm --force contrail_vrouter_agent contrail_vrouter_agent_nodemgr
+                {{ container_cli }} rm --force contrail_vrouter_agent contrail_vrouter_agent_nodemgr
             - name: Save Contrail Vrouter ISSU is in progress marker
               file:
                 path: "/tmp/contrail_issu_marker"
@@ -196,11 +196,11 @@ outputs:
                 - name: Stop contrail_vrouter_agent and contrail_vrouter_agent_nodemgr
                   ignore_errors: yes
                   shell: >
-                    docker stop contrail_vrouter_agent contrail_vrouter_agent_nodemgr
+                    {{ container_cli }} stop contrail_vrouter_agent contrail_vrouter_agent_nodemgr
                 - name: Remove contrail_vrouter_agent and contrail_vrouter_agent_nodemgr
                   ignore_errors: yes
                   shell: >
-                    docker rm --force contrail_vrouter_agent contrail_vrouter_agent_nodemgr
+                    {{ container_cli }} rm --force contrail_vrouter_agent contrail_vrouter_agent_nodemgr
                 - name: Apply tripleo step5 to relaunch contrail_vrouter_agent and contrail_vrouter_agent_nodemgr
                   shell: >
                     paunch --debug apply --managed-by paunch
