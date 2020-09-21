@@ -116,8 +116,6 @@ outputs:
       contrail_env_file: &contrail_env_file
         "/etc/contrail/common_analytics_alarm.env"
       docker_config:
-        step_2:
-          get_attr: [ContrailBase, role_data, docker_config, step_2]
         step_3:
           if:
             - is_not_5_0
@@ -219,3 +217,22 @@ outputs:
 
       upgrade_tasks:
         get_attr: [ContrailBase, role_data, upgrade_tasks_common]
+
+      external_upgrade_tasks:
+        - when: step|int == 1
+          tags:
+            - never
+            - system_upgrade_transfer_data
+            - system_upgrade_stop_services
+          block:
+            - name: Stop analytics alarm containers
+              import_role:
+                name: tripleo-container-stop
+              vars:
+                tripleo_containers_to_stop:
+                  - contrail_analytics_alarmgen
+                  - contrail_analytics_alarm_nodemgr
+                  - contrail_analytics_alarm_provisioner
+                  - contrail_analytics_zookeeper
+                  - contrail_analytics_kafka
+                tripleo_delegate_to: "{{ groups['contrail_analytics_alarm'] | default([]) }}"
