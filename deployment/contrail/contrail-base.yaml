@@ -511,8 +511,6 @@ outputs:
         map_merge:
           - *contrail_auth_base_env
           - *contrail_auth_internal_env
-      docker_config:
-        step_2: {}
       contrail_common_env_file: &contrail_common_env_file
         "/etc/contrail/common_contrail.env"
       contrail_kafka_service_name: &contrail_kafka_service_name
@@ -721,7 +719,10 @@ outputs:
                 - name: remove current cert files
                   shell: rm -f {{ contrail_cert_file }} {{ contrail_certkey_file }}
                 - name: re-run node-init container
-                  shell: podman start -i contrail-node-init
+                  shell: |
+                    if {{ container_cli }} inspect contrail-node-init >/dev/null 2>&1 ; then
+                      {{ container_cli }} start -i contrail-node-init
+                    fi
 
             - name: create selinux module for unprivileged contrail containers
               block:
@@ -762,7 +763,7 @@ outputs:
                       (allow certmonger_t chkpwd_exec_t ( file ( execute )))
                       (allow certmonger_t self  (process ( setrlimit )))
                       (allow kmod_t container_file_t (system ( module_load )))
-                      (allow NetworkManager_t container_file_t (file (read)))
+                      (allow NetworkManager_t container_file_t (file (read open)))
                       (allow sshd_t container_file_t (lnk_file (read)))
                       (allow system_dbusd_t container_file_t (lnk_file (read)))
                       (allow systemd_logind_t container_file_t (lnk_file (read)))
@@ -811,16 +812,7 @@ outputs:
 
       fast_forward_post_upgrade_tasks_common: []
 
-      upgrade_tasks_common:
-        - name: Install docker packages on upgrade if missing
-          when: step|int == 3
-          tags: common
-          yum:
-            name: "{{ item }}"
-            state: present
-          with_items:
-            - podman
-            - python-podman-api
+      upgrade_tasks_common: []
 
       contrail_puppet_update_tasks:
         - set_fact:

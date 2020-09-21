@@ -115,8 +115,6 @@ outputs:
       contrail_env_file: &contrail_env_file
         get_attr: [ContrailVrouterBase, role_data, contrail_env_file]
       docker_config:
-        step_2:
-          get_attr: [ContrailBase, role_data, docker_config, step_2]
         step_3:
           contrail_nova_plugin:
             image: &contrail_nova_plugin_image {get_attr: [DockerContrailNovaPluginImageNormalize, contrail_image]}
@@ -210,7 +208,19 @@ outputs:
         list_concat:
           - {get_attr: [ContrailVrouterBase, role_data, post_update_tasks]}
           - - name: Restart vhost0 interface
-              shell: bash -c 'ifdown vhost0; ifup vhost0; docker start contrail_vrouter_agent || true'
+              when:
+                - step|int == 1
+              shell: |
+                exec > >(tee -a /tmp/contrail_reinit_vhost0.log)
+                exec 2>&1
+                ifdown vhost0
+                ifup vhost0
+                {{ container_cli }} start contrail_vrouter_agent
+              async: 120
+              poll: 5
+              ignore_errors: yes
+              args:
+                executable: /bin/bash
 
       fast_forward_upgrade_tasks:
         get_attr: [ContrailVrouterBase, role_data, fast_forward_upgrade_tasks]

@@ -99,7 +99,6 @@ outputs:
                   - 18081
                   # web
                   - 8143
-      # BEGIN DOCKER SETTINGS
       puppet_config:
         config_volume: 'neutron'
         puppet_tags: neutron_plugin_opencontrail,ini_setting,create_ini_settings,neutron_config,neutron_api_config,inifile
