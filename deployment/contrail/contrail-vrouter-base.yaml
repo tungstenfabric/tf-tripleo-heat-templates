@@ -31,14 +31,14 @@ parameters:
     default: {}
     description: Parameters specific to the role
     type: json
-  ContrailVrouterAgentMode:
-    default: 'kernel'
-    description: Agent mode kernel or dpdk
-    type: string
   DockerContrailVrouterKernelInitImageName:
     description: image
     type: string
     default: "contrail-vrouter-kernel-init"
+  ContrailVrouterAgentMode:
+    default: 'kernel'
+    description: Agent mode kernel or dpdk
+    type: string
   ContrailVrouterHugepages2MB:
     default: ''
     description: Number of 2MB hugepages
@@ -53,6 +53,7 @@ resources:
     type: ../../tools/contrail/contrail-image-normalize.yaml
     properties:
       GenericImageName: {get_param: DockerContrailVrouterKernelInitImageName}
+
   ContrailVrouterIssu:
     type: OS::TripleO::ContrailVrouterIssu
     properties:
@@ -84,8 +85,8 @@ outputs:
       agent_mode: &agent_mode {get_param: ContrailVrouterAgentMode}
       hugepages_2mb: &hugepages_2mb {get_attr: [ContrailSettingsRoleParametersValue, value, hugepages_2mb]}
       hugepages_1gb: &hugepages_1gb {get_attr: [ContrailSettingsRoleParametersValue, value, hugepages_1gb]}
-      vrouter_init_container_name: &vrouter_init_container_name
-        {get_attr: [DockerContrailVrouterKernelImageNormalize, contrail_image_only]}
+      vrouter_init_image: &vrouter_init_image
+        {get_attr: [DockerContrailVrouterKernelImageNormalize, contrail_image]}
       host_prep_tasks:
         list_concat:
           - - name: Contrail vrouter base host prep tasks
@@ -178,12 +179,12 @@ outputs:
       update_tasks:
         - name: Find out current volume name of contrail_vrouter_agent container
           shell: >
-            docker inspect contrail_vrouter_agent | jq -r '.[].Mounts | .[] | select(.Destination =="/var/lib/contrail") | .Name'
+            {{ container_cli }} inspect contrail_vrouter_agent | jq -r '.[].Mounts | .[] | select(.Destination =="/var/lib/contrail") | .Name'
           register:
             agent_container_volume_name
         - name: Find out current volume location of contrail_vrouter_agent container
           shell: >
-            docker inspect contrail_vrouter_agent | jq -r '.[].Mounts | .[] | select(.Destination =="/var/lib/contrail") | .Source'
+            {{ container_cli }} inspect contrail_vrouter_agent | jq -r '.[].Mounts | .[] | select(.Destination =="/var/lib/contrail") | .Source'
           register:
             agent_container_volume_location
         - block:
@@ -216,11 +217,6 @@ outputs:
               name: "/tmp/contrail_var_lib_unnamed_volume"
               state: absent
           when: 'contrail_var_lib_unnamed_volume.stat.exists == true'
-        - name: Set contrail-vrouter-kernel-init container name
-          set_fact:
-            vrouter_init_container_name_ansible: *vrouter_init_container_name
-        - name: Start contrail-vrouter-kernel-init container
-          shell: bash -c "docker start {{ vrouter_init_container_name_ansible }}"
 
       fast_forward_upgrade_tasks:
         - name: Stop contrail vrouter dpdk services
@@ -234,7 +230,62 @@ outputs:
       fast_forward_post_upgrade_tasks: []
 
       upgrade_tasks:
-        get_attr: [ContrailVrouterIssu, role_data, upgrade_tasks]
+        list_concat:
+          - {get_attr: [ContrailVrouterIssu, role_data, upgrade_tasks]}
+          - - name: remove custome contrail hugepages mountpoints from fstab
+              tags:
+                - never
+                - system_upgrade
+                - system_upgrade_prepare
+              when:
+                - step|int == 1
+                - upgrade_leapp_enabled
+              block:
+                - name: unmount and remove hugepages entries
+                  mount: path={{ item }} state=absent
+                  ignore_errors: true
+                  with_items:
+                    - /dev/hugepages1G
+                    - /dev/hugepages2M
+                - name: remove ifcfg-pktX files
+                  file:
+                    path: "/etc/sysconfig/network-scripts/ifcfg-{{ item }}"
+                    state: absent
+                  ignore_errors: true
+                  with_items:
+                    - pkt1
+                    - pkt2
+                    - pkt3
+
+      leapp_vrouter_upgrade_tasks:
+        - name: leapp upgrade prepare vrouter driver 
+          tags:
+            - never
+            - system_upgrade_prepare
+          when:
+            - step|int == 5
+            - upgrade_leapp_enabled
+          block:
+            - name: root leapp installation folder
+              set_fact:
+                leapp_folder: "/var/lib/leapp/el8userspace"
+            - name: Set contrail-vrouter-kernel-init container name
+              set_fact:
+                vrouter_init_image: *vrouter_init_image
+            - name: Start contrail-vrouter-kernel-init container for system_upgrade
+              shell: |
+                set -eux
+                container_cli={{ container_cli }}
+                if type docker &> /dev/null ; then
+                    container_cli="docker"
+                fi
+                $container_cli rm --force contrail-vrouter-kernel-init-leapp || true
+                $container_cli run -at --network host --privileged \
+                  -v /dev:/dev \
+                  -v /bin:/host/bin \
+                  -v {{ leapp_folder }}/lib/modules:/lib/modules \
+                  --name  contrail-vrouter-kernel-init-leapp \
+                  {{ vrouter_init_image }}
 
       post_upgrade_tasks:
         get_attr: [ContrailVrouterIssu, role_data, post_upgrade_tasks]
