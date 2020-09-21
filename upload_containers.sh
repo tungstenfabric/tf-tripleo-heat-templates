@@ -144,8 +144,8 @@ contrail-vrouter-agent \
 contrail-vrouter-kernel-init $provisioner \
 do
    echo ${remote_registry}/${image}:${tag} ${local_registry}/${image}:${tag}
-   docker pull ${remote_registry}/${image}:${tag}
-   docker tag ${remote_registry}/${image}:${tag} ${local_registry}/${image}:${tag}
-   docker push ${local_registry}/${image}:${tag}
+   podman pull ${remote_registry}/${image}:${tag}
+   podman tag ${remote_registry}/${image}:${tag} ${local_registry}/${image}:${tag}
+   podman push ${local_registry}/${image}:${tag}
 done
 #./upload_containers.sh -l 192.168.24.1:8787 -r satellite.englab.juniper.net:5443 -t train-master-139-rhel -c http://satellite.englab.juniper.net/pub/satellite.englab.juniper.net.cert

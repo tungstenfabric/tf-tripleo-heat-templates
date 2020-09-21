@@ -205,9 +205,6 @@ outputs:
         {get_attr: [ContrailBase, role_data, contrail_common_base_env]}
 
       docker_config:
-        step_2:
-          get_attr: [ContrailBase, role_data, docker_config, step_2]
-
         step_5:
           map_merge:
             - if:

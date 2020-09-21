@@ -21,7 +21,7 @@ SSH_OPTIONS='-o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null'
 #Running scripts on the nodes
 #Pull new images on the nodes
 for ip_addr in $(openstack server list -f value -c Networks | cut -d '=' -f 2); do
-    echo "node: ${ip_addr}  Pulling new docker images:"
+    echo "node: ${ip_addr}  Pulling new container images:"
     scp ${SSH_OPTIONS} $my_dir/pull_new_contrail_images.sh ${SSH_USER}@${ip_addr}:/tmp/
     ssh ${SSH_OPTIONS} ${SSH_USER}@${ip_addr} CONTRAIL_IMAGE_PREFIX=${CONTRAIL_IMAGE_PREFIX} CONTRAIL_NEW_IMAGE_TAG=${CONTRAIL_NEW_IMAGE_TAG} /tmp/pull_new_contrail_images.sh
 done
