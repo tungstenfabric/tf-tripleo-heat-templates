@@ -52,11 +52,13 @@
     - name: contrail vrouter plugin init container if exists
       block:
         - name: remove contrail vrouter plugin init container if exists
-          shell: podman container rm --force"{{ _CONTRAIL_VROUTER_PLUGIN_INIT_IMAGE_NAME_ }}"
+          shell: >
+            {{ container_cli }} container rm --force"{{ _CONTRAIL_VROUTER_PLUGIN_INIT_IMAGE_NAME_ }}"
           ignore_errors: yes
 
         - name: create contrail vrouter plugin init container
-          shell: podman run -t --network host --name "{{ _CONTRAIL_VROUTER_PLUGIN_INIT_IMAGE_NAME_ }}" --privileged -v /lib/modules:/lib/modules -v /usr/src:/usr/src "{{ _CONTRAIL_VROUTER_PLUGIN_INIT_IMAGE_ }}"
+          shell: >
+            {{ container_cli }} run -t --network host --name "{{ _CONTRAIL_VROUTER_PLUGIN_INIT_IMAGE_NAME_ }}" --privileged -v /lib/modules:/lib/modules -v /usr/src:/usr/src "{{ _CONTRAIL_VROUTER_PLUGIN_INIT_IMAGE_ }}"
       when:
         - _CONTRAIL_VROUTER_PLUGIN_INIT_IMAGE_NAME_ is defined and _CONTRAIL_VROUTER_PLUGIN_INIT_IMAGE_NAME_ != ''
         - _CONTRAIL_VROUTER_PLUGIN_INIT_IMAGE_ is defined and _CONTRAIL_VROUTER_PLUGIN_INIT_IMAGE_ != ''
@@ -73,15 +75,17 @@
           loop: "{{ contrail_settings_env_vars | dict2items}}"
 
         - name: pull contrail vrouter dpdk agent container
-          shell: podman pull "{{ _CONTRAIL_VROUTER_AGENT_DPDK_IMAGE_ }}"
+          shell: >
+            {{ container_cli }} pull "{{ _CONTRAIL_VROUTER_AGENT_DPDK_IMAGE_ }}"
 
         - name: remove contrail dpdk init container if exists
-          shell: podman container rm --force "{{ _CONTRAIL_VROUTER_INIT_IMAGE_NAME_ }}"
+          shell: >
+            {{ container_cli }} container rm --force "{{ _CONTRAIL_VROUTER_INIT_IMAGE_NAME_ }}"
           ignore_errors: yes
 
         - name: create contrail dpdk init container
           shell: |
-            podman run  -t --network host --name {{ _CONTRAIL_VROUTER_INIT_IMAGE_NAME_ }} --privileged \
+            {{ container_cli }} run  -t --network host --name {{ _CONTRAIL_VROUTER_INIT_IMAGE_NAME_ }} --privileged \
               -v /dev:/dev -v /etc/sysconfig/network-scripts:/etc/sysconfig/network-scripts -v /lib/modules:/lib/modules -v /bin:/host/bin \
               -e AGENT_MODE=dpdk -e CONTRAIL_VROUTER_AGENT_DPDK_DOCKER_IMAGE={{ _CONTRAIL_VROUTER_AGENT_DPDK_IMAGE_ }} \
               -e CONTRAIL_VROUTER_AGENT_DPDK_CONTAINER_NAME={{ _CONTRAIL_VROUTER_AGENT_DPDK_CONTAINER_NAME_ }} \
@@ -110,13 +114,14 @@
           loop: "{{ vrouter_init_env_vars | dict2items}}"
 
         - name: remove contrail init container if exists
-          shell: podman container rm --force "{{ _CONTRAIL_VROUTER_INIT_IMAGE_NAME_ }}"
+          shell: >
+            {{ container_cli }} container rm --force "{{ _CONTRAIL_VROUTER_INIT_IMAGE_NAME_ }}"
           ignore_errors: yes
 
 
         - name: create vrouter init container
           shell: |
-            podman run -t --network host --name {{ _CONTRAIL_VROUTER_INIT_IMAGE_NAME_ }} --privileged \
+            {{ container_cli }} run -t --network host --name {{ _CONTRAIL_VROUTER_INIT_IMAGE_NAME_ }} --privileged \
               -v /dev:/dev -v /etc/sysconfig/network-scripts:/etc/sysconfig/network-scripts \
               -v /lib/modules:/lib/modules -v /bin:/host/bin \
               {{ init_env_args }} {{ _CONTRAIL_VROUTER_INIT_IMAGE_ }}

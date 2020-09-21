@@ -39,11 +39,11 @@ parameters:
     default: "/var/log/containers/contrail/config-database"
   DockerContrailConfigDatabaseVolume:
     default: '/var/lib/contrail/config_cassandra'
-    description: Docker volume for contrail config DB service
+    description: Container volume for contrail config DB service
     type: string
   DockerContrailConfigZookeeperVolume:
     default: '/var/lib/contrail/config_zookeeper'
-    description: Docker volume for contrail config zookeeper service
+    description: Container volume for contrail config zookeeper service
     type: string
   DockerContrailZookeeperLogPath:
     default: '/var/log/containers/contrail/zookeeper'
@@ -385,11 +385,11 @@ outputs:
           block: &contrail_config_database_update_data
             - name: Log contrail_config_database inspect
               shell: >
-                docker inspect contrail_config_database > /tmp/contrail_config_database_inspect 2>&1
+                {{ container_cli }} inspect contrail_config_database > /tmp/contrail_config_database_inspect 2>&1
               ignore_errors: yes
             - name: Find out current volume name of contrail_config_database container for old mount path
               shell: >
-                docker inspect contrail_config_database | jq -r '.[].Mounts | .[] | select(.Destination =="/var/lib/cassandra/data") | .Name'
+                {{ container_cli }} inspect contrail_config_database | jq -r '.[].Mounts | .[] | select(.Destination =="/var/lib/cassandra/data") | .Name'
               register:
                 contrail_config_database_volume_name
               ignore_errors: yes
@@ -407,7 +407,7 @@ outputs:
                 ignore_errors: yes
               - name: Get contrail_config_database_volume_name location
                 shell: >
-                  docker inspect {{ contrail_config_database_volume_name.stdout }} | jq -r '.[].Mountpoint'
+                  {{ container_cli }} inspect {{ contrail_config_database_volume_name.stdout }} | jq -r '.[].Mountpoint'
                 register:
                   contrail_config_database_volume_location
               - name: Make contrail_config_database_volume data subfolder
@@ -420,7 +420,7 @@ outputs:
                   find {{ contrail_config_database_volume_location.stdout }} -maxdepth 1 -mindepth 1 -path {{ contrail_config_database_volume_location.stdout }}/data -o -prune -execdir mv {} {{ contrail_config_database_volume_location.stdout }}/data/ \;
               - name: Find out commitlog volume for contrail_config_database container for old mount path
                 shell: >
-                  docker inspect contrail_config_database | jq -r '.[].Mounts | .[] | select(.Destination =="/var/lib/cassandra") | .Name'
+                  {{ container_cli }} inspect contrail_config_database | jq -r '.[].Mounts | .[] | select(.Destination =="/var/lib/cassandra") | .Name'
                 register:
                   contrail_config_database_log_volume_name
               - name: Log contrail_config_database_log_volume_name
@@ -431,10 +431,10 @@ outputs:
                 block:
                 - name: Log contrail_config_database_log_volume inspect
                   shell: >
-                    docker inspect {{ contrail_config_database_log_volume_name.stdout }} > /tmp/contrail_config_database_log_volume_inspect 2>&1
+                    {{ container_cli }} inspect {{ contrail_config_database_log_volume_name.stdout }} > /tmp/contrail_config_database_log_volume_inspect 2>&1
                 - name: Get contrail_config_database_log_volume_name location
                   shell: >
-                    docker inspect {{ contrail_config_database_log_volume_name.stdout }} | jq -r '.[].Mountpoint'
+                    {{ container_cli }} inspect {{ contrail_config_database_log_volume_name.stdout }} | jq -r '.[].Mountpoint'
                   register:
                     contrail_config_database_log_volume_location
                 - name: Move commitlog, hints, etc to the new volume

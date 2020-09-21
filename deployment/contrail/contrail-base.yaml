@@ -721,7 +721,7 @@ outputs:
                 - name: remove current cert files
                   shell: rm -f {{ contrail_cert_file }} {{ contrail_certkey_file }}
                 - name: re-run node-init container
-                  shell: podman start -i contrail-node-init
+                  shell: "{{ container_cli }} start -i contrail-node-init"
 
             - name: create selinux module for unprivileged contrail containers
               block:
@@ -809,16 +809,7 @@ outputs:
 
       fast_forward_post_upgrade_tasks_common: []
 
-      upgrade_tasks_common:
-        - name: Install docker packages on upgrade if missing
-          when: step|int == 3
-          tags: common
-          yum:
-            name: "{{ item }}"
-            state: present
-          with_items:
-            - podman
-            - python-podman-api
+      upgrade_tasks_common: []
 
       contrail_puppet_update_tasks:
         - set_fact:

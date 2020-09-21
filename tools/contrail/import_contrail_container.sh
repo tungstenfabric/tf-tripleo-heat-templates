@@ -181,29 +181,13 @@ ${contrail_tools}
 )
 
 if [[ -n ${user} && -n ${password} ]]; then
-  docker login -u ${user} -p ${password} ${registry}
+  podman login -u ${user} -p ${password} ${registry}
 fi
 
 if [[ -n ${cert} ]]; then
   registry_name=(${registry//:/ })
-  [ ! -f /etc/docker/certs.d/${registry_name} ]; sudo mkdir -p /etc/docker/certs.d/${registry_name}
-  (cd /etc/docker/certs.d/${registry_name}; sudo curl -s -O ${cert})
   (cd /etc/pki/ca-trust/source/anchors/; sudo curl -s -O ${cert})
   sudo update-ca-trust
-  sudo systemctl restart docker
-fi
-
-if [[ ${insecure} -eq 1 ]];then
-  registry_name=(${registry//\// })
-  registry_string=`cat /etc/sysconfig/docker |grep INSECURE_REGISTRY |awk -F"INSECURE_REGISTRY=\"" '{print $2}'|tr "\"" " "`
-  registry_string="${registry_string} --insecure-registry ${registry_name}"
-  complete_string="INSECURE_REGISTRY=\"${registry_string}\""
-  if [[ `grep INSECURE_REGISTRY /etc/sysconfig/docker` ]]; then
-    sudo sed -i "s/^INSECURE_REGISTRY=.*/${complete_string}/" /etc/sysconfig/docker
-  else
-    sudo echo ${complete_string} >> /etc/sysconfig/docker
-  fi
-  sudo systemctl restart docker
 fi
 
 echo "container_images:" > ${output_file}
