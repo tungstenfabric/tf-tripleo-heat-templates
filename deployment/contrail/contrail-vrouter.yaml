@@ -133,8 +133,6 @@ outputs:
       vrouter_init_container_name: &vrouter_init_container_name
         {get_attr: [DockerContrailVrouterKernelImageNormalize, contrail_image_only]}
       docker_config:
-        step_2:
-          get_attr: [ContrailBase, role_data, docker_config, step_2]
         step_3:
           contrail_nova_plugin:
             image: &contrail_nova_plugin_image {get_attr: [DockerContrailNovaPluginImageNormalize, contrail_image]}
@@ -226,16 +224,24 @@ outputs:
       update_tasks:
         get_attr: [ContrailVrouterBase, role_data, update_tasks]
 
+      reinit_vhost_tasks: &reinit_vhost_tasks
+        - name: Set contrail-vrouter-kernel-init container name
+          set_fact:
+            vrouter_init_container_name_ansible: *vrouter_init_container_name
+        - name: Start contrail-vrouter-kernel-init container as post update
+          shell: >
+            {{ container_cli }} start -i {{ vrouter_init_container_name_ansible }}
+        - name: Restart vhost0 interface
+          shell: |
+            ifdown vhost0
+            ifup vhost0
+            {{ container_cli }} start -i contrail_vrouter_agent
+          ignore_errors: yes
+
       post_update_tasks:
         list_concat:
           - {get_attr: [ContrailVrouterBase, role_data, post_update_tasks]}
-          - - name: Set contrail-vrouter-kernel-init container name
-              set_fact:
-                vrouter_init_container_name_ansible: *vrouter_init_container_name
-            - name: Start contrail-vrouter-kernel-init container as post update
-              shell: bash -c "docker start {{ vrouter_init_container_name_ansible }}"
-            - name: Restart vhost0 interface
-              shell: bash -c 'ifdown vhost0; ifup vhost0; docker start contrail_vrouter_agent || true'
+          - *reinit_vhost_tasks
 
       fast_forward_upgrade_tasks:
         get_attr: [ContrailVrouterBase, role_data, fast_forward_upgrade_tasks]
@@ -247,6 +253,35 @@ outputs:
         list_concat:
           - {get_attr: [ContrailBase, role_data, upgrade_tasks_common]}
           - {get_attr: [ContrailVrouterBase, role_data, upgrade_tasks]}
+          - - name: run init container to put vrouter ko for newer kernel
+              tags:
+                - never
+                - system_upgrade
+                - system_upgrade_prepare
+              when:
+                - step|int == 1
+                - upgrade_leapp_enabled
+              block:
+                - name: HACK create /lib/modules/4.18.0-193.19.1.el8_2.x86_64/kernel/net/
+                  shell: |
+                    kver=4.18.0-193.19.1.el8_2.x86_64
+                    mkdir -p /lib/modules/$kver/kernel/net/vrouter
+                    touch /lib/modules/$kver/modules.order
+                    touch /lib/modules/$kver/modules.builtin
+                - name: Set contrail-vrouter-kernel-init container name
+                  set_fact:
+                    vrouter_init_container_name_ansible: *vrouter_init_container_name
+                - name: Start contrail-vrouter-kernel-init container for system_upgrade
+                  shell: |
+                    set -eux
+                    if type docker &> /dev/null ; then
+                        docker start -i {{ vrouter_init_container_name_ansible }}
+                    else
+                        podman start -i {{ vrouter_init_container_name_ansible }}
+                    fi
+                  ignore_errors: yes
 
       post_upgrade_tasks:
-        get_attr: [ContrailVrouterBase, role_data, post_upgrade_tasks]
+        list_concat:
+          - {get_attr: [ContrailVrouterBase, role_data, post_upgrade_tasks]}
+          - *reinit_vhost_tasks
