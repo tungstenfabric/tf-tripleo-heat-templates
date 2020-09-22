@@ -767,6 +767,7 @@ outputs:
                       (allow system_dbusd_t container_file_t (lnk_file (read)))
                       (allow systemd_logind_t container_file_t (lnk_file (read)))
                       (allow svirt_tcg_t container_file_t ( dir ( read  )))
+                      (allow timedatex_t container_file_t ( lnk_file ( read )))
                       )
                 - name: create selinux module from file /tmp/contrail_container.cil
                   shell: "/sbin/semodule -i /tmp/contrail_container.cil"
