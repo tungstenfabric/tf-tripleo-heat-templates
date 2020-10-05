@@ -42,6 +42,12 @@ parameters:
       systemd and repin interrupts (IRQ repinning).
     tags:
       - role_specific
+  TunedPsBlackList:
+    default: ""
+    type: string
+    description: Tuned PS black list.
+    tags:
+      - role_specific
   ContrailDpdkHugepages2MB:
     default: '1024'
     description: Number of 2MB hugepages
@@ -116,6 +122,7 @@ conditions:
       - {not: {equals: [{get_param: [RoleParameters, KernelArgs]}, ""]}}
       - {not: {equals: [{get_param: [RoleParameters, TunedProfileName]}, ""]}}
       - {not: {equals: [{get_param: [RoleParameters, IsolCpusList]}, ""]}}
+      - {not: {equals: [{get_param: [RoleParameters, TunedPsBlackList]}, ""]}}
   deployment_actions_empty:
     equals:
       - {get_param: deployment_actions}
@@ -254,6 +261,7 @@ resources:
         - name: _KERNEL_ARGS_
         - name: _TUNED_PROFILE_NAME_
         - name: _TUNED_CORES_
+        - name: _TUNED_PS_BLACKLIST_
       outputs:
         - name: result
       config:
@@ -279,6 +287,7 @@ resources:
         _KERNEL_ARGS_: {get_param: [RoleParameters, KernelArgs]}
         _TUNED_PROFILE_NAME_: {get_param: [RoleParameters, TunedProfileName]}
         _TUNED_CORES_: {get_param: [RoleParameters, IsolCpusList]}
+        _TUNED_PS_BLACKLIST_: {get_param: [RoleParameters, TunedPsBlackList]}
 
   RebootConfig:
     type: OS::Heat::SoftwareConfig
