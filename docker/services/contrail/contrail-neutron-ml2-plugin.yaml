@@ -136,6 +136,5 @@ outputs:
             image: &contrail_neutron_plugin_image {get_attr: [DockerContrailNeutronMl2PluginImageNormalize, contrail_image]}
             volumes:
               - opt_plugin:/opt/plugin
-      host_prep_tasks: []
       metadata_settings:
         get_attr: [NeutronBase, role_data, metadata_settings]

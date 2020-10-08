@@ -76,10 +76,9 @@ outputs:
       agent_mode: &agent_mode {get_param: ContrailVrouterAgentMode}
       hugepages_2mb: &hugepages_2mb {get_attr: [ContrailSettingsRoleParametersValue, value, hugepages_2mb]}
       hugepages_1gb: &hugepages_1gb {get_attr: [ContrailSettingsRoleParametersValue, value, hugepages_1gb]}
-      host_prep_tasks:
+      deploy_steps_tasks:
         list_concat:
           - - name: Contrail vrouter base host prep tasks
-              tags: common
               block:
                 - name: register contrail dpdk env file
                   stat:
@@ -163,7 +162,7 @@ outputs:
                     state: present
                     regexp: "HUGE_PAGES_DIR="
                     line: "HUGE_PAGES_DIR={{ hp_dir }}"
-          - {get_attr: [ContrailVrouterIssu, role_data, host_prep_tasks]}
+          - {get_attr: [ContrailVrouterIssu, role_data, deploy_steps_tasks]}
 
       update_tasks:
         - name: Find out current volume name of contrail_vrouter_agent container

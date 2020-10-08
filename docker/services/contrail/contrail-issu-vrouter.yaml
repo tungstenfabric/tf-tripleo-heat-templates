@@ -77,9 +77,8 @@ outputs:
         get_attr: [ContrailBase, role_data, contrail_common_env_file]
 
       # task should patch docker config to connect computes to ISSU node
-      host_prep_tasks:
+      deploy_steps_tasks:
         - name: Contrail Vrouter Issu host prep tasks
-          tags: issu
           block:
             - name: Check if /tmp/contrail_issu_marker exists
               stat:
@@ -127,7 +126,6 @@ outputs:
                     # CONFIG_NODES: "{{ contrail_issu_nodes_string }}"
                     # MAINTENANCE_MODE: True
                     # CONFIG_API_PORT: *contrail_issu_api_port
-
 
       upgrade_tasks:
         - name: Contrail Vrouter ISSU upgrade
@@ -188,7 +186,7 @@ outputs:
           block:
             list_concat:
               # reapply common tasks to revert IPs to Contrail Control plane
-              - {get_attr: [ContrailBase, role_data, contrail_host_prep_tasks_base]}
+              - {get_attr: [ContrailBase, role_data, contrail_prep_tasks_base]}
               - - name: Remove Contrail Vrouter ISSU is in progress marker
                   file:
                     path: "/tmp/contrail_issu_marker"
