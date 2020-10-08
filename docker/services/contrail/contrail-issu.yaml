@@ -1172,166 +1172,163 @@ outputs:
           with_items:
             - /var/log/containers/contrail
             - /etc/contrail
-        - name: register contrail config issu env file
-          stat:
-            path: *contrail_issu_env_file
-          register: p
-        - name: create contrail config issu env file
-          copy:
-            dest: *contrail_issu_env_file
-            content: ""
-          when: not p.stat.exists
 
-        - name: set contrail base calculated parameters
-          set_fact:
-            contrail_base_env_params: *contrail_common_base_env
-        - name: write contrail base parameters to environment file
-          lineinfile:
-            dest: *contrail_issu_env_file
-            state: present
-            line: "{{ item }}"
-          with_items: "{{ contrail_base_env_params }}"
-
-        - name: get dmi
-          shell: |
-            #!/bin/sh
-            dmidecode --s system-uuid | awk 'match($0, /[0-9A-Fa-f]{8}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{12}/) { print substr($0, RSTART, RLENGTH) }'
-          register: dmi
-        - name: set dmi fact
-          set_fact:
-            dmi_uuid: "{{ dmi.stdout }}"
-        - name: get contrail_settings
-          shell: "hiera -c /etc/puppet/hiera.yaml contrail_settings ::uuid={{ dmi_uuid }} | sed 's/=>/:/g'"
-          register: contrail_settings_string
-        - name: turn contrail_settings into json
-          set_fact:
-            contrail_settings: "{{ contrail_settings_string.stdout | from_json }}"
-          when:
-            - contrail_settings_string.stdout is defined
-            - contrail_settings_string.stdout != "nil"
-        - name: write contrail settings to file
-          lineinfile:
-            dest: *contrail_issu_env_file
-            regexp: "^{{ item.key }}.*"
-            line: "{{ item.key }}={{ item.value }}"
-            state: present
-          with_dict: "{{ contrail_settings }}"
-          when: contrail_settings is defined
-
-        - name: get nova api
-          shell: *get_nova_api_network_cmd
-          register: nova_api_host
-
-        - name: node ips (names) param name
-          set_fact:
-            contrail_nodes_param_name: {list_join: ["_", ["contrail_issu", {get_param: contrail_nodes_param_suffux}]]}
-        - name: get contrail issu node ips
-          shell: "hiera -c /etc/puppet/hiera.yaml {{ contrail_nodes_param_name }}"
-          register: contrail_issu_nodes_list
-        - name: turn contrail config ips into string
-          set_fact:
-            contrail_issu_nodes_string: "{{ contrail_issu_nodes_list.stdout | from_json | join(',') }}"
-        - name: write contrail issu config node ips to environment file
-          lineinfile:
-            dest: *contrail_issu_env_file
-            state: present
-            regexp: "^{{ item.key }}.*"
-            line: "{{ item.key }}={{ item.value }}"
-          with_dict:
-            CONFIG_API_PORT: *contrail_issu_api_port
-            ANALYTICS_ALARM_ENABLE: 'True'
-            ANALYTICS_SNMP_ENABLE: 'True'
-            ANALYTICSDB_ENABLE: 'True'
-            ANALYTICS_NODES: "{{ contrail_issu_nodes_string }}"
-            ANALYTICS_SNMP_NODES: "{{ contrail_issu_nodes_string }}"
-            ANALYTICS_ALARM_NODES: "{{ contrail_issu_nodes_string }}"
-            ANALYTICSDB_NODES: "{{ contrail_issu_nodes_string }}"
-            CONFIG_NODES: "{{ contrail_issu_nodes_string }}"
-            CONFIGDB_NODES: "{{ contrail_issu_nodes_string }}"
-            WEBUI_NODES: "{{ contrail_issu_nodes_string }}"
-            RABBITMQ_NODES: "{{ contrail_issu_nodes_string }}"
-            RABBITMQ_NODE_PORT: 5673
-            RABBITMQ_ERLANG_COOKIE: "abcdefg"
-            KAFKA_NODES: "{{ contrail_issu_nodes_string }}"
-            IPFABRIC_SERVICE_HOST: "{{ nova_api_host.stdout }}"
-            # for 5.0 compatibility, starting from 5.1 it has correct default
-            ZOOKEEPER_PORTS: "2888:3888"
-            ZOOKEEPER_PORT: "2181"
-            ZOOKEEPER_NODES: "{{ contrail_issu_nodes_string }}"
-            ZOOKEEPER_ANALYTICS_PORT: "2181"
-            ZOOKEEPER_ANALYTICS_NODES: "{{ contrail_issu_nodes_string }}"
-
-        - name: register contrail issu config database env file
-          stat:
-            path: *contrail_issu_configdb_env_file
-          register: p
-        - name: create contrail issu config database env file
-          copy:
-            dest: *contrail_issu_configdb_env_file
-            content: ""
-          when: not p.stat.exists
-        - name: write contrail issu configdb env vars
-          lineinfile:
-            dest: *contrail_issu_configdb_env_file
-            state: present
-            line: "{{ item }}"
-          with_items:
-            - "NODE_TYPE=config-database"
-            - "CASSANDRA_SEEDS={{ contrail_issu_nodes_string }}"
-            - "CASSANDRA_START_RPC=true"
-            - "CASSANDRA_CLUSTER_NAME=contrail_database"
-            - "CASSANDRA_PORT=9161"
-            - "CASSANDRA_CQL_PORT=9041"
-            - "CASSANDRA_SSL_STORAGE_PORT=7013"
-            - "CASSANDRA_STORAGE_PORT=7012"
-            - "CASSANDRA_JMX_LOCAL_PORT=7201"
-
-        - name: register contrail issu analytics database env file
-          stat:
-            path: *contrail_issu_analyticsdb_env_file
-          register: p
-        - name: create contrail issu analytics database env file
-          copy:
-            dest: *contrail_issu_analyticsdb_env_file
-            content: ""
-          when: not p.stat.exists
-        - name: write contrail issu analytics database specific env cars
-          lineinfile:
-            dest: *contrail_issu_analyticsdb_env_file
-            state: present
-            line: "{{ item }}"
-          with_items:
-            - "NODE_TYPE=database"
-            - "CASSANDRA_SEEDS={{ contrail_issu_nodes_string }}"
-            - "CASSANDRA_START_RPC=true"
-            - "CASSANDRA_CLUSTER_NAME=contrail_analytics"
-            - "CASSANDRA_PORT=9160"
-            - "CASSANDRA_CQL_PORT=9042"
-            - "CASSANDRA_SSL_STORAGE_PORT=7011"
-            - "CASSANDRA_STORAGE_PORT=7010"
-            - "CASSANDRA_JMX_LOCAL_PORT=7200"
-
-        - name: contrail webui CA
-          set_fact:
-            contrail_webui_ca: {get_param: ContrailCA}
-        - name: overwrite contrail webui cert files for IPA
+      deploy_steps_tasks:
+        - when: step|int == 1
           block:
-            - name: contrail webui server cert
+            - name: register contrail config issu env file
+              stat:
+                path: *contrail_issu_env_file
+              register: p
+            - name: create contrail config issu env file
+              copy:
+                dest: *contrail_issu_env_file
+                content: ""
+              when: not p.stat.exists
+            - name: set contrail base calculated parameters
               set_fact:
-                contrail_webui_cert: {get_param: ContrailServiceCertFile}
-            - name: contrail webui server key
+                contrail_base_env_params: *contrail_common_base_env
+            - name: write contrail base parameters to environment file
+              lineinfile:
+                dest: *contrail_issu_env_file
+                state: present
+                line: "{{ item }}"
+              with_items: "{{ contrail_base_env_params }}"
+            - name: get dmi
+              shell: |
+                #!/bin/sh
+                dmidecode --s system-uuid | awk 'match($0, /[0-9A-Fa-f]{8}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{12}/) { print substr($0, RSTART, RLENGTH) }'
+              register: dmi
+            - name: set dmi fact
               set_fact:
-                contrail_webui_key: {get_param: ContrailServiceKeyFile}
-            - name: set contrail webui certs for IPA case
+                dmi_uuid: "{{ dmi.stdout }}"
+            - name: get contrail_settings
+              shell: "hiera -c /etc/puppet/hiera.yaml contrail_settings ::uuid={{ dmi_uuid }} | sed 's/=>/:/g'"
+              register: contrail_settings_string
+            - name: turn contrail_settings into json
+              set_fact:
+                contrail_settings: "{{ contrail_settings_string.stdout | from_json }}"
+              when:
+                - contrail_settings_string.stdout is defined
+                - contrail_settings_string.stdout != "nil"
+            - name: write contrail settings to file
+              lineinfile:
+                dest: *contrail_issu_env_file
+                regexp: "^{{ item.key }}.*"
+                line: "{{ item.key }}={{ item.value }}"
+                state: present
+              with_dict: "{{ contrail_settings }}"
+              when: contrail_settings is defined
+            - name: get nova api
+              shell: *get_nova_api_network_cmd
+              register: nova_api_host
+            - name: node ips (names) param name
+              set_fact:
+                contrail_nodes_param_name: {list_join: ["_", ["contrail_issu", {get_param: contrail_nodes_param_suffux}]]}
+            - name: get contrail issu node ips
+              shell: "hiera -c /etc/puppet/hiera.yaml {{ contrail_nodes_param_name }}"
+              register: contrail_issu_nodes_list
+            - name: turn contrail config ips into string
+              set_fact:
+                contrail_issu_nodes_string: "{{ contrail_issu_nodes_list.stdout | from_json | join(',') }}"
+            - name: write contrail issu config node ips to environment file
               lineinfile:
                 dest: *contrail_issu_env_file
                 state: present
                 regexp: "^{{ item.key }}.*"
                 line: "{{ item.key }}={{ item.value }}"
               with_dict:
-                WEBUI_SSL_CERT_FILE: "{{ contrail_webui_cert }}"
-                WEBUI_SSL_KEY_FILE: "{{ contrail_webui_key }}"
-          when: contrail_webui_ca == 'IPA'
+                CONFIG_API_PORT: *contrail_issu_api_port
+                ANALYTICS_ALARM_ENABLE: 'True'
+                ANALYTICS_SNMP_ENABLE: 'True'
+                ANALYTICSDB_ENABLE: 'True'
+                ANALYTICS_NODES: "{{ contrail_issu_nodes_string }}"
+                ANALYTICS_SNMP_NODES: "{{ contrail_issu_nodes_string }}"
+                ANALYTICS_ALARM_NODES: "{{ contrail_issu_nodes_string }}"
+                ANALYTICSDB_NODES: "{{ contrail_issu_nodes_string }}"
+                CONFIG_NODES: "{{ contrail_issu_nodes_string }}"
+                CONFIGDB_NODES: "{{ contrail_issu_nodes_string }}"
+                WEBUI_NODES: "{{ contrail_issu_nodes_string }}"
+                RABBITMQ_NODES: "{{ contrail_issu_nodes_string }}"
+                RABBITMQ_NODE_PORT: 5673
+                RABBITMQ_ERLANG_COOKIE: "abcdefg"
+                KAFKA_NODES: "{{ contrail_issu_nodes_string }}"
+                IPFABRIC_SERVICE_HOST: "{{ nova_api_host.stdout }}"
+                # for 5.0 compatibility, starting from 5.1 it has correct default
+                ZOOKEEPER_PORTS: "2888:3888"
+                ZOOKEEPER_PORT: "2181"
+                ZOOKEEPER_NODES: "{{ contrail_issu_nodes_string }}"
+                ZOOKEEPER_ANALYTICS_PORT: "2181"
+                ZOOKEEPER_ANALYTICS_NODES: "{{ contrail_issu_nodes_string }}"
+            - name: register contrail issu config database env file
+              stat:
+                path: *contrail_issu_configdb_env_file
+              register: p
+            - name: create contrail issu config database env file
+              copy:
+                dest: *contrail_issu_configdb_env_file
+                content: ""
+              when: not p.stat.exists
+            - name: write contrail issu configdb env vars
+              lineinfile:
+                dest: *contrail_issu_configdb_env_file
+                state: present
+                line: "{{ item }}"
+              with_items:
+                - "NODE_TYPE=config-database"
+                - "CASSANDRA_SEEDS={{ contrail_issu_nodes_string }}"
+                - "CASSANDRA_START_RPC=true"
+                - "CASSANDRA_CLUSTER_NAME=contrail_database"
+                - "CASSANDRA_PORT=9161"
+                - "CASSANDRA_CQL_PORT=9041"
+                - "CASSANDRA_SSL_STORAGE_PORT=7013"
+                - "CASSANDRA_STORAGE_PORT=7012"
+                - "CASSANDRA_JMX_LOCAL_PORT=7201"
+            - name: register contrail issu analytics database env file
+              stat:
+                path: *contrail_issu_analyticsdb_env_file
+              register: p
+            - name: create contrail issu analytics database env file
+              copy:
+                dest: *contrail_issu_analyticsdb_env_file
+                content: ""
+              when: not p.stat.exists
+            - name: write contrail issu analytics database specific env cars
+              lineinfile:
+                dest: *contrail_issu_analyticsdb_env_file
+                state: present
+                line: "{{ item }}"
+              with_items:
+                - "NODE_TYPE=database"
+                - "CASSANDRA_SEEDS={{ contrail_issu_nodes_string }}"
+                - "CASSANDRA_START_RPC=true"
+                - "CASSANDRA_CLUSTER_NAME=contrail_analytics"
+                - "CASSANDRA_PORT=9160"
+                - "CASSANDRA_CQL_PORT=9042"
+                - "CASSANDRA_SSL_STORAGE_PORT=7011"
+                - "CASSANDRA_STORAGE_PORT=7010"
+                - "CASSANDRA_JMX_LOCAL_PORT=7200"
+            - name: contrail webui CA
+              set_fact:
+                contrail_webui_ca: {get_param: ContrailCA}
+            - name: overwrite contrail webui cert files for IPA
+              block:
+                - name: contrail webui server cert
+                  set_fact:
+                    contrail_webui_cert: {get_param: ContrailServiceCertFile}
+                - name: contrail webui server key
+                  set_fact:
+                    contrail_webui_key: {get_param: ContrailServiceKeyFile}
+                - name: set contrail webui certs for IPA case
+                  lineinfile:
+                    dest: *contrail_issu_env_file
+                    state: present
+                    regexp: "^{{ item.key }}.*"
+                    line: "{{ item.key }}={{ item.value }}"
+                  with_dict:
+                    WEBUI_SSL_CERT_FILE: "{{ contrail_webui_cert }}"
+                    WEBUI_SSL_KEY_FILE: "{{ contrail_webui_key }}"
+              when: contrail_webui_ca == 'IPA'
 
       metadata_settings:
         get_attr: [ContrailBase, role_data, metadata_settings]

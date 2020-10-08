@@ -17,6 +17,12 @@ parameters:
   DefaultPasswords:
     default: {}
     type: json
+  DeployIdentifier:
+    type: string
+    default: ''
+    description: >
+      Setting this to a unique value will re-run any deployment tasks which
+      perform configuration on a Heat stack-update.
   RoleName:
     default: ''
     description: Role name on which the service is applied
@@ -577,13 +583,19 @@ outputs:
         list_concat:
           - *contrail_auth_base_env
           - *contrail_auth_admin_env
-          - null
+          - - list_join:
+                - ''
+                - - 'TRIPLEO_DEPLOY_IDENTIFIER='
+                  - {get_param: DeployIdentifier}
       contrail_defaults_env: &contrail_defaults_env {get_param: ContrailDefaults}
       contrail_base_auth_internal_env: &contrail_base_auth_internal_env
         list_concat:
           - *contrail_auth_base_env
           - *contrail_auth_internal_env
-          - null
+          - - list_join:
+                - ''
+                - - 'TRIPLEO_DEPLOY_IDENTIFIER='
+                  - {get_param: DeployIdentifier}
       docker_config:
         step_2: {}
       contrail_common_env_file: &contrail_common_env_file
@@ -595,7 +607,7 @@ outputs:
           - 'contrail_analytics_database'
       contrail_base_env_file: &contrail_base_env_file
         - *contrail_common_env_file
-      contrail_host_prep_tasks_base:
+      contrail_prep_tasks_base:
         - name: Contrail Base host prep tasks
           tags: common
           block:

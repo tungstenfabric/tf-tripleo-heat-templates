@@ -222,11 +222,14 @@ outputs:
                   list_concat:
                     - {get_attr: [ContrailBase, role_data, contrail_base_env_file]}
                     - - *contrail_env_file
-      host_prep_tasks:
-        list_concat:
-          - {get_attr: [ContrailBase, role_data, contrail_host_prep_tasks_base]}
-          - {get_attr: [ContrailVrouterBase, role_data, host_prep_tasks]}
-          - {get_attr: [ContrailBase, role_data, contrail_config_volume_prep]}
+
+      deploy_steps_tasks:
+        - when: step|int == 1
+          block:
+            list_concat:
+              - {get_attr: [ContrailBase, role_data, contrail_prep_tasks_base]}
+              - {get_attr: [ContrailVrouterBase, role_data, deploy_steps_tasks]}
+              - {get_attr: [ContrailBase, role_data, contrail_config_volume_prep]}
 
       metadata_settings:
         get_attr: [ContrailBase, role_data, metadata_settings]
