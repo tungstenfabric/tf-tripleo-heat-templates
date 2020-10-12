@@ -79,7 +79,6 @@ outputs:
       host_prep_tasks:
         list_concat:
           - - name: Contrail vrouter base host prep tasks
-              tags: common
               block:
                 - name: register contrail dpdk env file
                   stat:
