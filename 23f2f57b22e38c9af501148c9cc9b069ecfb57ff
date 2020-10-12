@@ -1,0 +1,21 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "67771651_985bc729",
+        "filename": "roles_data_contrail_aio.yaml",
+        "patchSetId": 1
+      },
+      "lineNbr": 520,
+      "author": {
+        "id": 437
+      },
+      "writtenOn": "2020-10-12T17:41:36Z",
+      "side": 1,
+      "message": "i\u0027d add explicitly hostname template like\nHostnameFormatDefault: \u0027%stackname%-cephstorage-%index%\u0027",
+      "revId": "23f2f57b22e38c9af501148c9cc9b069ecfb57ff",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    }
+  ]
+}
