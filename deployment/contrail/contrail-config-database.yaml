@@ -486,12 +486,13 @@ outputs:
                     docker inspect config_zookeeper | jq -r '.[].Mountpoint'
                   register:
                     volume_location
-                  when: zk_migrated_flag.stat.exists | bool
+                  when: zk_migrated_flag.stat.exists == False
                 - name: move config database zk data
                   shell: |
                     mkdir -p {{ target_path }}
                     rsync -auv {{ volume_location.stdout }}/ {{ target_path }}/
-                  when: zk_migrated_flag.stat.exists | bool
+                    touch "{{ target_path }}.migrated"
+                  when: zk_migrated_flag.stat.exists == False
                 - name: config database cassandra target folder path
                   set_fact:
                     target_path: {get_param: DockerContrailConfigDatabaseVolume}
@@ -504,12 +505,13 @@ outputs:
                     docker inspect config_cassandra | jq -r '.[].Mountpoint'
                   register:
                     volume_location
-                  when: db_migrated_flag.stat.exists | bool
+                  when: db_migrated_flag.stat.exists == False
                 - name: move config database cassandra data
                   shell: |
                     mkdir -p {{ target_path }}
                     rsync -auv {{ volume_location.stdout }}/ {{ target_path }}/
-                  when: db_migrated_flag.stat.exists | bool
+                    touch "{{ target_path }}.migrated"
+                  when: db_migrated_flag.stat.exists == False
 
       post_upgrade_tasks:
         - name: move config db data from volumes to host folders
