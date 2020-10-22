@@ -59,6 +59,9 @@ parameters:
     description: Parameters specific to the role
     type: json
 
+conditions:
+  agilio_cpu_mask_unset: {equals : [{get_param: AgilioForwarderCpuMask}, '']}
+
 resources:
   ContainersCommon:
     type: ../containers-common.yaml
@@ -97,6 +100,11 @@ outputs:
     value:
       service_name: agilio_virtio_forwarder
       config_settings: {}
+      agilio_vrouter_cpuset_cpus: &agilio_vrouter_cpuset_cpus
+        if:
+          - agilio_cpu_mask_unset
+          - 'all'
+          - {get_param: AgilioForwarderCpuMask}
       docker_config:
         step_1:
           agilio_vrouter:
@@ -107,15 +115,15 @@ outputs:
             user: root
             restart: on-failure
             pid: host
+            cpuset_cpus: *agilio_vrouter_cpuset_cpus
             volumes:
               list_concat:
-                - {get_attr: [ContainersCommon, volumes]}
+                - {get_attr: [AgilioCommonDockerVolumes, value]}
                 - - /lib/modules:/lib/modules
                   - /var/lib/firmware/netronome:/var/lib/firmware/netronome
                   - /etc/sysconfig/network-scripts:/etc/sysconfig/network-scripts
                   - /etc/sysconfig/network:/etc/sysconfig/network
                   - /usr/bin/vif:/usr/bin/vif
-                  - /var/run:/var/run
                   - /:/host
             environment:
               - list_join:
