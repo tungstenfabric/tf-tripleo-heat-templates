@@ -43,7 +43,7 @@ parameters:
     tags:
       - role_specific
   TunedPsBlackList:
-    default: ""
+    default: ".*pmd.*;.*PMD.*;^DPDK;.*qemu-kvm.*;^contrail-vroute$;^lcore-slave-.*;^rte_mp_handle$;^rte_mp_async$;^eal-intr-thread$"
     type: string
     description: Tuned PS black list.
     tags:
