@@ -28,7 +28,7 @@ parameters:
     tags:
       - role_specific
   TunedProfileName:
-    default: ""
+    default: "cpu-partitioning"
     type: string
     description: Tuned Profile to apply to the host
     tags:
@@ -43,7 +43,7 @@ parameters:
     tags:
       - role_specific
   TunedPsBlackList:
-    default: ""
+    default: ".*pmd.*;.*PMD.*;^DPDK;.*qemu-kvm.*;^contrail-vroute$;^lcore-slave-.*;^rte_mp_handle$;^rte_mp_async$;^eal-intr-thread$"
     type: string
     description: Tuned PS black list.
     tags:
@@ -161,6 +161,8 @@ resources:
               hugepages_1gb: ContrailDpdkHugepages1GB
               dpdk_driver: ContrailDpdkDriver
               dpdk_options: ContrailDpdkOptions
+              ps_blacklist: TunedPsBlackList
+              tuned_profile: TunedProfileName
             - values: {get_param: [RoleParameters]}
           - values:
               ContrailSettings: {get_param: ContrailSettings}
@@ -168,6 +170,8 @@ resources:
               ContrailDpdkHugepages1GB: {get_param: ContrailDpdkHugepages1GB}
               ContrailDpdkDriver: {get_param: ContrailDpdkDriver}
               ContrailDpdkOptions: {get_param: ContrailDpdkOptions}
+              TunedPsBlackList: {get_param: TunedPsBlackList}
+              TunedProfileName: {get_param: TunedProfileName}
 
   DpdkHostParametersConfig:
     type: OS::Heat::SoftwareConfig
@@ -285,9 +289,9 @@ resources:
         _CONTRAIL_HUGEPAGES_1GB_: {get_attr: [ContrailSettingsRoleParametersValue, value, hugepages_1gb]}
         _CONTRAIL_HUGEPAGES_2MB_: {get_attr: [ContrailSettingsRoleParametersValue, value, hugepages_2mb]}
         _KERNEL_ARGS_: {get_param: [RoleParameters, KernelArgs]}
-        _TUNED_PROFILE_NAME_: {get_param: [RoleParameters, TunedProfileName]}
+        _TUNED_PROFILE_NAME_: {get_attr: [ContrailSettingsRoleParametersValue, value, tuned_profile]}
         _TUNED_CORES_: {get_param: [RoleParameters, IsolCpusList]}
-        _TUNED_PS_BLACKLIST_: {get_param: [RoleParameters, TunedPsBlackList]}
+        _TUNED_PS_BLACKLIST_: {get_attr: [ContrailSettingsRoleParametersValue, value, ps_blacklist]}
 
   RebootConfig:
     type: OS::Heat::SoftwareConfig
