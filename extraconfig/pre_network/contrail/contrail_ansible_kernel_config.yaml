@@ -167,12 +167,24 @@
                 regexp: '^isolated_cores=.*'
                 line: 'isolated_cores={{ _TUNED_CORES_ }}'
               when: _TUNED_CORES_ | default("") != ""
-            - name: PS blacklist Tune-d Configuration
-              lineinfile:
-                dest: /etc/tuned/{{ _TUNED_PROFILE_NAME_ }}-variables.conf
-                regexp: '^ps_blacklist=.*'
-                line: 'ps_blacklist={{ _TUNED_PS_BLACKLIST_ }}'
+            - name: Set ps_blacklist in tuned config 
               when: _TUNED_PS_BLACKLIST_ | default("") != ""
+              block:
+                - name: Tuned config file for profile
+                  set_fact:
+                    tuned_cfg_file: /etc/tuned/{{ _TUNED_PROFILE_NAME_ }}/tuned.conf
+                - name: Ensure tuned config file exists  
+                  shell: |
+                    #!/bin/bash -x
+                    if [[ ! -e {{ tuned_cfg_file }} ]] ; then
+                      mkdir -p $(dirname {{ tuned_cfg_file }})
+                      cp /usr/lib/tuned/{{ _TUNED_PROFILE_NAME_ }}/tuned.conf {{ tuned_cfg_file }}
+                    fi
+                - name: PS blacklist Tune-d Configuration
+                  lineinfile:
+                    dest: "{{ tuned_cfg_file }}"
+                    regexp: '^ps_blacklist=.*'
+                    line: 'ps_blacklist={{ _TUNED_PS_BLACKLIST_ }}'
             - name: Tune-d profile activation
               shell: tuned-adm profile {{ _TUNED_PROFILE_NAME_ }}
             - name: Set reboot required fact
