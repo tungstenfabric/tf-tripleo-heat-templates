@@ -135,7 +135,14 @@ outputs:
           tags: issu
           block:
             - name: Contrail Vrouter ISSU get old config api address
-              shell: hiera -c  /etc/puppet/hiera.yaml contrail_config_vip
+              shell: |
+                #!/bin/bash
+                vip=$(hiera -c  /etc/puppet/hiera.yaml contrail_config_vip)
+                if [[ -z "$vip" || "$vip" == "nil" ]]; then
+                  net=$(hiera -c  /etc/puppet/hiera.yaml contrail_config_network)
+                  vip=$(hiera -c  /etc/puppet/hiera.yaml cloud_name_$net)
+                fi
+                echo "$vip"
               register: contrail_api_address
             - name: Contrail Vrouter ISSU get old config api port
               shell: hiera -c  /etc/puppet/hiera.yaml contrail::api_port

@@ -64,32 +64,24 @@ parameters:
     description: AAAmode can be no-auth, cloud-admin or rbac
     type: string
     default: 'cloud-admin'
-  ContrailAnalyticsVIP:
-    default: ''
-    description: >
-      Contrail Analytics Api address (optional).
-      In might be set to a virtual IP if a particular specific IP is needed.
-      In case of RedHat IDM and TLS everwhere it cannot be IP and should be an FQDN.
-    type: string
   ContrailConfigPort:
     type: string
     default: '8082'
     description: Config API port
-  ContrailConfigVIP:
-    default: ''
-    description: >
-      Contrail Config Api address (optional).
-      By default it is the name of ContrailConfig network.
-      In might be set to a virtual IP if a particular specific IP is needed.
-      In case of RedHat IDM and TLS everwhere it cannot be IP and should be an FQDN.
-      It is used to configure Heat & Neutron Contrail Plugins on Openstack controller nodes.
+  ContrailConfigIPs:
+    description:  Comma separated list of Contrail Config API servers.
+                  The servers that are not part of the RHOSP voercloud cluster and
+                  deployed separatly.
     type: string
-  ContrailWebuiVIP:
-    default: ''
-    description: >
-      Contrail Webui address (optional).
-      In might be set to a virtual IP if a particular specific IP is needed.
-      In case of RedHat IDM and TLS everwhere it cannot be IP and should be an FQDN.
+  ContrailControlIPs:
+    description:  Comma separated list of Contrail Control servers.
+                  The servers that are not part of the RHOSP voercloud cluster and
+                  deployed separatly.
+    type: string
+  ContrailAnalyticsIPs:
+    description:  Comma separated list of Contrail Analytics servers.
+                  The servers that are not part of the RHOSP voercloud cluster and
+                  deployed separatly.
     type: string
   ContrailRegistry:
     default: 'opencontrailnightly'
@@ -195,9 +187,9 @@ conditions:
       yaql:
         expression: $.data.split(":")[-1].matches("5\.0")
         data: {get_param: ContrailImageTag}
-  contrail_config_vip_unset: {equals : [{get_param: ContrailConfigVIP}, '']}
-  contrail_analytics_vip_unset: {equals : [{get_param: ContrailAnalyticsVIP}, '']}
-  contrail_webui_vip_unset: {equals : [{get_param: ContrailWebuiVIP}, '']}
+  contrail_config_ips_unset: {equals: [{get_param: ContrailConfigIPs}, '']}
+  contrail_control_ips_unset: {equals: [{get_param: ContrailControlIPs}, '']}
+  contrail_analytics_ips_unset: {equals: [{get_param: ContrailAnalyticsIPs}, '']}
   public_tls_enabled:
     or:
       - not: {equals: [{get_param: SSLCertificate}, '']}
@@ -293,36 +285,19 @@ outputs:
           node_data_lookup: {get_param: NodeDataLookup}
         - get_attr: [RoleParametersValue, value]
         - if:
-          - contrail_config_vip_unset
-          - contrail_config_vip:
-              str_replace:
-                template:
-                  "%{hiera('cloud_name_$NETWORK')}"
-                params:
-                  $NETWORK: {get_param: [ServiceNetMap, ContrailConfigNetwork]}
-          - contrail_config_vip: {get_param: ContrailConfigVIP}
-        - if:
-          - contrail_webui_vip_unset
-          - contrail_webui_vip:
-              str_replace:
-                template:
-                  "%{hiera('cloud_name_$NETWORK')}"
-                params:
-                  $NETWORK: {get_param: [ServiceNetMap, ContrailWebuiNetwork]}
-          - contrail_webui_vip: {get_param: ContrailWebuiVIP}
-        - if:
-          - contrail_analytics_vip_unset
-          - contrail_analytics_vip:
-              str_replace:
-                template:
-                  "%{hiera('cloud_name_$NETWORK')}"
-                params:
-                  $NETWORK: {get_param: [ServiceNetMap, ContrailAnalyticsNetwork]}
-          - contrail_analytics_vip: {get_param: ContrailAnalyticsVIP}
-        - if:
           - set_auth_ca_file
           - contrail::auth_ca_file: {get_param: InternalTLSCAFile}
           - null
+        - if:
+            - contrail_config_ips_unset
+            - null
+            - contrail_config_ips: {get_param: ContrailConfigIPs}
+        - if:
+            - contrail_control_ips_unset
+            - contrail_control_ips: {get_param: ContrailControlIPs}
+        - if:
+            - contrail_analytics_ips_unset
+            - contrail_analytics_ips: {get_param: ContrailAnalyticsIPs}
       haproxy_config_settings_member_options: &haproxy_config_settings_member_options
           - 'check'
           - 'inter 2000'
@@ -630,17 +605,25 @@ outputs:
                 regexp: "^{{ item.split('=')[0] }}.*"
               with_items: "{{ contrail_base_env_params }}"
 
-            - name: node ips (names) param name
-              set_fact:
-                contrail_nodes_param_name: {list_join: ["_", ["contrail_config", {get_param: contrail_nodes_param_suffux}]]}
-            - name: get contrail config node ips
-              shell: "hiera -c /etc/puppet/hiera.yaml {{ contrail_nodes_param_name }}"
+            - name: get external contrail control node ips
+              shell: hiera -c /etc/puppet/hiera.yaml contrail_config_ips
               register: contrail_config_nodes_list
-            - name: turn contrail config ips into string
+            - name: set contrail config ips
               set_fact:
-                contrail_config_nodes_string: "{{ contrail_config_nodes_list.stdout | regex_replace('nil', '[]') | from_json | join(',') }}"
+                contrail_config_nodes_string: "{{ contrail_config_nodes_list.stdout | regex_replace('nil', '') }}"
+            - when: contrail_config_nodes_string == ''
+              block:
+                - name: config api node ips (names) param name
+                  set_fact:
+                    contrail_nodes_param_name: {list_join: ["_", ["contrail_config", {get_param: contrail_nodes_param_suffux}]]}
+                - name: get contrail config node ips
+                  shell: "hiera -c /etc/puppet/hiera.yaml {{ contrail_nodes_param_name }}"
+                  register: contrail_config_nodes_list
+                - name: turn contrail config ips into string
+                  set_fact:
+                    contrail_config_nodes_string: "{{ contrail_config_nodes_list.stdout | regex_replace('nil', '[]') | from_json | join(',') }}"
 
-            - name: node ips (names) param name
+            - name: config db node ips (names) param name
               set_fact:
                 contrail_nodes_param_name: {list_join: ["_", ["contrail_database", {get_param: contrail_nodes_param_suffux}]]}
             - name: get contrail config database node ips
@@ -650,27 +633,43 @@ outputs:
               set_fact:
                 contrail_database_nodes_string: "{{ contrail_database_nodes_list.stdout | regex_replace('nil', '[]') | from_json | join(',') }}"
 
-            - name: node ips (names) param name
-              set_fact:
-                contrail_nodes_param_name: {list_join: ["_", ["contrail_control", {get_param: contrail_nodes_param_suffux}]]}
-            - name: get contrail control node ips
-              shell: hiera -c /etc/puppet/hiera.yaml {{ contrail_nodes_param_name }}
+            - name: get external contrail control node ips
+              shell: hiera -c /etc/puppet/hiera.yaml contrail_control_ips
               register: contrail_control_nodes_list
-            - name: turn contrail control ips into string
+            - name: set contrail control ips
               set_fact:
-                contrail_control_nodes_string: "{{ contrail_control_nodes_list.stdout | regex_replace('nil', '[]') | from_json | join(',') }}"
+                contrail_control_nodes_string: "{{ contrail_control_nodes_list.stdout | regex_replace('nil', '') }}"
+            - when: contrail_control_nodes_string == ''
+              block:
+                - name: config node ips (names) param name
+                  set_fact:
+                    contrail_nodes_param_name: {list_join: ["_", ["contrail_control", {get_param: contrail_nodes_param_suffux}]]}
+                - name: get contrail control node ips
+                  shell: hiera -c /etc/puppet/hiera.yaml {{ contrail_nodes_param_name }}
+                  register: contrail_control_nodes_list
+                - name: turn contrail control ips into string
+                  set_fact:
+                    contrail_control_nodes_string: "{{ contrail_control_nodes_list.stdout | regex_replace('nil', '[]') | from_json | join(',') }}"
 
-            - name: node ips (names) param name
-              set_fact:
-                contrail_nodes_param_name: {list_join: ["_", ["contrail_analytics", {get_param: contrail_nodes_param_suffux}]]}
-            - name: get contrail analytics node ips
-              shell: hiera -c /etc/puppet/hiera.yaml {{ contrail_nodes_param_name }}
+            - name: get external contrail analytics node ips
+              shell: hiera -c /etc/puppet/hiera.yaml contrail_analytics_ips
               register: contrail_analytics_nodes_list
-            - name: turn contrail analytics ips into string
+            - name: set contrail analytics ips
               set_fact:
-                contrail_analytics_nodes_string: "{{ contrail_analytics_nodes_list.stdout | regex_replace('nil', '[]') | from_json | join(',') }}"
+                contrail_analytics_nodes_string: "{{ contrail_analytics_nodes_list.stdout | regex_replace('nil', '') }}"
+            - when: contrail_analytics_nodes_string == ''
+              block:
+                - name: analytics node ips (names) param name
+                  set_fact:
+                    contrail_nodes_param_name: {list_join: ["_", ["contrail_analytics", {get_param: contrail_nodes_param_suffux}]]}
+                - name: get contrail analytics node ips
+                  shell: hiera -c /etc/puppet/hiera.yaml {{ contrail_nodes_param_name }}
+                  register: contrail_analytics_nodes_list
+                - name: turn contrail analytics ips into string
+                  set_fact:
+                    contrail_analytics_nodes_string: "{{ contrail_analytics_nodes_list.stdout | regex_replace('nil', '[]') | from_json | join(',') }}"
 
-            - name: node ips (names) param name
+            - name: snmp node ips (names) param name
               set_fact:
                 contrail_nodes_param_name: {list_join: ["_", ["contrail_analytics_snmp", {get_param: contrail_nodes_param_suffux}]]}
             - name: get contrail analytics snmp node ips
@@ -680,7 +679,7 @@ outputs:
               set_fact:
                 contrail_analytics_snmp_nodes_string: "{{ contrail_analytics_snmp_nodes_list.stdout | regex_replace('nil', '[]') | from_json | join(',') }}"
 
-            - name: node ips (names) param name
+            - name: alarm node ips (names) param name
               set_fact:
                 contrail_nodes_param_name: {list_join: ["_", ["contrail_analytics_alarm", {get_param: contrail_nodes_param_suffux}]]}
             - name: get contrail analytics alarm node ips
@@ -690,7 +689,7 @@ outputs:
               set_fact:
                 contrail_analytics_alarm_nodes_string: "{{ contrail_analytics_alarm_nodes_list.stdout | regex_replace('nil', '[]') | from_json | join(',') }}"
 
-            - name: node ips (names) param name
+            - name: analytics db node ips (names) param name
               set_fact:
                 contrail_nodes_param_name: {list_join: ["_", ["contrail_analytics_database", {get_param: contrail_nodes_param_suffux}]]}
             - name: get contrail analytics database node ips
@@ -699,6 +698,7 @@ outputs:
             - name: turn contrail analytics database ips into string
               set_fact:
                 contrail_analytics_database_nodes_string: "{{ contrail_analytics_database_nodes_list.stdout | regex_replace('nil', '[]') | from_json | join(',') }}"
+
             - name: kafka services specific node ips param name
               set_fact:
                 contrail_nodes_param_name: {list_join: ["_", [*contrail_kafka_service_name, {get_param: contrail_nodes_param_suffux}]]}
@@ -708,6 +708,7 @@ outputs:
             - name: turn contrail service specific node ips into string
               set_fact:
                 contrail_kafka_service_nodes_string: "{{ contrail_service_nodes_list.stdout | regex_replace('nil', '[]') | from_json | join(',')  }}"
+
             - name: write contrail config node ips to environment file
               lineinfile:
                 dest: *contrail_common_env_file
