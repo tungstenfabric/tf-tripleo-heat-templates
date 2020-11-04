@@ -302,14 +302,15 @@
     - OS::TripleO::Services::CACerts
     - OS::TripleO::Services::CertmongerUser
     - OS::TripleO::Services::Collectd
+    - OS::TripleO::Services::ContainersLogrotateCrond
     - OS::TripleO::Services::Docker
-    - OS::TripleO::Services::Podman
     - OS::TripleO::Services::Ec2Api
     - OS::TripleO::Services::IpaClient
     - OS::TripleO::Services::Ipsec
     - OS::TripleO::Services::Kernel
     - OS::TripleO::Services::LoginDefs
-    - OS::TripleO::Services::ContainersLogrotateCrond
+    - OS::TripleO::Services::Rhsm
+    - OS::TripleO::Services::Podman
     - OS::TripleO::Services::Snmp
     - OS::TripleO::Services::Sshd
     - OS::TripleO::Services::Timesync
@@ -348,16 +349,17 @@
     - OS::TripleO::Services::CACerts
     - OS::TripleO::Services::CertmongerUser
     - OS::TripleO::Services::Collectd
+    - OS::TripleO::Services::ContainersLogrotateCrond
+    - OS::TripleO::Services::ContrailCertmongerUser
+    - OS::TripleO::Services::ContrailControlOnly
     - OS::TripleO::Services::Docker
-    - OS::TripleO::Services::Podman
     - OS::TripleO::Services::Ec2Api
     - OS::TripleO::Services::IpaClient
     - OS::TripleO::Services::Ipsec
     - OS::TripleO::Services::Kernel
     - OS::TripleO::Services::LoginDefs
-    - OS::TripleO::Services::ContainersLogrotateCrond
-    - OS::TripleO::Services::ContrailCertmongerUser
-    - OS::TripleO::Services::ContrailControlOnly
+    - OS::TripleO::Services::Podman
+    - OS::TripleO::Services::Rhsm
     - OS::TripleO::Services::Snmp
     - OS::TripleO::Services::Sshd
     - OS::TripleO::Services::Timesync
