@@ -292,6 +292,12 @@ outputs:
           - set_auth_ca_file
           - contrail::auth_ca_file: {get_param: InternalTLSCAFile}
           - null
+        - contrail_config_vip:
+            str_replace:
+              template:
+                "%{hiera('cloud_name_$NETWORK')}"
+              params:
+                $NETWORK: {get_param: [ServiceNetMap, ContrailConfigNetwork]}
         - if:
             - contrail_config_ips_unset
             - null
@@ -397,7 +403,10 @@ outputs:
       contrail_base_volumes: &contrail_base_volumes
         list_concat:
           - {get_attr: [ContainersCommon, volumes]}
-          - - /etc/contrail/ssl:/etc/contrail/ssl:z
+          - - if:
+                - contrail_ipa_ca
+                - /etc/contrail/ssl:/etc/contrail/ssl:ro
+                - /etc/contrail/ssl:/etc/contrail/ssl:z
             - /var/crashes:/var/crashes:z
             - /var/log/containers/contrail:/var/log/contrail:z
             - list_join:
