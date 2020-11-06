@@ -78,7 +78,7 @@ parameter_defaults:
 
   NeutronApiOptVolumes:
     - '/var/lib/contrail/plugin_contrail_neutron:/opt/plugin:ro'
-    - '/etc/contrail/ssl:/etc/contrail/ssl:z'
+    - '/etc/contrail/ssl:/etc/contrail/ssl:ro'
   NeutronApiOptEnvVars:
       PYTHONPATH: '/opt/plugin/python3/site-packages'
   NovaComputeOptEnvVars:
@@ -91,7 +91,7 @@ parameter_defaults:
     - /var/lib/contrail/vif_plug_vrouter:/usr/lib/python3.6/site-packages/vif_plug_vrouter:ro
     - /var/lib/contrail/vif_plug_contrail_vrouter:/usr/lib/python3.6/site-packages/vif_plug_contrail_vrouter:ro
   HeatEngineOptVolumes:
-    - '/etc/contrail/ssl:/etc/contrail/ssl:z'
+    - '/etc/contrail/ssl:/etc/contrail/ssl:ro'
     - '/var/lib/contrail/plugin_contrail_heat:/opt/plugin:ro'
   HeatEngineOptEnvVars:
       PYTHONPATH: '/opt/plugin/python3/site-packages'
