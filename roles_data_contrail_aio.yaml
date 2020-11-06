@@ -259,6 +259,7 @@
     - OS::TripleO::Services::LoginDefs
     - OS::TripleO::Services::Ntp
     - OS::TripleO::Services::ContainersLogrotateCrond
+    - OS::TripleO::Services::Rhsm
     - OS::TripleO::Services::Snmp
     - OS::TripleO::Services::Sshd
     - OS::TripleO::Services::Timezone
@@ -304,6 +305,7 @@
     - OS::TripleO::Services::ContainersLogrotateCrond
     - OS::TripleO::Services::ContrailCertmongerUser
     - OS::TripleO::Services::ContrailControlOnly
+    - OS::TripleO::Services::Rhsm
     - OS::TripleO::Services::Snmp
     - OS::TripleO::Services::Sshd
     - OS::TripleO::Services::Timezone
@@ -499,6 +501,7 @@
     - OS::TripleO::Services::LoginDefs
     - OS::TripleO::Services::Ntp
     - OS::TripleO::Services::ContainersLogrotateCrond
+    - OS::TripleO::Services::Rhsm
     - OS::TripleO::Services::Snmp
     - OS::TripleO::Services::Sshd
     - OS::TripleO::Services::Timezone
