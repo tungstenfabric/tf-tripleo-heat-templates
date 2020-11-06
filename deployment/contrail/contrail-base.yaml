@@ -190,6 +190,30 @@ conditions:
       yaql:
         expression: $.data.split(":")[-1].matches("5\.0")
         data: {get_param: ContrailImageTag}
+  is_latest:
+    or:
+      - yaql:
+          expression: $.data.matches(".*dev.*")
+          data: {get_param: ContrailImageTag}
+      - yaql:
+          expression: $.data.matches(".*latest.*")
+          data: {get_param: ContrailImageTag}
+      - yaql:
+          expression: $.data.matches(".*master.*")
+          data: {get_param: ContrailImageTag}
+  is_2011_or_latest:
+    or:
+      - is_latest
+      - and:
+        - not:
+            yaql:
+              expression: $.data.split(".").select($.split("-")).flatten().where($.matches("^[0-9]{4,}$")).where(int($) < 2011).any()
+              data: {get_param: ContrailImageTag}
+        - not:
+            yaql:
+              expression: $.data.split(".").select($.split("-")).flatten().where($.matches("^r[0-9]{4}$")).where(int($.substring(-4)) < 2011).any()
+              data: {get_param: ContrailImageTag}
+
   contrail_config_ips_unset: {equals: [{get_param: ContrailConfigIPs}, []]}
   contrail_control_ips_unset: {equals: [{get_param: ContrailControlIPs}, []]}
   contrail_analytics_ips_unset: {equals: [{get_param: ContrailAnalyticsIPs}, []]}
@@ -397,7 +421,12 @@ outputs:
       contrail_base_volumes: &contrail_base_volumes
         list_concat:
           - {get_attr: [ContainersCommon, volumes]}
-          - - /etc/contrail/ssl:/etc/contrail/ssl:z
+          - - if:
+                - and:
+                    - contrail_ipa_ca
+                    - is_2011_or_latest
+                - /etc/contrail/ssl:/etc/contrail/ssl:ro
+                - /etc/contrail/ssl:/etc/contrail/ssl:z
             - /var/crashes:/var/crashes:z
             - /var/log/containers/contrail:/var/log/contrail:z
             - list_join:

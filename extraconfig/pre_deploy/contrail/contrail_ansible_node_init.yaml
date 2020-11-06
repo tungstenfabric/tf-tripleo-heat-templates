@@ -81,7 +81,7 @@
     - name: Add SSL folder for self-signed cert management
       block:
         - set_fact:
-            node_init_volumes: "{{ node_init_volumes + ['/etc/contrail/ssl:/etc/contrail/ssl'] }}"
+            node_init_volumes: "{{ node_init_volumes + ['/etc/contrail/ssl:/etc/contrail/ssl:z'] }}"
 
         - set_fact:
             node_init_env_vars: "{{ node_init_env_vars | combine({item.key: item.value}) }}"
