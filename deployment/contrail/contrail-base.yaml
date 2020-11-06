@@ -397,7 +397,10 @@ outputs:
       contrail_base_volumes: &contrail_base_volumes
         list_concat:
           - {get_attr: [ContainersCommon, volumes]}
-          - - /etc/contrail/ssl:/etc/contrail/ssl:z
+          - - if:
+                - contrail_ipa_ca
+                - /etc/contrail/ssl:/etc/contrail/ssl:ro
+                - /etc/contrail/ssl:/etc/contrail/ssl:z
             - /var/crashes:/var/crashes:z
             - /var/log/containers/contrail:/var/log/contrail:z
             - list_join:
