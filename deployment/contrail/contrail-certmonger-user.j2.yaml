@@ -61,7 +61,7 @@ resources:
       value:
         - ctlplane
 {%- for network in networks %}
-  {%- if network.name_lower not in ( 'external', 'management', 'storage', 'storagemgmt' ) %}
+  {%- if network.name_lower not in ( 'external', 'management', 'storage', 'storagemgmt', 'storage_mgmt' ) %}
         - {{network.name_lower}}
   {%- endif %}
 {%- endfor %}
@@ -107,6 +107,7 @@ outputs:
                     for_each:
                       NAME: {get_attr: [DnsNamesInCert, value]}
             - {}
+
       metadata_settings:
         if:
           - contrail_ipa_ca
@@ -118,5 +119,20 @@ outputs:
               for_each:
                 NETWORK: {get_attr: [ContrailNetworks, value]}
           - null
+
       step_config: |
         include ::tripleo::network::contrail::certmonger_user
+
+      upgrade_tasks:
+        # after leapp upgrade somehow certmonger cannot access to old cert files
+        # and rewrite them (https://contrail-jws.atlassian.net/browse/CEM-20467)
+        - name: Contral Certmonger upgrade tasks
+          when: step|int == 0
+          block:
+            - name: Fix selinux perms for Contrail ssl folder
+              shell: |
+                #!/bin/bash -x
+                mkdir -m 750 -p /etc/contrail/ssl
+                chcon -R -t cert_t /etc/contrail/ssl
+                semanage fcontext -a -t cert_t "/etc/contrail/ssl(/.*)?" || true
+              ignore_errors: true
