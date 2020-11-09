@@ -1,0 +1,126 @@
+heat_template_version: rocky
+
+description: >
+  OpenStack LLDP service for Contrail ML2 plugin and Fabric management
+
+parameters:
+  EndpointMap:
+    default: {}
+    description: Mapping of service endpoint -> protocol. Typically set
+                 via parameter_defaults in the resource registry.
+    type: json
+  ServiceData:
+    default: {}
+    description: Dictionary packing service data
+    type: json
+  ServiceNetMap:
+    default: {}
+    description: Mapping of service_name -> network name. Typically set
+                 via parameter_defaults in the resource registry.  This
+                 mapping overrides those in ServiceNetMapDefaults.
+    type: json
+  DefaultPasswords:
+    type: json
+  RoleName:
+    default: ''
+    description: Role name on which the service is applied
+    type: string
+  RoleParameters:
+    default: {}
+    description: Parameters specific to the role
+    type: json
+  NeutronPhysicalDevMappings:
+    description: >
+      List of <physical_network>:<physical device>
+      All physical networks listed in network_vlan_ranges
+      on the server should have mappings to appropriate
+      interfaces on each agent.
+      Example "tenant0:ens2f0,tenant1:ens2f1"
+    type: comma_delimited_list
+    default: ""
+    tags:
+      - role_specific
+  ContrailDataNetworks:
+    description: >
+      List of network names that are not management networks and are to be 
+      handled by ML2 plugin as data networks
+    type: comma_delimited_list
+    default: ['tenant']
+  ContrailManagementPortTags:
+    default: ''
+    description:  List tags for the ports that are connected to management RHOSP networks (
+                  provisioning(ctlplane), internal api, external, storage, storagemgmt)
+    type: comma_delimited_list
+  ContrailDataPortTags:
+    default: ''
+    description: List tags for the ports that are connected to RHOSP data networks (tenant)
+    type: comma_delimited_list
+
+resources:
+  # Merging role-specific parameters (RoleParameters) with the default parameters.
+  # RoleParameters will have the precedence over the default parameters.
+  RoleParametersValue:
+    type: OS::Heat::Value
+    properties:
+      type: json
+      value:
+        map_replace:
+          - map_replace:
+            - physical_device_mappings: NeutronPhysicalDevMappings
+            - values: {get_param: [RoleParameters]}
+          - values:
+              NeutronPhysicalDevMappings: {get_param: NeutronPhysicalDevMappings}
+
+  ContrailManagementNetworksValue:
+    type: OS::Heat::Value
+    properties:
+      value:
+        yaql:
+          expression: $.data.net_cidrs.deleteAll(list($.data.data_networks).flatten()).values().join(",")
+          data:
+            data_networks: {get_param: ContrailDataNetworks}
+            net_cidrs: {get_param: [ServiceData, net_cidr_map]}
+
+outputs:
+  role_data:
+    description: Role data for the Contrail Neutron Plugin role.
+    value:
+      service_name: contrail_lldp
+      config_settings:
+        contrail_management_port_tags: {get_param: ContrailManagementPortTags}
+        contrail_data_port_tags: {get_param: ContrailDataPortTags}
+      metadata_settings: []
+      puppet_config: {}
+      kolla_config: {}
+      docker_config: {}
+      host_prep_tasks:
+        - name: ensure lldpd is installed
+          package:
+            name: "{{ item }}"
+            state: present
+          with_items:
+            - lldpd
+            - python3-psutil
+        - name: prepare tmp directory for contrail tools
+          file:
+            state: directory
+            path: /tmp/contrail
+        - name: copy setup_lldp.py to node
+          copy:
+            mode: 0755
+            content: {get_file: ../../tools/contrail/setup_lldp.py}
+        - name: configure lldpd config
+          script: /tmp/contrail/setup_lldp.py
+          environment:
+            SRIOV_NETWORK_MAPPINGS:
+              yaql:
+                expression: list($.data).flatten().join(",")
+                data: {get_attr: [RoleParametersValue, value, physical_device_mappings]}
+            MANAGEMENT_NETWORKS: {get_attr: [ContrailManagementNetworksValue, value]}
+          args:
+            executable: python3
+        - name: Ensure lldpd is enabled and restarted
+          systemd:
+            state: restarted
+            name: lldpd
+            enabled: true
