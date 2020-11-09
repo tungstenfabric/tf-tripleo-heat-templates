@@ -34,7 +34,7 @@ parameters:
     tags:
       - role_specific
   IsolCpusList:
-    default: ""
+    default: "1,2"
     type: string
     description: >
       List of logical CPU ids whic need to be isolated from the host processes.
