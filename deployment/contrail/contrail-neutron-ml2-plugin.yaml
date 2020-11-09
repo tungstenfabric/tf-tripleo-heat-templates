@@ -121,7 +121,6 @@ outputs:
               - null
               - neutron_api:
                   neutron::server::service_providers: {get_param: NeutronServiceProviders}
-      # BEGIN DOCKER SETTINGS
       puppet_config:
         config_volume: 'neutron'
         puppet_tags: {list_join: [',', [{get_param: NeutronPluginMl2PuppetTags}, 'ini_setting,create_ini_settings,inifile']]}
