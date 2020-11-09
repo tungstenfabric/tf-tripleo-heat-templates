@@ -44,18 +44,9 @@ parameter_defaults:
   ContrailDpdkCount: 0
   ContrailSriovCount: 0
   NeutronMetadataProxySharedSecret: secret
-# enable public juniper registry
-#  ContrailRegistry: hub.juniper.net/contrail
-#  ContrailRegistryUser: YOURUSER
-#  ContrailRegistryPassword: YOURPASSWORD
-# enable insecure registry
-#  ContrailRegistryInsecure: true
-#  DockerInsecureRegistryAddress: 10.87.64.32:5000,192.168.24.1:8787
-#  ContrailRegistry: 10.87.64.32:5000
-# Including images with specific registry and tag is supported
-# DockerContrailVrouterAgentImageName: 192.168.24.1:8787/contrail-vrouter-agent:master-rhel
-# enable private secure registry
-  ContrailRegistryCertUrl: http://satellite.englab.juniper.net/pub/satellite.englab.juniper.net.crt
+#  DockerInsecureRegistryAddress:
+#    - 10.87.64.32:5000
+#    - 192.168.24.1:8787
   ContrailRegistry: satellite.englab.juniper.net:5443
   ContrailImageTag: latest
 

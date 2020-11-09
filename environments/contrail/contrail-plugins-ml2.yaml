@@ -1,7 +1,6 @@
 
 resource_registry:
   OS::TripleO::Services::NeutronCorePlugin: ../../deployment/contrail/contrail-neutron-ml2-plugin.yaml
-
   OS::TripleO::ControllerExtraConfigPre: ../../extraconfig/pre_deploy/contrail/contrail-node-init.yaml
   
   # SRIOV types
