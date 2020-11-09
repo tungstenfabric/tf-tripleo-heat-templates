@@ -1,8 +1,8 @@
 
 resource_registry:
   OS::TripleO::Services::NeutronCorePlugin: ../../deployment/contrail/contrail-neutron-ml2-plugin.yaml
+
   OS::TripleO::ControllerExtraConfigPre: ../../extraconfig/pre_deploy/contrail/contrail-node-init.yaml
-  OS::TripleO::Controller::NodeUserData: ../../firstboot/contrail/contrail_container_registry.yaml
   
   # SRIOV types
   OS::TripleO::Services::NeutronSriovAgent: ../../deployment/neutron/neutron-sriov-agent-container-puppet.yaml
@@ -109,13 +109,17 @@ parameter_defaults:
     - '/var/lib/contrail/plugin_contrail_neutron:/opt/plugin:ro'
     - '/etc/contrail/ssl:/etc/contrail/ssl:ro'
   NeutronApiOptEnvVars:
-      PYTHONPATH: '/opt/plugin/site-packages:/opt/plugin/python3/site-packages'
+    PYTHONPATH: '/opt/plugin/site-packages:/opt/plugin/python3/site-packages'
 
   # Ajust regsitry where Contrail containers are
   # (contrail-node-init and contrail-openstack-neutron-ml2-init)
   ContrailRegistry: '192.168.24.10:8787'
   ContrailImageTag: 'latest'
   install_contrail_puppet: true
+
+  # Adjust to setup - undercloud address
+  # DockerInsecureRegistryAddress:
+  #   - 192.168.24.1:8787
 
   # Address of Contrail Config API in format: ip1,ip2
   # !!! Setup to correct IPs to point to existing Contrail cluster
