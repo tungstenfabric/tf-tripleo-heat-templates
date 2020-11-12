@@ -1,0 +1,21 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "5db600b6_aca514bb",
+        "filename": "deployment/contrail/contrail-base.yaml",
+        "patchSetId": 2
+      },
+      "lineNbr": 71,
+      "author": {
+        "id": 554
+      },
+      "writtenOn": "2020-11-12T16:02:16Z",
+      "side": 1,
+      "message": "Hi, can we change type of these fields to \u0027comma_delimited_list\u0027? With string I had a problems with passing it, tried:\n\n ContrailConfigIPs: ip,ip,ip\n\nor: \n\n ContrailConfigIPs: \"ip,ip,ip\"\n\nbut it fail once template is decoded to json:\n\n  Exception during message handling: ValueError: Value 172.16.0.21,172.16.0.22,172.16.0.23 must be valid JSON: Extra data: line 1 column 7 (char 6)\n\nalso tried:\n\n ContrailConfigIPs: [\"ip\",\"ip\",\"ip\"]\n\nbut this is interpreted as literal string.\n\nWhat seems to work is to set field type to \u0027comma_delimited_list\u0027 and later in the code:\n\n        - if:\n            - contrail_config_ips_unset\n            - null\n            - contrail_config_ips:\n                list_join:\n                  - \u0027,\u0027\n                  - {get_param: ContrailConfigIPs }",
+      "revId": "67f55e2fd9f5daa338f7fdaea96fce7ec1ed9326",
+      "serverId": "c72cd27d-1743-4a55-84a4-cd13b8400c52",
+      "unresolved": true
+    }
+  ]
+}
