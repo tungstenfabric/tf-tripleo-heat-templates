@@ -12,7 +12,7 @@ CONTRAIL_IMAGE_PREFIX=${CONTRAIL_IMAGE_PREFIX:-'contrail-'}
 #Containers which must be stopped before update procedure
 STOP_CONTAINERS=${STOP_CONTAINERS:-'contrail_config_api contrail_analytics_api'}
 
-SSH_USER=heat-admin
+SSH_USER=${SSH_USER:-'heat-admin'}
 #Specific identity key can be specified in SSH_OPTIONS
 #SSH_OPTIONS='-i ~/.ssh/id_rsa -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null'
 SSH_OPTIONS='-o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null'
