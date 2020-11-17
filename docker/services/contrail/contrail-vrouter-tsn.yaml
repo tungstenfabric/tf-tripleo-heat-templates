@@ -217,6 +217,8 @@ outputs:
             - name: Start contrail-vrouter-kernel-init container as post update
               shell: bash -c "docker start {{ vrouter_init_container_name_ansible }}"
             - name: Restart vhost0 interface
+              async: 120
+              poll: 5
               shell: bash -c 'ifdown vhost0; ifup vhost0; docker start contrail_vrouter_agent || true'
 
       fast_forward_upgrade_tasks:
