@@ -28,7 +28,7 @@ parameters:
     tags:
       - role_specific
   TunedProfileName:
-    default: ""
+    default: "cpu-partitioning"
     type: string
     description: Tuned Profile to apply to the host
     tags:
@@ -161,12 +161,9 @@ resources:
               hugepages_1gb: ContrailDpdkHugepages1GB
               dpdk_driver: ContrailDpdkDriver
               dpdk_options: ContrailDpdkOptions
-<<<<<<< HEAD   (1d8dc4 Non empty default cpu mask for dpdk)
-=======
               isol_cpu_list: IsolCpusList
               ps_blacklist: TunedPsBlackList
               tuned_profile: TunedProfileName
->>>>>>> CHANGE (2b3602 User non-empty global isol cpu list for dpdk)
             - values: {get_param: [RoleParameters]}
           - values:
               ContrailSettings: {get_param: ContrailSettings}
@@ -174,12 +171,9 @@ resources:
               ContrailDpdkHugepages1GB: {get_param: ContrailDpdkHugepages1GB}
               ContrailDpdkDriver: {get_param: ContrailDpdkDriver}
               ContrailDpdkOptions: {get_param: ContrailDpdkOptions}
-<<<<<<< HEAD   (1d8dc4 Non empty default cpu mask for dpdk)
-=======
               IsolCpusList: {get_param: IsolCpusList}
               TunedPsBlackList: {get_param: TunedPsBlackList}
               TunedProfileName: {get_param: TunedProfileName}
->>>>>>> CHANGE (2b3602 User non-empty global isol cpu list for dpdk)
 
   DpdkHostParametersConfig:
     type: OS::Heat::SoftwareConfig
@@ -297,15 +291,9 @@ resources:
         _CONTRAIL_HUGEPAGES_1GB_: {get_attr: [ContrailSettingsRoleParametersValue, value, hugepages_1gb]}
         _CONTRAIL_HUGEPAGES_2MB_: {get_attr: [ContrailSettingsRoleParametersValue, value, hugepages_2mb]}
         _KERNEL_ARGS_: {get_param: [RoleParameters, KernelArgs]}
-<<<<<<< HEAD   (1d8dc4 Non empty default cpu mask for dpdk)
-        _TUNED_PROFILE_NAME_: {get_param: [RoleParameters, TunedProfileName]}
-        _TUNED_CORES_: {get_param: [RoleParameters, IsolCpusList]}
-        _TUNED_PS_BLACKLIST_: {get_param: [RoleParameters, TunedPsBlackList]}
-=======
         _TUNED_PROFILE_NAME_: {get_attr: [ContrailSettingsRoleParametersValue, value, tuned_profile]}
         _TUNED_CORES_: {get_attr: [ContrailSettingsRoleParametersValue, value, isol_cpu_list]}
         _TUNED_PS_BLACKLIST_: {get_attr: [ContrailSettingsRoleParametersValue, value, ps_blacklist]}
->>>>>>> CHANGE (2b3602 User non-empty global isol cpu list for dpdk)
 
   RebootConfig:
     type: OS::Heat::SoftwareConfig
