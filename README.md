@@ -7,6 +7,7 @@ Currently the following combinations of Operating System/OpenStack/Deployer/Cont
 | CentOS 7.5        | RDO queens/stable | tripleo queens/stable | Tungsten Fabric latest |
 
 
+
 # Contrail Versions Notes
 
 5.0 and 5.1 have different incompatible containers layout.
