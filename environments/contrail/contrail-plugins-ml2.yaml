@@ -1,0 +1,130 @@
+
+resource_registry:
+  OS::TripleO::Services::NeutronCorePlugin: ../../docker/services/contrail/contrail-neutron-ml2-plugin.yaml
+  OS::TripleO::ControllerExtraConfigPre: ../../extraconfig/pre_deploy/contrail/contrail-node-init.yaml
+  OS::TripleO::Controller::NodeUserData: ../../firstboot/contrail/contrail_container_registry.yaml
+  
+  # SRIOV types
+  OS::TripleO::ComputeSriov::PreNetworkConfig: ../../extraconfig/pre_network/host_config_and_reboot.yaml
+  OS::TripleO::Services::NeutronSriovAgent: ../../docker/services/neutron-sriov-agent.yaml
+  OS::TripleO::Services::NeutronSriovHostConfig: ../../puppet/services/neutron-sriov-host-config.yaml
+
+parameter_defaults:
+  # Neutron config options
+  #
+  # core_plugin
+  NeutronCorePlugin: 'ml2'
+
+  # service_plugins
+  # NeutronServicePlugins: 'opencontrail-router'
+  NeutronServicePlugins: 'neutron.services.l3_router.l3_router_plugin.L3RouterPlugin'
+  
+  # neutron::server::service_providers
+  NeutronServiceProviders: ['L3_ROUTER_NAT:TF:networking_opencontrail.l3.service_provider.TFL3ServiceProvider']
+
+  # Neutron ML2 config options
+  # ml2/ml2_conf.ini: mechanism_drivers
+  NeutronMechanismDrivers: 'opencontrail,sriovnicswitch,openvswitch'
+  
+  # ml2/ml2_conf.ini: type_drivers
+  NeutronTypeDrivers: 'local,vlan'
+  
+  # ml2/ml2_conf.ini: tenant_network_types
+  NeutronNetworkType: 'local,vlan'
+
+  # The tunnel type for the tenant network (vxlan or gre).
+  # Set to '' to disable tunneling.
+  # ml2/openvswitch_agent.ini: tunnel_types
+  NeutronTunnelTypes: ''
+
+  # !!! Ajust according to the setup
+  # ml2/openvswitch_agent.ini: bridge_mappings
+  NeutronBridgeMappings:
+    - datacentre:br-ex
+    - tenant:br-vlans
+  # ml2/ml2_conf.ini: network_vlan_ranges
+  NeutronNetworkVLANRanges:
+    - tenant:1:1000
+
+  # Flavors for baremetal node selection
+  OvercloudControllerFlavor: 'control'
+  OvercloudComputeFlavor: 'compute'
+  OvercloudComputeSriovFlavor: compute-sriov
+
+  # Nodes counts
+  # !!! Ajust to the setup
+  ControllerCount: 1
+  ComputeCount: 0
+  ComputeSriovCount: 0
+
+  # If sriov enabled
+  # Nova filters
+  NovaSchedulerDefaultFilters: ['RetryFilter','AvailabilityZoneFilter','ComputeFilter','ComputeCapabilitiesFilter','ImagePropertiesFilter','ServerGroupAntiAffinityFilter','ServerGroupAffinityFilter','PciPassthroughFilter']
+  NovaSchedulerAvailableFilters: ["nova.scheduler.filters.all_filters","nova.scheduler.filters.pci_passthrough_filter.PciPassthroughFilter"]
+  
+  # Compute Sriov specific
+  # !!! ajust to the setup  
+  ComputeSriovParameters:
+    KernelArgs: "iommu=pt intel_iommu=on"
+    TunedProfileName: "virtual-host"
+    # ml2/openvswitch_agent.ini: bridge_mappings
+    NeutronBridgeMappings:
+      - datacentre:br-ex
+      - tenant:br-vlans
+      - tenant1:br-link1
+      - tenant2:br-link2
+    # ml2/ml2_conf.ini: network_vlan_ranges
+    NeutronNetworkVLANRanges:
+      - tenant:1:1000
+      - tenant1:1:1000
+      - tenant2:1:1000
+    # ml2/sriov_agent.ini: physical_device_mappings
+    NeutronPhysicalDevMappings:
+      - tenant1:eth4
+      - tenant2:eth5
+    NeutronSriovNumVFs:
+      - eth4:8
+      - eth5:8
+    # nova.conf: passthrough_whitelist
+    NovaPCIPassthrough:
+      - devname: "eth4"
+        physical_network: "tenant1"
+      - devname: "eth5"
+        physical_network: "tenant2"
+
+  # To make contrail ML2 plugin code available to neutron server
+  NeutronApiOptVolumes:
+    - 'opt_plugin:/opt/plugin'
+  NeutronApiOptEnvVars:
+    - 'PYTHONPATH=/opt/plugin/site-packages:/usr/lib/python2.7/site-packages'
+
+  # Ajust regsitry where Contrail containers are
+  # (contrail-node-init and contrail-openstack-neutron-ml2-init)
+  ContrailRegistry: '192.168.24.10:8787'
+  ContrailImageTag: 'latest'
+  install_contrail_puppet: true
+
+  # Address of Contrail Config API in format: ip1,ip2
+  # !!! Setup to correct IPs to point to existing Contrail cluster
+  ExternalContrailConfigIPs: ''
+  ContrailConfigPort: '8082'
+
+  # Tags for ML2 plugin to differentiate ports in RHOSP networks
+  # (should be same as used in servers discovery in Contrail Command)
+  # !!! Ajust if other values are used in Contrail Command during servers discovery
+  ContrailManagementPortTags:
+    - 'rhosp-provisioning'
+    - 'rhosp-external'
+    - 'rhosp-storage'
+    - 'rhosp-internal'
+    - 'rhosp-storage-mgmt'
+  ContrailDataPortTags:
+    - 'rhosp-data'
+
+  # Enable/Disable Device Manager integration
+  ContrailDmIntegration: true
+
+  # Contrail controller use keyston for auth
+  # it needs admin endpoint on same network as intenral endpoint
+  ServiceNetMap:
+    KeystoneAdminApiNetwork: internal_api
