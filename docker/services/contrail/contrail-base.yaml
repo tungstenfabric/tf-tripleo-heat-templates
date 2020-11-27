@@ -68,19 +68,19 @@ parameters:
     type: string
     default: '8082'
     description: Config API port
-  ContrailConfigIPs:
+  ExternalContrailConfigIPs:
     description:  Comma separated list of Contrail Config API servers.
                   The servers that are not part of the RHOSP voercloud cluster and
                   deployed separatly.
     default: []
     type: comma_delimited_list
-  ContrailControlIPs:
+  ExternalContrailControlIPs:
     description:  Comma separated list of Contrail Control servers.
                   The servers that are not part of the RHOSP voercloud cluster and
                   deployed separatly.
     default: []
     type: comma_delimited_list
-  ContrailAnalyticsIPs:
+  ExternalContrailAnalyticsIPs:
     description:  Comma separated list of Contrail Analytics servers.
                   The servers that are not part of the RHOSP voercloud cluster and
                   deployed separatly.
@@ -213,9 +213,9 @@ conditions:
             yaql:
               expression: $.data.split(".").select($.split("-")).flatten().where($.matches("^r[0-9]{4}$")).where(int($.substring(-4)) < 2011).any()
               data: {get_param: ContrailImageTag}
-  contrail_config_ips_unset: {equals: [{get_param: ContrailConfigIPs}, []]}
-  contrail_control_ips_unset: {equals: [{get_param: ContrailControlIPs}, []]}
-  contrail_analytics_ips_unset: {equals: [{get_param: ContrailAnalyticsIPs}, []]}
+  contrail_config_ips_unset: {equals: [{get_param: ExternalContrailConfigIPs}, []]}
+  contrail_control_ips_unset: {equals: [{get_param: ExternalContrailControlIPs}, []]}
+  contrail_analytics_ips_unset: {equals: [{get_param: ExternalContrailAnalyticsIPs}, []]}
   public_tls_enabled:
     or:
       - not: {equals: [{get_param: SSLCertificate}, '']}
@@ -323,15 +323,15 @@ outputs:
         - if:
             - contrail_config_ips_unset
             - null
-            - contrail_config_ips: {list_join: [',', {get_param: ContrailConfigIPs}]}
+            - contrail_config_ips: {list_join: [',', {get_param: ExternalContrailConfigIPs}]}
         - if:
             - contrail_control_ips_unset
             - null
-            - contrail_control_ips: {list_join: [',', {get_param: ContrailControlIPs}]}
+            - contrail_control_ips: {list_join: [',', {get_param: ExternalContrailControlIPs}]}
         - if:
             - contrail_analytics_ips_unset
             - null
-            - contrail_analytics_ips: {list_join: [',', {get_param: ContrailAnalyticsIPs}]}
+            - contrail_analytics_ips: {list_join: [',', {get_param: ExternalContrailAnalyticsIPs}]}
       haproxy_config_settings_member_options: &haproxy_config_settings_member_options
           - 'check'
           - 'inter 2000'

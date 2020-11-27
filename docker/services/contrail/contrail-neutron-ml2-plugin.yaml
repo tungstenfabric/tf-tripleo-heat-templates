@@ -45,7 +45,7 @@ parameters:
     default: 'neutron_plugin_ml2'
     description: Puppet resource tag names that are used to generate config files with puppet
     type: string
-  ContrailConfigIPs:
+  ExternalContrailConfigIPs:
     description:  Comma separated list of Contrail API servers.
                   The servers that are not part of the RHOSP voercloud cluster and
                   deployed separatly.
@@ -65,7 +65,7 @@ parameters:
     type: comma_delimited_list
 
 conditions:
-  contrail_config_ips_unset: {equals: [{get_param: ContrailConfigIPs}, '']}
+  contrail_config_ips_unset: {equals: [{get_param: ExternalContrailConfigIPs}, '']}
   neutron_service_providers_unset:
     or: 
       - {equals: [{get_param: NeutronServiceProviders}, '']}
@@ -112,7 +112,7 @@ outputs:
           - if:
               - contrail_config_ips_unset
               - null
-              - contrail_config_ips: {get_param: ContrailConfigIPs}
+              - contrail_config_ips: {get_param: ExternalContrailConfigIPs}
       service_config_settings:
         map_merge:
           - get_attr: [NeutronBase, role_data, service_config_settings]

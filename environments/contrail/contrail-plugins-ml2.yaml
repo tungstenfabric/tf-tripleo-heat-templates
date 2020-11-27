@@ -107,7 +107,7 @@ parameter_defaults:
 
   # Address of Contrail Config API in format: ip1,ip2
   # !!! Setup to correct IPs to point to existing Contrail cluster
-  ContrailConfigIPs: ''
+  ExternalContrailConfigIPs: ''
   ContrailConfigPort: '8082'
 
   # Tags for ML2 plugin to differentiate ports in RHOSP networks
