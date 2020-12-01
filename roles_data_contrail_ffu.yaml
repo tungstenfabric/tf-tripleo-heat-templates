@@ -8,7 +8,8 @@
   description: |
     Controller role that has all the controler services loaded and handles
     Database, Messaging and Network functions.
-  CountDefault: 1
+  disable_constraints: False
+  CountDefault: 0
   tags:
     - primary
     - controller
@@ -171,7 +172,8 @@
 - name: Compute
   description: |
     Basic Compute Node role
-  CountDefault: 1
+  disable_constraints: False
+  CountDefault: 0
   networks:
     - InternalApi
     - Tenant
@@ -235,7 +237,8 @@
   description: |
     ContrailController role that has config and control Contrail services
     loaded and handles config, control and webui functions
-  CountDefault: 1
+  disable_constraints: False
+  CountDefault: 0
   tags:
     - primary
     - contrailcontroller
@@ -256,6 +259,7 @@
     - OS::TripleO::Services::LoginDefs
     - OS::TripleO::Services::Ntp
     - OS::TripleO::Services::ContainersLogrotateCrond
+    - OS::TripleO::Services::Rhsm
     - OS::TripleO::Services::Snmp
     - OS::TripleO::Services::Sshd
     - OS::TripleO::Services::Timezone
@@ -272,7 +276,8 @@
 - name: ContrailAnalytics
   description: |
     ContrailAnalytics role that has the Contrail analytics services loaded
-  CountDefault: 1
+  disable_constraints: False
+  CountDefault: 0
   tags:
     - primary
     - contrailanalytics
@@ -293,6 +298,7 @@
     - OS::TripleO::Services::LoginDefs
     - OS::TripleO::Services::Ntp
     - OS::TripleO::Services::ContainersLogrotateCrond
+    - OS::TripleO::Services::Rhsm
     - OS::TripleO::Services::Snmp
     - OS::TripleO::Services::Sshd
     - OS::TripleO::Services::Timezone
@@ -308,7 +314,8 @@
 - name: ContrailAnalyticsDatabase
   description: |
     ContrailAnalyticsDatabase role that has all the Contrail analytics DB services loaded
-  CountDefault: 1
+  disable_constraints: False
+  CountDefault: 0
   tags:
     - primary
     - contrailanalyticsdatabase
@@ -329,6 +336,7 @@
     - OS::TripleO::Services::LoginDefs
     - OS::TripleO::Services::Ntp
     - OS::TripleO::Services::ContainersLogrotateCrond
+    - OS::TripleO::Services::Rhsm
     - OS::TripleO::Services::Snmp
     - OS::TripleO::Services::Sshd
     - OS::TripleO::Services::Timezone
@@ -343,6 +351,7 @@
   description: |
     ContrailController role that has all the Contrail controler services loaded
     and handles config, control and webui functions
+  disable_constraints: False
   CountDefault: 0
   tags:
     - primary
@@ -366,6 +375,7 @@
     - OS::TripleO::Services::ContainersLogrotateCrond
     - OS::TripleO::Services::ContrailCertmongerUser
     - OS::TripleO::Services::ContrailControlOnly
+    - OS::TripleO::Services::Rhsm
     - OS::TripleO::Services::Snmp
     - OS::TripleO::Services::Sshd
     - OS::TripleO::Services::Timezone
@@ -377,6 +387,7 @@
 - name: ContrailDpdk
   description: |
     Contrail Dpdk Node role
+  disable_constraints: False
   CountDefault: 0
   tags:
     - contraildpdk
@@ -396,10 +407,10 @@
     - OS::TripleO::Services::Collectd
     - OS::TripleO::Services::ContrailCertmongerUser
     - OS::TripleO::Services::ContrailDpdk
-    - OS::TripleO::Services::ContrailIssuCompute
     - OS::TripleO::Services::ComputeCeilometerAgent
     - OS::TripleO::Services::ComputeNeutronL3Agent
     - OS::TripleO::Services::ComputeNeutronMetadataAgent
+    - OS::TripleO::Services::ContrailIssuCompute
     - OS::TripleO::Services::ContainersLogrotateCrond
     - OS::TripleO::Services::Docker
     - OS::TripleO::Services::Fluentd
@@ -431,6 +442,7 @@
 - name: ContrailSriov
   description: |
     Contrail Sriov Node role
+  disable_constraints: False
   CountDefault: 0
   tags:
     - contrailsriov
@@ -505,10 +517,10 @@
     - OS::TripleO::Services::Collectd
     - OS::TripleO::Services::ContrailCertmongerUser
     - OS::TripleO::Services::ContrailTsn
-    - OS::TripleO::Services::ContrailIssuCompute
     - OS::TripleO::Services::ComputeCeilometerAgent
     - OS::TripleO::Services::ComputeNeutronL3Agent
     - OS::TripleO::Services::ComputeNeutronMetadataAgent
+    - OS::TripleO::Services::ContrailIssuCompute
     - OS::TripleO::Services::Docker
     - OS::TripleO::Services::Fluentd
     - OS::TripleO::Services::IpaClient
@@ -539,7 +551,10 @@
 # Role: ContrailIssu
 ###############################################################################
 - name: ContrailControllerIssu
+  disable_constraints: False
   CountDefault: 0
+  tags:
+    - contrailissu
   networks:
     - InternalApi
     - Tenant
@@ -556,6 +571,7 @@
     - OS::TripleO::Services::LoginDefs
     - OS::TripleO::Services::Ntp
     - OS::TripleO::Services::ContainersLogrotateCrond
+    - OS::TripleO::Services::Rhsm
     - OS::TripleO::Services::Snmp
     - OS::TripleO::Services::Sshd
     - OS::TripleO::Services::Timezone
