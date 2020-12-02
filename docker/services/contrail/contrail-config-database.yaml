@@ -187,9 +187,12 @@ outputs:
         "/etc/contrail/common_config_database.env"
       contrail_rabbit_internal_log_path: &contrail_rabbit_internal_log_path
         if:
-          - is_2008_or_latest
-          - '/var/log/rabbitmq'
-          - '/var/log/contrail/rabbitmq'
+          - is_not_5_0
+          - if:
+              - is_2008_or_latest
+              - '/var/log/rabbitmq'
+              - '/var/log/contrail/rabbitmq'
+          - '/var/log/contrail'
       docker_config:
         step_2:
           get_attr: [ContrailBase, role_data, docker_config, step_2]
@@ -205,7 +208,9 @@ outputs:
               list_concat:
                 - get_attr: [ContrailBase, role_data, contrail_base_volumes]
                 - if:
-                  - rabbitmq_log_keep_default
+                  - or:
+                      - rabbitmq_log_keep_default
+                      - not: is_not_5_0
                   - []
                   - - list_join:
                         - ':'
