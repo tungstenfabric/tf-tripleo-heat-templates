@@ -88,9 +88,12 @@ if [[ -n ${missing} ]]; then
   exit 1
 fi
 
-topology_name='contrail-analytics-snmp-topology'
-if echo "$tag" | grep -q '5\.0' ; then
+is_5_0=$(echo "$tag" | grep -c '5\.0')
+
+if [[ $is_5_0 == 1 ]] ; then
   topology_name='contrail-analytics-topology'
+else
+  topology_name='contrail-analytics-snmp-topology'
 fi
 
 function is_less_than() {
@@ -126,6 +129,12 @@ is_5_x=$(awk '{
   };
   print 0;
 }' <<< $tag)
+
+if [[ "$is_5_x" == 0 ]] ; then
+  stunnel=''
+else
+  stunnel='DockerContrailStunnelImageName:contrail-external-stunnel'
+fi
 
 # Check if tag contains numbers less than 2002
 is_less_2002=$(is_less_than $tag 2002)
@@ -167,7 +176,6 @@ DockerContrailNodemgrImageName:contrail-nodemgr
 DockerContrailNovaPluginImageName:contrail-openstack-compute-init
 DockerContrailRabbitmqImageName:contrail-external-rabbitmq
 DockerContrailRedisImageName:contrail-external-redis
-DockerContrailStunnelImageName:contrail-external-stunnel
 DockerContrailStatusImageName:contrail-status
 DockerContrailVrouterAgentContainerName:contrail-vrouter-agent
 DockerContrailVrouterAgentDpdkContainerName:contrail-vrouter-agent-dpdk
@@ -177,6 +185,7 @@ DockerContrailVrouterKernelInitImageName:contrail-vrouter-kernel-init
 DockerContrailWebuiJobImageName:contrail-controller-webui-job
 DockerContrailWebuiWebImageName:contrail-controller-webui-web
 DockerContrailZookeeperImageName:contrail-external-zookeeper
+${stunnel}
 ${provisioner}
 ${contrail_tools}
 )
