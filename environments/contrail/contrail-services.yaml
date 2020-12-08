@@ -128,8 +128,8 @@ parameter_defaults:
 #    TunedProfileName: "cpu-partitioning"
 #    IsolCpusList: "3-20"
     NovaPCIPassthrough:
-      - devname: "ens2f1"
+      - devname: "ens2f3"
         physical_network: "sriov1"
-    ContrailSriovNumVFs: ["ens2f1:7"]
+    ContrailSriovNumVFs: ["ens2f3:7"]
     ContrailSriovHugepages1GB: 10
 
