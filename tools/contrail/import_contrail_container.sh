@@ -130,7 +130,7 @@ is_5_x=$(awk '{
   print 0;
 }' <<< $tag)
 
-if [[ "$is_5_x" == 0 ]] ; then
+if [[ "$is_5_x" == 1 ]] ; then
   stunnel=''
 else
   stunnel='DockerContrailStunnelImageName:contrail-external-stunnel'
