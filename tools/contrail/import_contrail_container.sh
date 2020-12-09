@@ -130,7 +130,7 @@ is_5_x=$(awk '{
   print 0;
 }' <<< $tag)
 
-if [[ "$is_5_x" == 0 ]] ; then
+if [[ "$is_5_x" == 1 ]] ; then
   stunnel=''
 else
   stunnel='DockerContrailStunnelImageName:contrail-external-stunnel'
@@ -191,7 +191,7 @@ ${contrail_tools}
 )
 
 if [[ -n ${user} && -n ${password} ]]; then
-  podman login -u ${user} -p ${password} ${registry}
+  sudo podman login -u ${user} -p ${password} ${registry}
 fi
 
 if [[ -n ${cert} ]]; then
@@ -211,4 +211,4 @@ done
 
 echo "Written ${output_file}"
 echo "Upload with:"
-echo "openstack overcloud container image upload --config-file ${output_file}"
+echo "sudo openstack overcloud container image upload --config-file ${output_file}"
