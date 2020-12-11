@@ -115,6 +115,21 @@ outputs:
                     - NODE_TYPE=vrouter
                     - METADATA_PROXY_SECRET={{ contrail_dpdk_metadata_secret.stdout }}
                     - AGENT_MODE={{ agent_mode }}
+                - name: copy dev-hugepages1G.mount
+                  copy:
+                    mode: 0644
+                    content: {get_file: ../../tools/contrail/dev-hugepages1G.mount}
+                    dest: "/usr/lib/systemd/system/dev-hugepages1G.mount"
+                - name: copy dev-hugepages2M.mount
+                  copy:
+                    mode: 0644
+                    content: {get_file: ../../tools/contrail/dev-hugepages2M.mount}
+                    dest: "/usr/lib/systemd/system/dev-hugepages2M.mount"
+                - name: enable mount hugepages services
+                  shell: |
+                    set -x
+                    systemctl enable dev-hugepages1G.mount
+                    systemctl enable dev-hugepages2M.mount
                 - name: contrail vrouter hugepages_2mb
                   set_fact:
                     hugepages_2mb: *hugepages_2mb
