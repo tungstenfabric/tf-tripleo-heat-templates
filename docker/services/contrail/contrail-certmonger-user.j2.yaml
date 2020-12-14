@@ -60,7 +60,7 @@ resources:
     properties:
       value:
         - ctlplane
-{%- for network in networks %}
+{%- for network in networks if network.enabled|default(true) %}
   {%- if network.name_lower not in ( 'external', 'management', 'storage', 'storagemgmt', 'storage_mgmt' ) %}
         - {{network.name_lower}}
   {%- endif %}
