@@ -205,6 +205,7 @@ conditions:
     or:
       - is_latest
       - and:
+        - is_not_5_0
         - not:
             yaql:
               expression: $.data.split(".").select($.split("-")).flatten().where($.matches("^[0-9]{4,}$")).where(int($) < 2011).any()
