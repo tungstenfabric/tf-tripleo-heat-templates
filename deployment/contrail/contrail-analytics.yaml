@@ -9,7 +9,7 @@ parameters:
     description: Contrail container image tag
     type: string
   ContrailAnalyticsApiSslSupport:
-    default: false
+    default: true
     description: Analytics Api uses Ssl
     type: boolean
   DockerContrailAnalyticsApiImageName:
