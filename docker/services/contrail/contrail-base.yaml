@@ -774,7 +774,10 @@ outputs:
   #               ZOOKEEPER_NODES: "{{ contrail_database_nodes_string }}"
 
             # Process contrail settings as they can be Role specific and should
-            # overwrite previous values if any.
+            # overwrite from NodeDataLookup if any.
+            - name: role specific contrail_settings
+              set_fact:
+                contrail_settings: {get_attr: [RoleParametersValue, value, 'contrail_settings']}
             - name: get dmi
               shell: |
                 #!/bin/sh
@@ -783,15 +786,19 @@ outputs:
             - name: set dmi fact
               set_fact:
                 dmi_uuid: "{{ dmi.stdout }}"
-            - name: get contrail_settings
+            - name: get node specific contrail_settings
               shell: "hiera -c /etc/puppet/hiera.yaml contrail_settings ::uuid={{ dmi_uuid }} | sed 's/=>/:/g'"
               register: contrail_settings_string
-            - name: turn contrail_settings into json
-              set_fact:
-                contrail_settings: "{{ contrail_settings_string.stdout | from_json }}"
+            - name: merge node and role specific contrail_settings
               when:
                 - contrail_settings_string.stdout is defined
                 - contrail_settings_string.stdout != "nil"
+              block:
+                - set_fact:
+                    contrail_settings_json: "{{ contrail_settings_string.stdout | from_json }}"
+                - set_fact:
+                    contrail_settings: "{{ contrail_settings | combine({item.key: item.value}) }}"
+                  with_dict: "{{ contrail_settings_json }}"
             - name: write contrail settings to file
               lineinfile:
                 dest: *contrail_common_env_file
