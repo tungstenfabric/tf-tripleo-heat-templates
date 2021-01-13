@@ -154,26 +154,31 @@ resources:
     properties:
       type: json
       value:
-        map_replace:
+        map_merge:
+          - contrail_settings:
+              yaql:
+                expression: $.data.default.mergeWith($.data.overrides != null and $.data.overrides or dict())
+                data:
+                  default: {get_param: ContrailSettings}
+                  overrides: {get_param: [RoleParameters, ContrailSettings]}
           - map_replace:
-            - contrail_settings: ContrailSettings
-              hugepages_2mb: ContrailDpdkHugepages2MB
-              hugepages_1gb: ContrailDpdkHugepages1GB
-              dpdk_driver: ContrailDpdkDriver
-              dpdk_options: ContrailDpdkOptions
-              isol_cpu_list: IsolCpusList
-              ps_blacklist: TunedPsBlackList
-              tuned_profile: TunedProfileName
-            - values: {get_param: [RoleParameters]}
-          - values:
-              ContrailSettings: {get_param: ContrailSettings}
-              ContrailDpdkHugepages2MB: {get_param: ContrailDpdkHugepages2MB}
-              ContrailDpdkHugepages1GB: {get_param: ContrailDpdkHugepages1GB}
-              ContrailDpdkDriver: {get_param: ContrailDpdkDriver}
-              ContrailDpdkOptions: {get_param: ContrailDpdkOptions}
-              IsolCpusList: {get_param: IsolCpusList}
-              TunedPsBlackList: {get_param: TunedPsBlackList}
-              TunedProfileName: {get_param: TunedProfileName}
+              - map_replace:
+                - hugepages_2mb: ContrailDpdkHugepages2MB
+                  hugepages_1gb: ContrailDpdkHugepages1GB
+                  dpdk_driver: ContrailDpdkDriver
+                  dpdk_options: ContrailDpdkOptions
+                  isol_cpu_list: IsolCpusList
+                  ps_blacklist: TunedPsBlackList
+                  tuned_profile: TunedProfileName
+                - values: {get_param: [RoleParameters]}
+              - values:
+                  ContrailDpdkHugepages2MB: {get_param: ContrailDpdkHugepages2MB}
+                  ContrailDpdkHugepages1GB: {get_param: ContrailDpdkHugepages1GB}
+                  ContrailDpdkDriver: {get_param: ContrailDpdkDriver}
+                  ContrailDpdkOptions: {get_param: ContrailDpdkOptions}
+                  IsolCpusList: {get_param: IsolCpusList}
+                  TunedPsBlackList: {get_param: TunedPsBlackList}
+                  TunedProfileName: {get_param: TunedProfileName}
 
   DpdkHostParametersConfig:
     type: OS::Heat::SoftwareConfig

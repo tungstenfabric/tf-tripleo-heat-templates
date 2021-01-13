@@ -54,6 +54,7 @@ resources:
       DefaultPasswords: {get_param: DefaultPasswords}
       RoleName: {get_param: RoleName}
       RoleParameters: {get_param: RoleParameters}
+
   ContrailSettingsRoleParametersValue:
     type: OS::Heat::Value
     properties:
