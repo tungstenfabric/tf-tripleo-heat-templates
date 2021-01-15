@@ -138,15 +138,19 @@ resources:
     properties:
       type: json
       value:
-        map_replace:
+        map_merge:
+          - contrail_settings:
+              yaql:
+                expression: $.data.default.mergeWith($.data.overrides != null and $.data.overrides or dict())
+                data:
+                  default: {get_param: ContrailSettings}
+                  overrides: {get_param: [RoleParameters, ContrailSettings]}
           - map_replace:
-            - contrail_settings: ContrailSettings
-              sriov_num: ContrailSriovNumVFs
+            - sriov_num: ContrailSriovNumVFs
               vrouter_module_opts: ContrailVrouterModuleOptions
               dpdk_options: ContrailDpdkOptions
             - values: {get_param: [RoleParameters]}
           - values:
-              ContrailSettings: {get_param: ContrailSettings}
               ContrailSriovNumVFs: {get_param: ContrailSriovNumVFs}
               ContrailVrouterModuleOptions: {get_param: ContrailVrouterModuleOptions}
               ContrailDpdkOptions: {get_param: ContrailDpdkOptions}
