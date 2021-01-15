@@ -105,14 +105,19 @@ resources:
     properties:
       type: json
       value:
-        map_replace:
+        map_merge:
+          - contrail_settings:
+              yaql:
+                expression: $.data.default.mergeWith($.data.overrides != null and $.data.overrides or dict())
+                data:
+                  default: {get_param: ContrailSettings}
+                  overrides: {get_param: [RoleParameters, ContrailSettings]}
           - map_replace:
-            - contrail_settings: ContrailSettings
-              dpdk_options: ContrailDpdkOptions
-            - values: {get_param: [RoleParameters]}
-          - values:
-              ContrailSettings: {get_param: ContrailSettings}
-              ContrailDpdkOptions: {get_param: ContrailDpdkOptions}
+            - map_replace:
+              - dpdk_options: ContrailDpdkOptions
+              - values: {get_param: [RoleParameters]}
+            - values:
+                ContrailDpdkOptions: {get_param: ContrailDpdkOptions}
 
   DpdkHostParametersConfig:
     type: OS::Heat::SoftwareConfig

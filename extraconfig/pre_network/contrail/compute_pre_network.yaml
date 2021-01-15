@@ -97,15 +97,19 @@ resources:
     properties:
       type: json
       value:
-        map_replace:
+        map_merge:
+          - contrail_settings:
+              yaql:
+                expression: $.data.default.mergeWith($.data.overrides != null and $.data.overrides or dict())
+                data:
+                  default: {get_param: ContrailSettings}
+                  overrides: {get_param: [RoleParameters, ContrailSettings]}
           - map_replace:
-            - contrail_settings: ContrailSettings
-              vrouter_module_opts: ContrailVrouterModuleOptions
-            - values: {get_param: [RoleParameters]}
-          - values:
-              ContrailSettings: {get_param: ContrailSettings}
-              ContrailVrouterModuleOptions: {get_param: ContrailVrouterModuleOptions}
-
+            - map_replace:
+              - vrouter_module_opts: ContrailVrouterModuleOptions
+              - values: {get_param: [RoleParameters]}
+            - values:
+                ContrailVrouterModuleOptions: {get_param: ContrailVrouterModuleOptions}
 
   VrouterContainerParametersConfig:
     type: OS::Heat::SoftwareConfig
