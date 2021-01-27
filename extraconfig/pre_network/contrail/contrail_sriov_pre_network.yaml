@@ -146,14 +146,15 @@ resources:
                   default: {get_param: ContrailSettings}
                   overrides: {get_param: [RoleParameters, ContrailSettings]}
           - map_replace:
-            - sriov_num: ContrailSriovNumVFs
-              vrouter_module_opts: ContrailVrouterModuleOptions
-              dpdk_options: ContrailDpdkOptions
-            - values: {get_param: [RoleParameters]}
-          - values:
-              ContrailSriovNumVFs: {get_param: ContrailSriovNumVFs}
-              ContrailVrouterModuleOptions: {get_param: ContrailVrouterModuleOptions}
-              ContrailDpdkOptions: {get_param: ContrailDpdkOptions}
+            - map_replace:
+              - sriov_num: ContrailSriovNumVFs
+                vrouter_module_opts: ContrailVrouterModuleOptions
+                dpdk_options: ContrailDpdkOptions
+              - values: {get_param: [RoleParameters]}
+            - values:
+                ContrailSriovNumVFs: {get_param: ContrailSriovNumVFs}
+                ContrailVrouterModuleOptions: {get_param: ContrailVrouterModuleOptions}
+                ContrailDpdkOptions: {get_param: ContrailDpdkOptions}
 
   SriovHostParametersConfig:
     type: OS::Heat::SoftwareConfig

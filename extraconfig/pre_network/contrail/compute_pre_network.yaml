@@ -105,11 +105,11 @@ resources:
                   default: {get_param: ContrailSettings}
                   overrides: {get_param: [RoleParameters, ContrailSettings]}
           - map_replace:
-              - map_replace:
-                - vrouter_module_opts: ContrailVrouterModuleOptions
-                - values: {get_param: [RoleParameters]}
-              - values:
-                  ContrailVrouterModuleOptions: {get_param: ContrailVrouterModuleOptions}
+            - map_replace:
+              - vrouter_module_opts: ContrailVrouterModuleOptions
+              - values: {get_param: [RoleParameters]}
+            - values:
+                ContrailVrouterModuleOptions: {get_param: ContrailVrouterModuleOptions}
 
   VrouterContainerParametersConfig:
     type: OS::Heat::SoftwareConfig

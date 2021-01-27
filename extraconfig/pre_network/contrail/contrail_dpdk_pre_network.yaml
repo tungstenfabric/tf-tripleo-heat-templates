@@ -113,10 +113,11 @@ resources:
                   default: {get_param: ContrailSettings}
                   overrides: {get_param: [RoleParameters, ContrailSettings]}
           - map_replace:
-            - dpdk_options: ContrailDpdkOptions
-            - values: {get_param: [RoleParameters]}
-          - values:
-              ContrailDpdkOptions: {get_param: ContrailDpdkOptions}
+            - map_replace:
+              - dpdk_options: ContrailDpdkOptions
+              - values: {get_param: [RoleParameters]}
+            - values:
+                ContrailDpdkOptions: {get_param: ContrailDpdkOptions}
 
   DpdkHostParametersConfig:
     type: OS::Heat::SoftwareConfig

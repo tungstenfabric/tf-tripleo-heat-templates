@@ -276,11 +276,11 @@ resources:
                   default: {get_param: ContrailSettings}
                   overrides: {get_param: [RoleParameters, ContrailSettings]}
           - map_replace:
-              - map_replace:
-                - contrail::aaa_mode: AAAMode
-                - values: {get_param: [RoleParameters]}
-              - values:
-                  AAAMode: {get_param: AAAMode}
+            - map_replace:
+              - contrail::aaa_mode: AAAMode
+              - values: {get_param: [RoleParameters]}
+            - values:
+                AAAMode: {get_param: AAAMode}
 
   ContrailNodemgrImageNormalize:
     type: ../../tools/contrail/contrail-image-normalize.yaml
