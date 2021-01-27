@@ -100,17 +100,22 @@
             state: absent
           ignore_errors: yes
 
-        - name: contral dpdk env file
-          set_fact:
-            dpdk_env_file: "/etc/sysconfig/network-scripts/network-functions-vrouter-dpdk-env"
-        - name: register create contrail analytics kafka env file
-          stat:
-            path: "{{ dpdk_env_file }}"
-          register: dpdk_env_file_stat
-        - name: save old dpdk env values
-          when: dpdk_env_file_stat.stat.exists
-          shell: "cat {{ dpdk_env_file }}"
-          register: dpdk_env_file_content_old
+        - name: save current dpdk env 
+          when:
+            - _CONTRAIL_APPLY_CONFIG_CHANGE_ is defined
+            - _CONTRAIL_APPLY_CONFIG_CHANGE_ | bool
+          block:
+            - name: contral dpdk env file
+              set_fact:
+                dpdk_env_file: "/etc/sysconfig/network-scripts/network-functions-vrouter-dpdk-env"
+            - name: register create contrail analytics kafka env file
+              stat:
+                path: "{{ dpdk_env_file }}"
+              register: dpdk_env_file_stat
+            - name: save old dpdk env values
+              when: dpdk_env_file_stat.stat.exists
+              shell: "cat {{ dpdk_env_file }}"
+              register: dpdk_env_file_content_old
 
         - name: create contrail dpdk init container
           docker_container:
@@ -126,7 +131,12 @@
             env: "{{ dpdk_init_env_vars }}"
 
         - name: check if dpdk env changed
-          when: dpdk_env_file_stat.stat.exists
+          when:
+            - _CONTRAIL_APPLY_CONFIG_CHANGE_ is defined
+            - _CONTRAIL_APPLY_CONFIG_CHANGE_ | bool
+            - dpdk_env_file_content_old is defined
+            - dpdk_env_file_stat is defined
+            - dpdk_env_file_stat.stat.exists
           block:
             - name: save new dpdk env values
               shell: "cat {{ dpdk_env_file }}"
