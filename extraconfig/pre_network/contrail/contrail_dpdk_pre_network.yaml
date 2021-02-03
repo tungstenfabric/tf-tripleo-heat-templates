@@ -106,7 +106,7 @@ parameters:
     default: {}
     description: Contrail Service settings
     type: json
-  ContrailApplyConfigChange:
+  ContrailRestartNetworkOnUpdatePrepare:
     type: boolean
     description: >
       Whether to apply or not config changes on vhost0
@@ -175,7 +175,7 @@ resources:
                   isol_cpu_list: IsolCpusList
                   ps_blacklist: TunedPsBlackList
                   tuned_profile: TunedProfileName
-                  apply_config_change: ContrailApplyConfigChange
+                  apply_config_change: ContrailRestartNetworkOnUpdatePrepare
                 - values: {get_param: [RoleParameters]}
               - values:
                   ContrailDpdkHugepages2MB: {get_param: ContrailDpdkHugepages2MB}
@@ -185,7 +185,7 @@ resources:
                   IsolCpusList: {get_param: IsolCpusList}
                   TunedPsBlackList: {get_param: TunedPsBlackList}
                   TunedProfileName: {get_param: TunedProfileName}
-                  ContrailApplyConfigChange: {get_param: ContrailApplyConfigChange}
+                  ContrailRestartNetworkOnUpdatePrepare: {get_param: ContrailRestartNetworkOnUpdatePrepare}
 
   DpdkHostParametersConfig:
     type: OS::Heat::SoftwareConfig
