@@ -17,12 +17,6 @@ parameters:
   DefaultPasswords:
     default: {}
     type: json
-  DeployIdentifier:
-    type: string
-    default: ''
-    description: >
-      Setting this to a unique value will re-run any deployment tasks which
-      perform configuration on a Heat stack-update.
   RoleName:
     default: ''
     description: Role name on which the service is applied
@@ -534,13 +528,11 @@ outputs:
         map_merge:
           - *contrail_auth_base_env
           - *contrail_auth_admin_env
-          - TRIPLEO_DEPLOY_IDENTIFIER: {get_param: DeployIdentifier}
       contrail_defaults_env: &contrail_defaults_env {get_param: ContrailDefaults}
       contrail_base_auth_internal_env: &contrail_base_auth_internal_env
         map_merge:
           - *contrail_auth_base_env
           - *contrail_auth_internal_env
-          - TRIPLEO_DEPLOY_IDENTIFIER: {get_param: DeployIdentifier}
       contrail_common_env_file: &contrail_common_env_file
         "/etc/contrail/common_contrail.env"
       contrail_kafka_service_name: &contrail_kafka_service_name

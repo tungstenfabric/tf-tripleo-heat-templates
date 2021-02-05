@@ -204,12 +204,12 @@ outputs:
         list_concat:
           - {get_attr: [ContrailVrouterBase, role_data, update_tasks]}
 
-      post_update_tasks:
-        list_concat:
-          - {get_attr: [ContrailVrouterBase, role_data, post_update_tasks]}
-          - - name: Restart vhost0 interface
-              when:
-                - step|int == 1
+      reinit_vhost_tasks: &reinit_vhost_tasks
+        - name: Update vrouter dpdk on post upgrade and reinit vhost0
+          when:
+            - step|int == 1
+          block:
+            - name: Restart vhost0 interface
               shell: |
                 exec > >(tee -a /tmp/contrail_reinit_vhost0.log)
                 exec 2>&1
@@ -221,6 +221,11 @@ outputs:
               ignore_errors: yes
               args:
                 executable: /bin/bash
+
+      post_update_tasks:
+        list_concat:
+          - {get_attr: [ContrailVrouterBase, role_data, post_update_tasks]}
+          - *reinit_vhost_tasks
 
       fast_forward_upgrade_tasks:
         get_attr: [ContrailVrouterBase, role_data, fast_forward_upgrade_tasks]
@@ -234,4 +239,6 @@ outputs:
           - {get_attr: [ContrailVrouterBase, role_data, upgrade_tasks]}
 
       post_upgrade_tasks:
-        get_attr: [ContrailVrouterBase, role_data, post_upgrade_tasks]
+        list_concat:
+          - {get_attr: [ContrailVrouterBase, role_data, post_upgrade_tasks]}
+          - *reinit_vhost_tasks
