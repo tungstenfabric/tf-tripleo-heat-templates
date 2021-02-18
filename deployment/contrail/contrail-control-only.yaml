@@ -136,6 +136,7 @@ outputs:
             - contrail_control_nodemgr:
                 image: {get_attr: [ContrailBase, role_data, contrail_nodemgr_image_name]}
                 net: host
+                pid: host
                 detach: true
                 user: root
                 privileged: true
@@ -143,7 +144,7 @@ outputs:
                 volumes:
                   list_concat:
                     - {get_attr: [ContrailBase, role_data, contrail_base_volumes]}
-                    - - /var/run:/var/run:z
+                    - {get_attr: [ContrailBase, role_data, contrail_nodemgr_volumes]}
                 environment:
                   get_attr: [ContrailBase, role_data, contrail_base_env]
                 env_file:

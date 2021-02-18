@@ -449,6 +449,12 @@ outputs:
                   - {get_param: ContrailCaCertFile}
                   - 'ro'
             - null
+      contrail_nodemgr_volumes: &contrail_nodemgr_volumes
+          - /var/run:/var/run:z
+          - /run/runc:/run/runc:z
+          - /sys/fs/cgroup:/sys/fs/cgroup:ro
+          - /sys/fs/selinux:/sys/fs/selinux
+          - /var/lib/containers:/var/lib/containers:shared
       contrail_general_base_env: &contrail_general_base_env
         CLOUD_ORCHESTRATOR: 'openstack'
         OPENSTACK_VERSION: 'train'
