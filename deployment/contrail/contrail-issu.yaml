@@ -708,11 +708,7 @@ outputs:
                 volumes:
                   list_concat:
                     - {get_attr: [ContrailBase, role_data, contrail_base_volumes]}
-                    - - /var/run:/var/run:z
-                      - /run/runc:/run/runc:z
-                      - /sys/fs/cgroup:/sys/fs/cgroup:ro
-                      - /sys/fs/selinux:/sys/fs/selinux
-                      - /var/lib/containers:/var/lib/containers:shared
+                    - {get_attr: [ContrailBase, role_data, contrail_nodemgr_volumes]}
                 environment:
                   map_merge:
                     - {get_attr: [ContrailBase, role_data, contrail_base_env]}
@@ -910,6 +906,7 @@ outputs:
             - contrail_config_nodemgr:
                 image: *contrail_nodemgr_image_name
                 net: host
+                pid: host
                 detach: true
                 user: root
                 privileged: true
@@ -917,7 +914,7 @@ outputs:
                 volumes:
                   list_concat:
                     - {get_attr: [ContrailBase, role_data, contrail_base_volumes]}
-                    - - /var/run:/var/run:z
+                    - {get_attr: [ContrailBase, role_data, contrail_nodemgr_volumes]}
                 environment:
                   map_merge:
                     - get_attr: [ContrailBase, role_data, contrail_base_env]
@@ -974,6 +971,7 @@ outputs:
               contrail_analytics_nodemgr:
                 image: *contrail_nodemgr_image_name
                 net: host
+                pid: host
                 detach: true
                 user: root
                 privileged: true
@@ -981,7 +979,7 @@ outputs:
                 volumes:
                   list_concat:
                     - {get_attr: [ContrailBase, role_data, contrail_base_volumes]}
-                    - - /var/run:/var/run:z
+                    - {get_attr: [ContrailBase, role_data, contrail_nodemgr_volumes]}
                 environment:
                   map_merge:
                     - get_attr: [ContrailBase, role_data, contrail_base_env]
@@ -1073,11 +1071,7 @@ outputs:
                 volumes:
                   list_concat:
                     - {get_attr: [ContrailBase, role_data, contrail_base_volumes]}
-                    - - /var/run:/var/run:z
-                      - /run/runc:/run/runc:z
-                      - /sys/fs/cgroup:/sys/fs/cgroup:ro
-                      - /sys/fs/selinux:/sys/fs/selinux
-                      - /var/lib/containers:/var/lib/containers:shared
+                    - {get_attr: [ContrailBase, role_data, contrail_nodemgr_volumes]}
                 environment:
                   map_merge:
                     - {get_attr: [ContrailBase, role_data, contrail_base_env]}
@@ -1134,6 +1128,7 @@ outputs:
                 - contrail_analytics_snmp_nodemgr:
                     image: *contrail_nodemgr_image_name
                     net: host
+                    pid: host
                     detach: true
                     user: root
                     privileged: true
@@ -1141,7 +1136,7 @@ outputs:
                     volumes:
                       list_concat:
                         - {get_attr: [ContrailBase, role_data, contrail_base_volumes]}
-                        - - /var/run:/var/run:z
+                        - {get_attr: [ContrailBase, role_data, contrail_nodemgr_volumes]}
                     environment:
                       map_merge:
                         - get_attr: [ContrailBase, role_data, contrail_base_env]
@@ -1150,6 +1145,7 @@ outputs:
                   contrail_analytics_alarm_nodemgr:
                     image: *contrail_nodemgr_image_name
                     net: host
+                    pid: host
                     detach: true
                     user: root
                     privileged: true
@@ -1157,7 +1153,7 @@ outputs:
                     volumes:
                       list_concat:
                         - {get_attr: [ContrailBase, role_data, contrail_base_volumes]}
-                        - - /var/run:/var/run:z
+                        - {get_attr: [ContrailBase, role_data, contrail_nodemgr_volumes]}
                     environment:
                       map_merge:
                         - get_attr: [ContrailBase, role_data, contrail_base_env]

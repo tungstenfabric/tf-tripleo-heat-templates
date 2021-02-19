@@ -184,6 +184,7 @@ outputs:
             - contrail_vrouter_agent_nodemgr:
                 image: {get_attr: [ContrailBase, role_data, contrail_nodemgr_image_name]}
                 net: host
+                pid: host
                 detach: true
                 user: root
                 privileged: true
@@ -191,7 +192,7 @@ outputs:
                 volumes:
                   list_concat:
                     - {get_attr: [ContrailBase, role_data, contrail_base_volumes]}
-                    - - /var/run:/var/run:z
+                    - {get_attr: [ContrailBase, role_data, contrail_nodemgr_volumes]}
                     - - /var/lib/contrail/loadbalancer:/var/lib/contrail/loadbalancer
                 environment:
                   get_attr: [ContrailBase, role_data, contrail_base_env]
