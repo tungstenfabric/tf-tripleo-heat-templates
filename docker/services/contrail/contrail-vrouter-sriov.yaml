@@ -243,7 +243,24 @@ outputs:
         get_attr: [ContrailBase, role_data, metadata_settings]
 
       update_tasks:
-        get_attr: [ContrailVrouterBase, role_data, update_tasks]
+        list_concat:
+          - {get_attr: [ContrailVrouterBase, role_data, update_tasks]}
+          - if:
+            - is_dpdk
+            - null
+            - - name: Contrail vrouter re-run kernel init
+                when: step|int == 0
+                block:
+                  - name: Set contrail-vrouter-kernel-init container name
+                    set_fact:
+                      vrouter_init_container_name_ansible: *vrouter_init_container_name
+                  - name: Start contrail-vrouter-kernel-init container as post update
+                    shell: bash -c "docker start {{ vrouter_init_container_name_ansible }}"
+          - - name: Restart vhost0 interface to reload vrouter module and stop agent
+              when: step|int == 0
+              async: 120
+              poll: 5
+              shell: bash -c 'ifdown vhost0; ifup vhost0 || true'
 
       post_update_tasks:
         list_concat:
@@ -251,15 +268,19 @@ outputs:
           - if:
             - is_dpdk
             - null
-            - - name: Set contrail-vrouter-kernel-init container name
-                set_fact:
-                  vrouter_init_container_name_ansible: *vrouter_init_container_name
-              - name: Start contrail-vrouter-kernel-init container as post update
-                shell: bash -c "docker start {{ vrouter_init_container_name_ansible }}"
-              - name: Restart vhost0 interface
-                async: 120
-                poll: 5
-                shell: bash -c 'ifdown vhost0; ifup vhost0; docker start contrail_vrouter_agent || true'
+            - - name: Contrail vrouter re-run kernel init
+                when: step|int == 0
+                block:
+                  - name: Set contrail-vrouter-kernel-init container name
+                    set_fact:
+                      vrouter_init_container_name_ansible: *vrouter_init_container_name
+                  - name: Start contrail-vrouter-kernel-init container as post update
+                    shell: bash -c "docker start {{ vrouter_init_container_name_ansible }}"
+          - - name: Restart vhost0 interface
+              when: step|int == 0
+              async: 120
+              poll: 5
+              shell: bash -c 'ifdown vhost0; ifup vhost0; docker start contrail_vrouter_agent || true'
 
       fast_forward_upgrade_tasks:
         get_attr: [ContrailVrouterBase, role_data, fast_forward_upgrade_tasks]

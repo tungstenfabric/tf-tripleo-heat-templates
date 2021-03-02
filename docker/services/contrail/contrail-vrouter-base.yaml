@@ -166,45 +166,51 @@ outputs:
           - {get_attr: [ContrailVrouterIssu, role_data, host_prep_tasks]}
 
       update_tasks:
-        - name: Find out current volume name of contrail_vrouter_agent container
-          shell: >
-            docker inspect contrail_vrouter_agent | jq -r '.[].Mounts | .[] | select(.Destination =="/var/lib/contrail") | .Name'
-          register:
-            agent_container_volume_name
-        - name: Find out current volume location of contrail_vrouter_agent container
-          shell: >
-            docker inspect contrail_vrouter_agent | jq -r '.[].Mounts | .[] | select(.Destination =="/var/lib/contrail") | .Source'
-          register:
-            agent_container_volume_location
-        - block:
-          - name: Copy contents of old volume to the new one
-            command: cp -R {{ agent_container_volume_location.stdout }}/. /var/lib/contrail/
-          - name: Save information about old volume for furhter reference
-            shell: echo "{{ agent_container_volume_name.stdout }}" > /tmp/contrail_var_lib_unnamed_volume
-          when:
-            - agent_container_volume_name.stdout != ''
-            - agent_container_volume_location.stdout != '/var/lib/contrail'
+        - name: Contrail vrouter common update_tasks
+          when: step|int == 0
+          block:
+            - name: Find out current volume name of contrail_vrouter_agent container
+              shell: >
+                docker inspect contrail_vrouter_agent | jq -r '.[].Mounts | .[] | select(.Destination =="/var/lib/contrail") | .Name'
+              register:
+                agent_container_volume_name
+            - name: Find out current volume location of contrail_vrouter_agent container
+              shell: >
+                docker inspect contrail_vrouter_agent | jq -r '.[].Mounts | .[] | select(.Destination =="/var/lib/contrail") | .Source'
+              register:
+                agent_container_volume_location
+            - block:
+              - name: Copy contents of old volume to the new one
+                command: cp -R {{ agent_container_volume_location.stdout }}/. /var/lib/contrail/
+              - name: Save information about old volume for furhter reference
+                shell: echo "{{ agent_container_volume_name.stdout }}" > /tmp/contrail_var_lib_unnamed_volume
+              when:
+                - agent_container_volume_name.stdout != ''
+                - agent_container_volume_location.stdout != '/var/lib/contrail'
 
       post_update_tasks:
-        - name: Check if /tmp/contrail_var_lib_unnamed_volume exists
-          stat:
-            path: /tmp/contrail_var_lib_unnamed_volume
-          register: contrail_var_lib_unnamed_volume
-        - block:
-          - name: Get name of volume from /tmp/contrail_var_lib_unnamed_volume
-            command: >
-              cat /tmp/contrail_var_lib_unnamed_volume
-            register:
-              tmp_file
-          - name: Ensure old unused volume is absent
-            docker_volume:
-              name: '{{ tmp_file.stdout }}'
-              state: absent
-          - name: Ensure temp file is absent
-            file:
-              name: "/tmp/contrail_var_lib_unnamed_volume"
-              state: absent
-          when: 'contrail_var_lib_unnamed_volume.stat.exists == true'
+        - name: Contrail vrouter common post_update_tasks
+          when: step|int == 0
+          block:
+            - name: Check if /tmp/contrail_var_lib_unnamed_volume exists
+              stat:
+                path: /tmp/contrail_var_lib_unnamed_volume
+              register: contrail_var_lib_unnamed_volume
+            - block:
+              - name: Get name of volume from /tmp/contrail_var_lib_unnamed_volume
+                command: >
+                  cat /tmp/contrail_var_lib_unnamed_volume
+                register:
+                  tmp_file
+              - name: Ensure old unused volume is absent
+                docker_volume:
+                  name: '{{ tmp_file.stdout }}'
+                  state: absent
+              - name: Ensure temp file is absent
+                file:
+                  name: "/tmp/contrail_var_lib_unnamed_volume"
+                  state: absent
+              when: 'contrail_var_lib_unnamed_volume.stat.exists == true'
 
       fast_forward_upgrade_tasks:
         - name: Stop contrail vrouter dpdk services
