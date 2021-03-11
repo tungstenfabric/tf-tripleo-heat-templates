@@ -122,6 +122,8 @@ outputs:
         get_attr: [ContrailVrouterBase, role_data, contrail_env_file]
       vrouter_init_container_name: &vrouter_init_container_name
         {get_attr: [DockerContrailVrouterKernelImageNormalize, contrail_image_only]}
+      vrouter_init_container_full_name: &vrouter_init_container_full_name
+        {get_attr: [DockerContrailVrouterKernelImageNormalize, contrail_image]}
       docker_config:
         step_5:
           map_merge:
@@ -197,7 +199,37 @@ outputs:
         get_attr: [ContrailBase, role_data, metadata_settings]
 
       update_tasks:
-        get_attr: [ContrailVrouterBase, role_data, update_tasks]
+        list_concat:
+          - {get_attr: [ContrailVrouterBase, role_data, update_tasks]}
+          - - name: Contrail vrouter reinit vhost0
+              when: step|int == 0
+              block:
+                - name: Set contrail-vrouter-kernel-init container name (old container)
+                  set_fact:
+                    vrouter_init_container_name_ansible: *vrouter_init_container_name
+                - name: Set contrail-vrouter-kernel-init container name (new container)
+                  set_fact:
+                    vrouter_init_container_full_name_ansible: *vrouter_init_container_full_name
+                - name: Stop vrouter agent service
+                  shell: bash -c 'systemctl stop tripleo_contrail_vrouter_agent.service'
+                - name: Remove old contrail-vrouter-kernel-init container
+                  shell: >
+                    "{{ container_cli }}" rm -f "{{ vrouter_init_container_name_ansible }}"
+                - name: Get loaded vrouter kernel module version
+                  shell: bash -c 'echo /sys/module/vrouter/version $(cat /sys/module/vrouter/version)'
+                  register: vrouter_module_version_before_ziu
+                - set_fact:
+                    vrouter_module_version_before_ziu: "{{ vrouter_module_version_before_ziu.stdout }}"
+                - name: Start new contrail-vrouter-kernel-init container 
+                  shell: >
+                    "{{ container_cli }}" run --privileged --network=host --name "{{ vrouter_init_container_name_ansible }}" -v /etc/sysconfig/network-scripts:/etc/sysconfig/network-scripts -v /lib/modules:/lib/modules -v /bin:/host/bin -v /dev:/dev "{{ vrouter_init_container_full_name_ansible }}"
+                - name: Restart vhost0 interface
+                  shell: bash -c 'ifdown vhost0; ifup vhost0; echo /sys/module/vrouter/version $(cat /sys/module/vrouter/version)'
+                  async: 120
+                  poll: 5
+                  register: reinit_vhost0
+                  ignore_errors: yes
+                - debug: var=reinit_vhost0.stdout
 
       reinit_vhost_tasks: &reinit_vhost_tasks
         - name: Update vrouter kernel module on post upgrade and reinit vhost0
@@ -226,7 +258,6 @@ outputs:
       post_update_tasks:
         list_concat:
           - {get_attr: [ContrailVrouterBase, role_data, post_update_tasks]}
-          - *reinit_vhost_tasks
 
       fast_forward_upgrade_tasks:
         get_attr: [ContrailVrouterBase, role_data, fast_forward_upgrade_tasks]
