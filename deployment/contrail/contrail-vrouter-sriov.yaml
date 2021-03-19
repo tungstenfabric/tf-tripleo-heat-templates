@@ -55,6 +55,8 @@ parameters:
   ContrailSriovMode:
     default: 'kernel'
     type: string
+    tags:
+      - role_specific
   RoleName:
     default: ''
     description: Role name on which the service is applied
@@ -88,8 +90,8 @@ conditions:
 
   is_dpdk:
     or:
-      - {equals: [{get_param: ContrailSriovMode}, 'dpdk']}
       - {equals: [{get_param: [RoleParameters, ContrailSriovMode]}, 'dpdk']}
+
 resources:
   DockerContrailVrouterKernelImageNormalize:
     type: ../../tools/contrail/contrail-image-normalize.yaml
@@ -120,7 +122,7 @@ resources:
   ContrailVrouterBase:
     type: contrail-vrouter-base.yaml
     properties:
-      ContrailVrouterAgentMode: {get_param: ContrailSriovMode}
+      ContrailVrouterAgentMode: {get_param: [RoleParameters, ContrailSriovMode]}
 
 outputs:
   role_data:
@@ -131,7 +133,7 @@ outputs:
         map_merge:
           - get_attr: [ContrailBase, role_data, config_settings]
           - contrail::vrouter::metadata_proxy_shared_secret: {get_param: NeutronMetadataProxySharedSecret}
-            contrail_sriov_mode: {get_param: ContrailSriovMode}
+            contrail_sriov_mode: {get_param: [RoleParameters, ContrailSriovMode]}
             tripleo.contrail_vrouter_sriov.firewall_rules:
               '111 contrail_vrouter_sriov_8085_8097':
                 dport:
