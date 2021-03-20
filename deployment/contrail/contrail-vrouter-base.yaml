@@ -111,11 +111,12 @@ outputs:
                   lineinfile:
                     dest: *contrail_env_file
                     state: present
-                    line: "{{ item }}"
-                  with_items:
-                    - NODE_TYPE=vrouter
-                    - METADATA_PROXY_SECRET={{ contrail_dpdk_metadata_secret.stdout }}
-                    - AGENT_MODE={{ agent_mode }}
+                    regexp: "^{{ item.key }}.*"
+                    line: "{{ item.key }}={{ item.value }}"
+                  with_dict:
+                    NODE_TYPE: "vrouter"
+                    METADATA_PROXY_SECRET: "{{ contrail_dpdk_metadata_secret.stdout }}"
+                    AGENT_MODE: "{{ agent_mode }}"
                 - name: copy dev-hugepages1G.mount
                   copy:
                     mode: 0644
@@ -183,6 +184,9 @@ outputs:
                     hp_dir: "{{ hp_1g_dir.stdout }}"
                 - name: set hugepages dir to 2mb
                   when:
+                    # if 1gb set to use and default is 1gb then hp_1g_dir empty
+                    # as path and mount is default /dev/hugepages
+                    - hugepages_1gb == ""
                     - hp_1g_dir.stdout == ""
                     - hp_2mb_dir.stdout != ""
                   set_fact:
