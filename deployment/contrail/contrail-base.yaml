@@ -451,8 +451,8 @@ outputs:
                   - 'ro'
             - null
       contrail_nodemgr_volumes: &contrail_nodemgr_volumes
-          - /var/run:/var/run:z
-          - /run/runc:/run/runc:z
+          - /var/run:/var/run
+          - /run/runc:/run/runc
           - /sys/fs/cgroup:/sys/fs/cgroup:ro
           - /sys/fs/selinux:/sys/fs/selinux
           - /var/lib/containers:/var/lib/containers:shared
