@@ -862,7 +862,7 @@ outputs:
                     volumes:
                       list_concat:
                         - {get_attr: [ContrailBase, role_data, contrail_base_volumes]}
-                        - - /var/run:/var/run:z
+                        - - /var/run:/var/run
                     environment:
                       map_merge:
                         - {get_attr: [ContrailBase, role_data, contrail_base_env]}
