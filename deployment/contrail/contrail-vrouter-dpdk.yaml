@@ -120,7 +120,7 @@ outputs:
             image: &contrail_nova_plugin_image {get_attr: [DockerContrailNovaPluginImageNormalize, contrail_image]}
             net: none
             volumes:
-              - /var/lib/contrail/vrouter_port_control:/opt/plugin/bin
+              - /var/lib/contrail/vrouter_port_control:/opt/plugin/bin:z
               - /var/lib/contrail/vif_nova_contrail:/opt/plugin/site-packages/nova_contrail_vif:z
               - /var/lib/contrail/vif_nova_contrail_egg:/opt/plugin/site-packages/nova_contrail_vif-0.1-py2.7.egg-info:z
               - /var/lib/contrail/vif_plug_vrouter:/opt/plugin/site-packages/vif_plug_vrouter:z
