@@ -75,7 +75,7 @@
 
         - name: prepare podman env args
           set_fact:
-            dpdk_init_env_args: "{{ dpdk_init_env_args }}  -e  {{ item.key}}={{ item.value }}"
+            dpdk_init_env_args: "{{ dpdk_init_env_args }}  -e  {{ item.key}}='{{ item.value }}'"
           loop: "{{ contrail_settings_env_vars | dict2items}}"
 
         - name: pull contrail vrouter dpdk agent container
