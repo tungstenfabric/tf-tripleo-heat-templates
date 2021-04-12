@@ -58,6 +58,10 @@ parameters:
   env_file_name:
     type: string
     default: ""
+  contrail_env_name:
+    type: string
+    default: ''
+    description: name of env file for service, concatenated with common_<name>.env 
   contrail_stunnel_support:
     type: boolean
     default: false
@@ -97,6 +101,7 @@ resources:
       DefaultPasswords: {get_param: DefaultPasswords}
       RoleName: {get_param: RoleName}
       RoleParameters: {get_param: RoleParameters}
+      contrail_env_name: {get_param: contrail_env_name}
 
 outputs:
   role_data:
