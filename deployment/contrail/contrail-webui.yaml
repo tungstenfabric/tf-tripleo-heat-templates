@@ -88,6 +88,7 @@ resources:
       RoleName: {get_param: RoleName}
       RoleParameters: {get_param: RoleParameters}
       contrail_stunnel_support: false
+      contrail_env_name: 'webui'
 
 outputs:
   role_data:
