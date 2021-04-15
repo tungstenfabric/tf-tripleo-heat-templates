@@ -12,6 +12,10 @@ parameters:
     description: image
     type: string
     default: "contrail-vrouter-agent"
+  DockerContrailVrouterKernelInitDpdkImageName:
+    description: image
+    type: string
+    default: "contrail-vrouter-kernel-init-dpdk"
   DockerContrailNovaPluginImageName:
     description: image
     type: string
@@ -81,6 +85,11 @@ resources:
     properties:
       GenericImageName: {get_param: DockerContrailVrouterAgentImageName}
 
+  DockerContrailVrouterKernelInitDpdkImageNormalize:
+    type: ../../../tools/contrail/contrail-image-normalize.yaml
+    properties:
+      GenericImageName: {get_param: DockerContrailVrouterKernelInitDpdkImageName}
+
   DockerContrailNovaPluginImageNormalize:
     type: ../../../tools/contrail/contrail-image-normalize.yaml
     properties:
@@ -120,6 +129,8 @@ outputs:
                   - 9091
       contrail_env_file: &contrail_env_file
         get_attr: [ContrailVrouterBase, role_data, contrail_env_file]
+      dpdk_init_container_name: &dpdk_init_container_name
+        {get_attr: [DockerContrailVrouterKernelInitDpdkImageNormalize, contrail_image_only]}
       docker_config:
         step_2:
           get_attr: [ContrailBase, role_data, docker_config, step_2]
@@ -209,6 +220,23 @@ outputs:
       update_tasks:
         list_concat:
           - {get_attr: [ContrailVrouterBase, role_data, update_tasks]}
+          - - name: Contrail dpdk reinit vhost0
+              when: step|int == 0
+              block:
+                - name: Set contrail-dpdk-init container name
+                  set_fact:
+                    dpdk_init_container_name_ansible: *dpdk_init_container_name
+                - name: Stop vrouter-agent container
+                  shell: bash -c "docker stop contrail_vrouter_agent"
+                - name: Remove old vrouter-agent container
+                  shell: bash -c "docker rm -f contrail_vrouter_agent"
+                - name: Start contrail-dpdk-init container as update
+                  shell: bash -c "docker start {{ dpdk_init_container_name_ansible }}"
+                - name: Restart vhost0 interface to reload vrouter module and stop agent
+                  async: 120
+                  poll: 5
+                  shell: bash -c 'ifdown vhost0; ifup vhost0 || true'
+
 
       post_update_tasks:
         list_concat:
