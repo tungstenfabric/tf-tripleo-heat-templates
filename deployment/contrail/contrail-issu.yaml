@@ -446,6 +446,7 @@ resources:
       RoleName: {get_param: RoleName}
       RoleParameters: {get_param: RoleParameters}
       ContrailImageTag: {get_param: ContrailIssuImageTag}
+      contrail_env_name: 'config'
 
   ContrailRedis:
     type: contrail-redis.yaml
@@ -457,6 +458,7 @@ resources:
       RoleName: {get_param: RoleName}
       RoleParameters: {get_param: RoleParameters}
       env_file_name: '/etc/contrail/issu_config.env'
+      contrail_env_name: 'config'
       ContrailImageTag: {get_param: ContrailIssuImageTag}
       contrail_stunnel_support: true
 

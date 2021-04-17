@@ -165,6 +165,7 @@ resources:
       RoleName: {get_param: RoleName}
       RoleParameters: {get_param: RoleParameters}
       ContrailImageTag: {get_param: ContrailIssuImageTag}
+      contrail_env_name: 'control'
 
 outputs:
   role_data:

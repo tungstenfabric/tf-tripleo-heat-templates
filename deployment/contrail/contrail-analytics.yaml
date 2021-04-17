@@ -124,6 +124,7 @@ resources:
       RoleName: {get_param: RoleName}
       RoleParameters: {get_param: RoleParameters}
       env_file_name: '/etc/contrail/common_analytics.env'
+      contrail_env_name: 'analytics'
       contrail_stunnel_support: true
 
   ContrailQueryEngine:

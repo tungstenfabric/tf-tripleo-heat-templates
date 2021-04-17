@@ -421,7 +421,7 @@ outputs:
       contrail_service_conf_dir: &contrail_service_conf_dir
         list_join:
           - ''
-          - - '/var/lib/config-data/contrail/'
+          - - '/var/lib/config-data/contrail_'
             - {get_param: contrail_env_name}
       # added contrail_service_conf_dir volume to make work docker/docker-puppet.py
       # ('/' trailing '/' in path is important as rhosp docker-puppet.py expects it)
@@ -859,10 +859,10 @@ outputs:
             - name: save md5 service env files and common env
               shell: |
                 #!/bin/bash -x
-                vars=$(cat {{ contrail_service_common_env_file }} {{ contrail_service_env_file }} | sort -u)
-                rm -f {{ contrail_service_conf_dir }}
                 mkdir -p {{ contrail_service_conf_dir }}
+                rm -f {{ contrail_service_conf_dir }}/*
                 cp {{ contrail_service_common_env_file }} {{ contrail_service_env_file }} {{ contrail_service_conf_dir }}/
+                vars=$(cat {{ contrail_service_common_env_file }} {{ contrail_service_env_file }} | sort -u)
                 echo "$vars" | md5sum | awk '{print($1)}' > {{ contrail_service_conf_md5_file }}
                 cat {{ contrail_service_conf_md5_file }}
               register: config_md5sum
