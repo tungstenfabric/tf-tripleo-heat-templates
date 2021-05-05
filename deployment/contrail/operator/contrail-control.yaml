@@ -1,0 +1,81 @@
+heat_template_version: rocky
+
+description: >
+  Contrail containerized Config Control service
+
+parameters:
+  EndpointMap:
+    default: {}
+    description: Mapping of service endpoint -> protocol. Typically set
+                 via parameter_defaults in the resource registry.
+    type: json
+  ServiceData:
+    default: {}
+    description: Dictionary packing service data
+    type: json
+  ServiceNetMap:
+    default: {}
+    description: Mapping of service_name -> network name. Typically set
+                 via parameter_defaults in the resource registry.  This
+                 mapping overrides those in ServiceNetMapDefaults.
+    type: json
+  DefaultPasswords:
+    default: {}
+    type: json
+  RoleName:
+    default: ''
+    description: Role name on which the service is applied
+    type: string
+  RoleParameters:
+    default: {}
+    description: Parameters specific to the role
+    type: json
+
+
+resources:
+  ContrailBase:
+    type: ../contrail-base.yaml
+    properties:
+      EndpointMap: {get_param: EndpointMap}
+      ServiceData: {get_param: ServiceData}
+      ServiceNetMap: {get_param: ServiceNetMap}
+      DefaultPasswords: {get_param: DefaultPasswords}
+      RoleName: {get_param: RoleName}
+      RoleParameters: {get_param: RoleParameters}
+      contrail_env_name: 'control'
+
+outputs:
+  role_data:
+    description: Role data for the Contrail Control service.
+    value:
+      service_name: contrail_control
+      config_settings:
+        map_merge:
+          - get_attr: [ContrailBase, role_data, config_settings]
+          - contrail_control_host_ip:
+              str_replace:
+                template:
+                  "%{hiera('$NETWORK')}"
+                params:
+                  $NETWORK: {get_param: [ServiceNetMap, ContrailControlNetwork]}
+            contrail_control_hostname:
+              str_replace:
+                template:
+                  "%{hiera('fqdn_$NETWORK')}"
+                params:
+                  $NETWORK: {get_param: [ServiceNetMap, ContrailControlNetwork]}
+            tripleo.contrail_control.firewall_rules:
+              '113 contrail_control_dns':
+                dport: 53
+                  - 53
+                  - 8092
+                proto: 'udp'
+              '113 contrail_control_tcp':
+                dport:
+                  - 179
+                  - 5269
+                  - 8083
+                  - 8092
+                  - 8093
+                  - 8094
+                  - 8101
