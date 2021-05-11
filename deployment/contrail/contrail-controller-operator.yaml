@@ -137,7 +137,7 @@ outputs:
                       - 8181
                       # analytics nodemgr
                       - 8104
-                    - {get_param: ContrailRedisPort}
+                    - - {get_param: ContrailRedisPort}
               '119 contrail analytics snmp':
                 dport:
                   # snmp collector
