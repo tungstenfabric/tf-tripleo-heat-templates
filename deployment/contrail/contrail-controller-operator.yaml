@@ -90,7 +90,7 @@ outputs:
                       - 3002
                       - 8143
                       - 8180
-                    - {get_param: ContrailRedisPort}
+                    - - {get_param: ContrailRedisPort}
               '113 contrail control dns':
                 dport: 53
                   - 53
