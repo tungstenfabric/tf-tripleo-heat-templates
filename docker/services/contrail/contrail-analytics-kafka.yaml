@@ -148,7 +148,7 @@ outputs:
               register: contrail_analytics_kafka_nodes_list
             - name: turn contrail service specific node ips into string
               set_fact:
-                contrail_analytics_kafka_nodes_string: "{{ contrail_analytics_kafka_nodes_list.stdout | from_json | join(',')  }}"
+                contrail_analytics_kafka_nodes_string: "{{ contrail_analytics_kafka_nodes_list.stdout | regex_replace('nil', '[]') | from_json | join(',') }}"
             - set_fact:
                 kafka_env_vars:
                   - "ZOOKEEPER_PORTS=4888:5888"

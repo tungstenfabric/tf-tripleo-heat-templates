@@ -740,7 +740,7 @@ outputs:
               register: contrail_service_nodes_list
             - name: turn contrail service specific node ips into string
               set_fact:
-                contrail_kafka_service_nodes_string: "{{ contrail_service_nodes_list.stdout | regex_replace('nil', '[]') | from_json | join(',')  }}"
+                contrail_kafka_service_nodes_string: "{{ contrail_service_nodes_list.stdout | regex_replace('nil', '[]') | from_json | join(',') }}"
 
             - name: write contrail config node ips to environment file
               lineinfile:
