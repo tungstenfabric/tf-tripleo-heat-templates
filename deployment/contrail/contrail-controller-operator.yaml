@@ -166,7 +166,7 @@ outputs:
                     - # alarm
                       - 5995
                       # alarm nodemgr
-                      - - 8113
+                      - 8113
                       # analytics alarm zookeeper
                       - 2182
                       - '4888-5888'
