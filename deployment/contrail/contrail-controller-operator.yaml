@@ -45,147 +45,46 @@ resources:
       DefaultPasswords: {get_param: DefaultPasswords}
       RoleName: {get_param: RoleName}
       RoleParameters: {get_param: RoleParameters}
-      contrail_env_name: 'contrail_controller'
+      contrail_env_name: 'contrail_operator'
 
 outputs:
   role_data:
     description: Role data for the Contrail Config Database service.
     value:
-      service_name: contrail_controller
+      service_name: contrail_operator
       config_settings:
         map_merge:
-          - get_attr: [ContrailBase, role_data, config_settings]
-          - contrail_control_host_ip:
-              str_replace:
-                template:
-                  "%{hiera('$NETWORK')}"
-                params:
-                  $NETWORK: {get_param: [ServiceNetMap, ContrailControlNetwork]}
-            contrail_control_hostname:
-              str_replace:
-                template:
-                  "%{hiera('fqdn_$NETWORK')}"
-                params:
-                  $NETWORK: {get_param: [ServiceNetMap, ContrailControlNetwork]}
-          - tripleo.contrail_controller.firewall_rules:
-              '114 config database':
-                dport:
-                  - 2181
-                  - '2888-3888'
-                  - 4369
-                  - 5673
-                  - 7012
-                  - 7013
-                  - 7201
-                  - 8112
-                  - 9041
-                  - 9161
-                  - 15673
-                  - 25673
-                  - '25684-25694'
-              '116 contrail webui':
-                dport:
-                  list_concat:
-                    - - 3000
-                      - 3002
-                      - 8143
-                      - 8180
-                    - - {get_param: ContrailRedisPort}
-              '113 contrail control dns':
-                dport: 53
-                  - 53
-                  - 8092
-                proto: 'udp'
-              '113 contrail control tcp':
-                dport:
-                  - 179
-                  - 5269
-                  - 8083
-                  - 8092
-                  - 8093
-                  - 8094
-                  - 8101
-              '118 contrail config':
-                dport:
-                  - 8082
-                  - 8084
-                  - 8087
-                  - 8088
-                  - 8096
-                  - 8100
-                  - 8101
-              '118 tf operator k8s':
-                dport:
-                  - '6443'
-                  - '2379-2380'
-                  - '10250-10252'
-                  - '10255'
-              '117 contrail_analytics':
-                dport:
-                  list_concat:
-                    -  # collector structured syslog
-                      - 3514
-                      # op server
-                      - 8081
-                      # collector
-                      - 8086
-                      # http collector
-                      - 8089
-                      # http op server
-                      - 8090
-                      # op server admin
-                      - 8181
-                      # analytics nodemgr
-                      - 8104
-                    - - {get_param: ContrailRedisPort}
-              '119 contrail analytics snmp':
-                dport:
-                  # snmp collector
-                  - 5920
-                  # topology
-                  - 5921
-                  # analytics snmp nodemgr
-                  - 8114
-              '115 contrail analytics database':
-                dport:
-                  list_concat:
-                    - # cassandra
-                      - 7010
-                      - 7011
-                      - 7200
-                      # database nodemgr
-                      - 8103
-                      # cassandra
-                      - 9042
-                      - 9160
-                      # query engine
-                      - 8091
-              '120 contrail analytics alarm':
-                dport:
-                  list_concat:
-                    - # alarm
-                      - 5995
-                      # alarm nodemgr
-                      - 8113
-                      # analytics alarm zookeeper
-                      - 2182
-                      - '4888-5888'
-                      # analytics alarm kafka
-                      - 9092
+          - # overrides ips for plugins instead of using vips
+            contrail_config_ips: "%{hiera('contrail_operator_node_ips')}"
+
       service_config_settings:
         haproxy:
-          tripleo.contrail_controller.haproxy_endpoints:
-            contrail_config:
+          tripleo.contrail_operator.haproxy_endpoints:
+            contrail_operator_config:
               map_merge:
                 - public_ssl_port: 18082
-                  internal_ip: {get_param: [ServiceData, net_vip_map, {get_param: [ServiceNetMap, ContrailConfigNetwork]}]}
+                  internal_ip: {get_param: [ServiceData, net_vip_map, {get_param: [ServiceNetMap, ContrailOperatorNetwork]}]}
                   service_port: 8082
-                  service_network: {get_param: [ServiceNetMap, ContrailConfigNetwork]}
+                  service_network: {get_param: [ServiceNetMap, ContrailOperatorNetwork]}
+                  base_service_name: 'contrail_operator'
                 - {get_attr: [ContrailBase, role_data, haproxy_config_settings_api]}
-            contrail_analytics:
+            contrail_operator_analytics:
               map_merge:
                 - public_ssl_port: 18081
-                  internal_ip: {get_param: [ServiceData, net_vip_map, {get_param: [ServiceNetMap, ContrailAnalyticsNetwork]}]}
+                  internal_ip: {get_param: [ServiceData, net_vip_map, {get_param: [ServiceNetMap, ContrailOperatorNetwork]}]}
                   service_port: 8081
-                  service_network: {get_param: [ServiceNetMap, ContrailAnalyticsNetwork]}
+                  service_network: {get_param: [ServiceNetMap, ContrailOperatorNetwork]}
+                  base_service_name: 'contrail_operator'
                 - {get_attr: [ContrailBase, role_data, haproxy_config_settings_api]}
+            contrail_operator_webui:
+              map_merge:
+                - public_ssl_port: 8143
+                  internal_ip: {get_param: [ServiceData, net_vip_map, {get_param: [ServiceNetMap, ContrailOperatorNetwork]}]}
+                  service_port: 8143
+                  service_network: {get_param: [ServiceNetMap, ContrailOperatorNetwork]}
+                  base_service_name: 'contrail_operator'
+                - {get_attr: [ContrailBase, role_data, haproxy_config_settings_webui]}
+
+
+      host_prep_tasks:
+        {get_attr: [ContrailBase, role_data, contrail_host_prep_tasks_selinux]}

@@ -1,15 +1,16 @@
-# A Heat environment file which can be used to enable TF SDN for Openstack
-# with TF Operator based deployment for Contrail Control plane
+# A Heat environment file which can be used to enable OpenContrail
+# # extensions, configured via puppet
 resource_registry:
-  OS::TripleO::Services::ContrailAnalytics: ../../deployment/contrail/contrail-controller-operator.yaml
-  OS::TripleO::Services::ContrailAnalyticsAlarm: ../../deployment/contrail/contrail-controller-operator.yaml
-  OS::TripleO::Services::ContrailAnalyticsDatabase: ../../deployment/contrail/contrail-controller-operator.yaml
-  OS::TripleO::Services::ContrailAnalyticsSnmp: ../../deployment/contrail/contrail-controller-operator.yaml
-  OS::TripleO::Services::ContrailConfigDatabase: ../../deployment/contrail/contrail-controller-operator.yaml
-  OS::TripleO::Services::ContrailConfig: ../../deployment/contrail/contrail-controller-operator.yaml
-  OS::TripleO::Services::ContrailControl: ../../deployment/contrail/contrail-controller-operator.yaml
-  OS::TripleO::Services::ContrailControlOnly: ../../deployment/contrail/contrail-controller-operator.yaml
-  OS::TripleO::Services::ContrailWebui: ../../deployment/contrail/contrail-controller-operator.yaml
+  OS::TripleO::Services::ContrailOperator: ../../deployment/contrail/contrail-controller-operator.yaml
+  OS::TripleO::Services::ContrailAnalytics: OS::Heat::None
+  OS::TripleO::Services::ContrailAnalyticsAlarm: OS::Heat::None
+  OS::TripleO::Services::ContrailAnalyticsDatabase: OS::Heat::None
+  OS::TripleO::Services::ContrailAnalyticsSnmp: OS::Heat::None
+  OS::TripleO::Services::ContrailConfigDatabase: OS::Heat::None
+  OS::TripleO::Services::ContrailConfig: OS::Heat::None
+  OS::TripleO::Services::ContrailControl: OS::Heat::None
+  OS::TripleO::Services::ContrailControlOnly: OS::Heat::None
+  OS::TripleO::Services::ContrailWebui: OS::Heat::None
   OS::TripleO::Services::ContrailVrouter: ../../deployment/contrail/contrail-vrouter.yaml
   OS::TripleO::Services::ContrailDpdk: ../../deployment/contrail/contrail-vrouter-dpdk.yaml
   OS::TripleO::Services::ContrailSriov: ../../deployment/contrail/contrail-vrouter-sriov.yaml
@@ -34,7 +35,7 @@ resource_registry:
   OS::TripleO::ControllerExtraConfigPre: ../../extraconfig/pre_deploy/contrail/contrail-init.yaml
   OS::TripleO::ContrailControllerExtraConfigPre: OS::Heat::None
   OS::TripleO::ContrailControlOnlyExtraConfigPre: OS::Heat::None
-  OS::TripleO::ContrailAnalyticsExtraConfigPre: .OS::Heat::None
+  OS::TripleO::ContrailAnalyticsExtraConfigPre: OS::Heat::None
   OS::TripleO::ContrailAnalyticsAlarmExtraConfigPre: OS::Heat::None
   OS::TripleO::ContrailAnalyticsDatabaseExtraConfigPre: OS::Heat::None
   OS::TripleO::ContrailAnalyticsSnmpExtraConfigPre: OS::Heat::None
