@@ -276,6 +276,10 @@ outputs:
                       vrouter_init_container_name_ansible: *vrouter_init_container_name
                   - name: Start contrail-vrouter-kernel-init container as post update
                     shell: bash -c "docker start {{ vrouter_init_container_name_ansible }}"
+                  # https://contrail-jws.atlassian.net/browse/CEM-22026
+                  - name: Remove possible agent core files as WA for CEM-22026
+                    ignore_errors: yes
+                    shell: bash -c "rm -rf /var/crashes/core.contrail-vroute* || true"
           - - name: Restart vhost0 interface
               when: step|int == 0
               async: 120
