@@ -638,6 +638,8 @@
     - OS::TripleO::Services::BootParams
     - OS::TripleO::Services::CACerts
     - OS::TripleO::Services::CertmongerUser
+    - OS::TripleO::Services::ContrailCertmongerUser
+    - OS::TripleO::Services::ContrailOperator
     - OS::TripleO::Services::IpaClient
     - OS::TripleO::Services::Ipsec
     - OS::TripleO::Services::Kernel
@@ -647,4 +649,3 @@
     - OS::TripleO::Services::Sshd
     - OS::TripleO::Services::Timesync
     - OS::TripleO::Services::Timezone
-    - OS::TripleO::Services::ContrailOperator
