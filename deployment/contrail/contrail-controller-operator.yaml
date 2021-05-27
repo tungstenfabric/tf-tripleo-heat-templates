@@ -53,8 +53,9 @@ outputs:
     value:
       service_name: contrail_operator
       service_config_settings:
-        # overrides ips for plugins instead of using vips
-        contrail_config_ips: "%{hiera('contrail_operator_node_ips')}"
+        contrail_neutron_plugin:
+          # overrides ips for plugins instead of using vips
+          contrail_config_ips: "%{hiera('contrail_operator_node_ips')}"
         haproxy:
           tripleo.contrail_operator.haproxy_endpoints:
             contrail_operator_config:
