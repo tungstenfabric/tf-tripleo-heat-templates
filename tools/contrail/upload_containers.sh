@@ -176,6 +176,9 @@ contrail-vrouter-kernel-init \
 contrail-controller-webui-job \
 contrail-controller-webui-web \
 contrail-external-zookeeper \
+contrail-kubernetes-cni-init \
+contrail-kubernetes-kube-manager \
+contrail-controller-config-dnsmasq \
 ${stunnel} \
 ${provisioner} \
 ${contrail_tools}

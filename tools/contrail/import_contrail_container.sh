@@ -185,6 +185,9 @@ DockerContrailVrouterKernelInitImageName:contrail-vrouter-kernel-init
 DockerContrailWebuiJobImageName:contrail-controller-webui-job
 DockerContrailWebuiWebImageName:contrail-controller-webui-web
 DockerContrailZookeeperImageName:contrail-external-zookeeper
+DockerContrailKubeCniImageName:contrail-kubernetes-cni-init
+DockerContrailKubeManagerImageName:contrail-kubernetes-kube-manager
+DockerContrailDnsmasqImageName:contrail-controller-config-dnsmasq
 ${stunnel}
 ${provisioner}
 ${contrail_tools}
