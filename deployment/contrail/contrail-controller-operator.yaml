@@ -34,6 +34,11 @@ parameters:
     default: 6379
     description: Contrail Redis port
     type: number
+  # internal params
+  contrail_nodes_param_suffux:
+    type: string
+    default: "node_ips"
+    description: suffix for reading hiera data, node_ips or node_names
 
 resources:
   ContrailBase:
@@ -55,7 +60,12 @@ outputs:
       service_config_settings:
         contrail_neutron_plugin:
           # overrides ips for plugins instead of using vips
-          contrail_config_ips: "%{hiera('contrail_operator_node_ips')}"
+          contrail_config_ips:
+            str_replace:
+              template:
+                "%{hiera('contrail_operator_$SUFFIX')}"
+              params:
+                $SUFFIX: {get_param: contrail_nodes_param_suffux}
         haproxy:
           tripleo.contrail_operator.haproxy_endpoints:
             contrail_operator_config:

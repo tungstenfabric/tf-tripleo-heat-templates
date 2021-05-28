@@ -315,7 +315,8 @@ outputs:
         - get_attr: [RoleParametersValue, value]
         - if:
           - set_auth_ca_file
-          - contrail::auth_ca_file: {get_param: InternalTLSCAFile}
+          - contrail::auth_ca_file: {get_param: ContrailCaCertFile}
+            contrail::keystone_auth_ca_file: {get_param: InternalTLSCAFile}
           - null
         - contrail_config_vip:
             str_replace:
@@ -635,7 +636,15 @@ outputs:
 
                 - name: get external contrail config node ips
                   shell: hiera -c /etc/puppet/hiera.yaml contrail_config_ips
-                  register: contrail_config_nodes_list
+                  register: contrail_config_ips
+                - name: turn contrail config ips into string
+                  set_fact:
+                    contrail_config_ips_arr: "{{ contrail_config_ips.stdout | regex_replace('nil', '[]') | to_json | from_json }}"
+                - set_fact:
+                    contrail_config_ips_string: "{{ contrail_config_ips_string | default('')  + ' ' + item }}"
+                  with_items: "{{ contrail_config_ips_arr }}"
+                - set_fact:
+                    contrail_config_ips_string: "{{ contrail_config_ips_string | default('') | trim | regex_replace(' ', ',') }}"
 
                 # used for operator based if nodes are deployed by tripleo
                 - name: contrail operator node ips (names) param name
@@ -650,7 +659,7 @@ outputs:
 
                 - name: set contrail config ips
                   set_fact:
-                    contrail_config_nodes_string: "{{ contrail_config_nodes_list.stdout | regex_replace('nil', '') }}"
+                    contrail_config_nodes_string: "{{ contrail_config_ips_string }}"
                 - when: contrail_config_nodes_string == ''
                   block:
                     - name: config api node ips (names) param name
