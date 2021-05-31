@@ -219,13 +219,21 @@ conditions:
   internal_ipa_ca: {equals: [{get_param: CertmongerCA}, 'IPA']}
   contrail_tls_enabled: {equals: [{get_param: ContrailSslEnabled}, true]}
   contrail_ipa_ca: {equals: [{get_param: ContrailCA}, 'IPA']}
+  # if ca is in tripleo-heat-templates/deployment/containers-common.yaml#volumes_base
+  contrail_ca_is_in_common:
+    or:
+      - {equals: [{get_param: ContrailCaCertFile}, '/etc/pki/tls/certs/ca-bundle.crt']}
+      - {equals: [{get_param: ContrailCaCertFile}, '/etc/pki/tls/certs/ca-bundle.trust.crt']}
+      - {equals: [{get_param: ContrailCaCertFile}, '/etc/pki/tls/cert.pem']}
+      - {equals: [{get_param: ContrailCaCertFile}, {get_param: InternalTLSCAFile}]}
+
   bind_contrail_ca_file:
     and:
       - contrail_tls_enabled
       - contrail_ipa_ca
       - or:
         - not: internal_tls_enabled
-        - not: {equals: [{get_param: ContrailCaCertFile}, {get_param: InternalTLSCAFile}]}
+        - not: contrail_ca_is_in_common
   set_auth_ca_file:
     and:
       - internal_tls_enabled
@@ -315,7 +323,9 @@ outputs:
         - get_attr: [RoleParametersValue, value]
         - if:
           - set_auth_ca_file
-          - contrail::auth_ca_file: {get_param: ContrailCaCertFile}
+          - contrail::ca_file: {get_param: ContrailCaCertFile}
+            # TODO: auth_ca_file - depricated, be removed
+            contrail::auth_ca_file: {get_param: ContrailCaCertFile}
             contrail::keystone_auth_ca_file: {get_param: InternalTLSCAFile}
           - null
         - contrail_config_vip:
