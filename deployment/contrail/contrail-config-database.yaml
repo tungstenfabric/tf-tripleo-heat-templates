@@ -537,9 +537,6 @@ outputs:
                 name: tripleo-container-stop
               vars:
                 tripleo_containers_to_stop:
-                  - contrail_config_rabbitmq
-                  - contrail_config_zookeeper
-                  - contrail_config_database
                   - contrail_config_database_nodemgr
                   - contrail_config_database_provisioner
                 tripleo_delegate_to: "{{ groups['contrail_database'] | default([]) }}"

@@ -329,10 +329,7 @@ outputs:
                 name: tripleo-container-stop
               vars:
                 tripleo_containers_to_stop:
-                  - contrail_analytics_database
                   - contrail_analytics_database_nodemgr
                   - contrail_analytics_database_provisioner
-                  - contrail_analytics_zookeeper
-                  - contrail_analytics_kafka
                   - contrail_analytics_queryengine
                 tripleo_delegate_to: "{{ groups['contrail_analytics_database'] | default([]) }}"

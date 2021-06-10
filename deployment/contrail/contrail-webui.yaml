@@ -237,8 +237,6 @@ outputs:
                 name: tripleo-container-stop
               vars:
                 tripleo_containers_to_stop:
-                  - contrail_redis
-                  - contrail_stunnel
                   - contrail_webui_job
                   - contrail_webui_web
                 tripleo_delegate_to: "{{ groups['contrail_webui'] | default([]) }}"

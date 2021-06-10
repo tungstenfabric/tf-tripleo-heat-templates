@@ -288,7 +288,4 @@ outputs:
                 tripleo_containers_to_stop:
                   - contrail_control_provisioner
                   - contrail_control_nodemgr
-                  - contrail_control_control
-                  - contrail_control_dns
-                  - contrail_control_named
                 tripleo_delegate_to: "{{ groups['contrail_control'] | default([]) }}"

@@ -234,6 +234,4 @@ outputs:
                   - contrail_analytics_alarmgen
                   - contrail_analytics_alarm_nodemgr
                   - contrail_analytics_alarm_provisioner
-                  - contrail_analytics_zookeeper
-                  - contrail_analytics_kafka
                 tripleo_delegate_to: "{{ groups['contrail_analytics_alarm'] | default([]) }}"
