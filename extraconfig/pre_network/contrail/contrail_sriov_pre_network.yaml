@@ -89,6 +89,8 @@ parameters:
   ContrailSriovMode:
     default: 'kernel'
     type: string
+    tags:
+      - role_specific
   ContrailRegistry:
     default: 'opencontrailnightly'
     description: Contrail Registry
