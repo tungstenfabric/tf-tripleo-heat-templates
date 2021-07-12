@@ -143,10 +143,7 @@ conditions:
     equals:
       - {get_param: deployment_actions}
       - []
-  is_dpdk:
-    or:
-      - {equals: [{get_param: ContrailSriovMode}, 'dpdk']}
-      - {equals: [{get_param: [RoleParameters, ContrailSriovMode]}, 'dpdk']}
+  is_dpdk: {equals: [{get_param: [RoleParameters, ContrailSriovMode]}, 'dpdk']}
 
 resources:
   DockerContrailVrouterKernelImageNormalize:

@@ -94,9 +94,7 @@ conditions:
               expression: $.data.split(".").select($.split("-")).flatten().where($.matches("^[0-9]{4,}$")).where(int($) < 2001).any()
               data: {get_param: ContrailImageTag}
 
-  is_dpdk:
-    or:
-      - {equals: [{get_param: [RoleParameters, ContrailSriovMode]}, 'dpdk']}
+  is_dpdk: {equals: [{get_param: [RoleParameters, ContrailSriovMode]}, 'dpdk']}
 
 resources:
   DockerContrailVrouterKernelImageNormalize:
