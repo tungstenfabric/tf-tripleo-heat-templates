@@ -920,6 +920,7 @@ outputs:
                 vars=$(cat {{ contrail_service_common_env_file }} {{ contrail_service_env_file }} | sort -u)
                 echo "$vars" | md5sum | awk '{print($1)}' > {{ contrail_service_conf_md5_file }}
                 cat {{ contrail_service_conf_md5_file }}
+                chmod 660 {{ contrail_service_conf_dir }}/*
               register: config_md5sum
             - debug:
                 msg: "service config md5sum: service={{ contrail_conf_name }} md5={{ config_md5sum.stdout }}"
