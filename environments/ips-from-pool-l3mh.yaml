@@ -1,0 +1,7 @@
+resource_registry:
+  OS::TripleO::ContrailAio::Ports::L3mhPort: ../network/ports/l3mh_from_pool.yaml
+
+parameter_defaults:
+  ContrailAioIPs:
+    l3mh:
+    - 10.10.10.150
