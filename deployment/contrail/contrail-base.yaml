@@ -298,6 +298,7 @@ outputs:
   role_data:
     description: Shared role data for the Contrail services.
     value:
+      contrail_settings: &contrail_settings {get_attr: [RoleParametersValue, value, 'contrail_settings']}
       contrail_nodemgr_image_name: {get_attr: [ContrailNodemgrImageNormalize, contrail_image]}
       contrail_provisioner_image_name: {get_attr: [ContrailProvisionerImageNormalize, contrail_image]}
       config_settings:
@@ -809,7 +810,7 @@ outputs:
                 # overwrite from NodeDataLookup if any.
                 - name: role specific contrail_settings
                   set_fact:
-                    contrail_settings: {get_attr: [RoleParametersValue, value, 'contrail_settings']}
+                    contrail_settings: *contrail_settings
                 - name: get dmi
                   shell: |
                     #!/bin/sh

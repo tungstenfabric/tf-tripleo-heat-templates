@@ -120,6 +120,7 @@ resources:
       RoleName: {get_param: RoleName}
       RoleParameters: {get_param: RoleParameters}
 
+
 outputs:
   role_data:
     description: Role data for the Contrail Vrouter service.
@@ -218,7 +219,10 @@ outputs:
                   map_merge:
                     - {get_attr: [ContrailBase, role_data, contrail_base_env]}
                     - VROUTER_MODULE_OPTIONS: {get_param: ContrailVrouterModuleOptions}
-                      KERNEL_INIT_VHOST0: 'false'
+                      KERNEL_INIT_VHOST0:
+                        yaql:
+                          expression: not $.containsKey("L3MH_CIDR") or $["L3MH_CIDR"].isEmpty()
+                          data: {get_attr: [ContrailBase, role_data, contrail_settings]}
                 env_file:
                   list_concat:
                     - {get_attr: [ContrailBase, role_data, contrail_base_env_file]}
