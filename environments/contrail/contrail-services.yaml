@@ -67,6 +67,9 @@ parameter_defaults:
         value: 2
       vm.max_map_count:
         value: 128960
+      # uncomment for L3MH to disable rp filtering
+      # net.ipv4.conf.all.rp_filter:
+      #   value: 0
 
 # ContrailDefaults - environment passed to provisione container
 # Pass all params as a list of strings
@@ -84,6 +87,8 @@ parameter_defaults:
     BGP_ASN: 64512
     # Supported values are true/false. When true, system will automatically create BGP peering mesh with all control-nodes that have same BGP AS number as global AS number.
     BGP_AUTO_MESH: true
+    # Uncomment and set for L3MH (or set in role specific parameters)
+    # L3MH_CIDR: 10.1.1.0/24 
 
 # Mellanox with kernel node doesnt requre any additions.
 # TODO: in further as soon as Mellanox supports full-offload
