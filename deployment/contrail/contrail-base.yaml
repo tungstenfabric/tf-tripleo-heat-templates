@@ -468,6 +468,9 @@ outputs:
           - /sys/fs/cgroup:/sys/fs/cgroup:ro
           - /sys/fs/selinux:/sys/fs/selinux
           - /var/lib/containers:/var/lib/containers:shared
+          - /etc/containers:/etc/containers:ro
+          - /usr/share/containers:/usr/share/containers:ro
+
       contrail_general_base_env: &contrail_general_base_env
         CLOUD_ORCHESTRATOR: 'openstack'
         OPENSTACK_VERSION: 'train'
