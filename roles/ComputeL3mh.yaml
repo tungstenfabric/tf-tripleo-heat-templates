@@ -1,9 +1,9 @@
 ###############################################################################
 # Role: Compute example for L3MH                                              #
 ###############################################################################
-- name: Compute
+- name: ComputeL3mh
   description: |
-    All-in-one role serving both as a controller, contrail controller and a compute.
+    Compute with L3MH networking.
   disable_constraints: False
   CountDefault: 0
   tags:
@@ -14,11 +14,13 @@
       subnet: internal_api_subnet
     Storage:
       subnet: storage_subnet
-    Tenant:
-      subnet: tenant_subnet
     L3mh:
       subnet: l3mh_subnet
-  HostnameFormatDefault: '%stackname%-novacompute-%index%'
+    Tenant1L3mh:
+      subnet: tenant1_l3mh_subnet
+    Tenant2L3mh:
+      subnet: tenant2_l3mh_subnet
+  HostnameFormatDefault: '%stackname%-computel3mh-%index%'
   RoleParametersDefault:
     TunedProfileName: "virtual-host"
   # Deprecated & backward-compatible values (FIXME: Make parameters consistent)

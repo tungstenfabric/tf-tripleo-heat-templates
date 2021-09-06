@@ -28,7 +28,9 @@ resource_registry:
   OS::TripleO::ContrailHeatIssu: OS::Heat::None
   OS::TripleO::ContrailNeutronIssu: OS::Heat::None
   OS::TripleO::Compute::PreNetworkConfig: ../../extraconfig/pre_network/contrail/compute_pre_network.yaml
+  OS::TripleO::ComputeL3mh::PreNetworkConfig: ../../extraconfig/pre_network/contrail/compute_pre_network.yaml
   OS::TripleO::ContrailAio::PreNetworkConfig: ../../extraconfig/pre_network/contrail/compute_pre_network.yaml
+  OS::TripleO::ContrailAioL3mh::PreNetworkConfig: ../../extraconfig/pre_network/contrail/compute_pre_network.yaml
   OS::TripleO::ContrailTsn::PreNetworkConfig: ../../extraconfig/pre_network/contrail/contrail_tsn_pre_network.yaml
   OS::TripleO::ContrailDpdk::PreNetworkConfig: ../../extraconfig/pre_network/contrail/contrail_dpdk_pre_network.yaml
   OS::TripleO::ContrailSriov::PreNetworkConfig: ../../extraconfig/pre_network/contrail/contrail_sriov_pre_network.yaml
@@ -40,10 +42,12 @@ resource_registry:
   OS::TripleO::ContrailAnalyticsDatabaseExtraConfigPre: OS::Heat::None
   OS::TripleO::ContrailAnalyticsSnmpExtraConfigPre: OS::Heat::None
   OS::TripleO::ComputeExtraConfigPre: ../../extraconfig/pre_deploy/contrail/contrail-init.yaml
+  OS::TripleO::ComputeL3mhExtraConfigPre: ../../extraconfig/pre_deploy/contrail/contrail-init.yaml
   OS::TripleO::ContrailDpdkExtraConfigPre: ../../extraconfig/pre_deploy/contrail/contrail-init.yaml
   OS::TripleO::ContrailSriovExtraConfigPre: ../../extraconfig/pre_deploy/contrail/contrail-init.yaml
   OS::TripleO::ContrailTsnExtraConfigPre: ../../extraconfig/pre_deploy/contrail/contrail-init.yaml
   OS::TripleO::ContrailAioExtraConfigPre: ../../extraconfig/pre_deploy/contrail/contrail-init.yaml
+  OS::TripleO::ContrailAioL3mhExtraConfigPre: ../../extraconfig/pre_deploy/contrail/contrail-init.yaml
 
   # Agilio by default is disabled
   OS::TripleO::Services::AgilioVrouter: OS::Heat::None

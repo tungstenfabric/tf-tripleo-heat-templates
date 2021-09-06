@@ -1,0 +1,49 @@
+###############################################################################
+# Role: ContrailController                                                    #
+###############################################################################
+- name: ContrailController
+  description: |
+    ContrailController role that has all the Contrail controler services loaded
+    and handles config, control and webui functions
+  CountDefault: 0
+  tags:
+    - primary
+    - contrailcontroller
+  networks:
+    External:
+      subnet: external_subnet
+    InternalApi:
+      subnet: internal_api_subnet
+    Tenant:
+      subnet: tenant_subnet
+  HostnameFormatDefault: '%stackname%-contrailcontroller-%index%'
+  ServicesDefault:
+    - OS::TripleO::Services::AuditD
+    - OS::TripleO::Services::BootParams
+    - OS::TripleO::Services::CACerts
+    - OS::TripleO::Services::CertmongerUser
+    - OS::TripleO::Services::Collectd
+    - OS::TripleO::Services::ContainersLogrotateCrond
+    - OS::TripleO::Services::Docker
+    - OS::TripleO::Services::Ec2Api
+    - OS::TripleO::Services::IpaClient
+    - OS::TripleO::Services::Ipsec
+    - OS::TripleO::Services::Kernel
+    - OS::TripleO::Services::LoginDefs
+    - OS::TripleO::Services::Rhsm
+    - OS::TripleO::Services::Podman
+    - OS::TripleO::Services::Snmp
+    - OS::TripleO::Services::Sshd
+    - OS::TripleO::Services::Timesync
+    - OS::TripleO::Services::Timezone
+    - OS::TripleO::Services::TripleoPackages
+    - OS::TripleO::Services::ContrailAnalytics
+    - OS::TripleO::Services::ContrailAnalyticsAlarm
+    - OS::TripleO::Services::ContrailAnalyticsDatabase
+    - OS::TripleO::Services::ContrailAnalyticsSnmp
+    - OS::TripleO::Services::ContrailCertmongerUser
+    - OS::TripleO::Services::ContrailConfig
+    - OS::TripleO::Services::ContrailConfigDatabase
+    - OS::TripleO::Services::ContrailControl
+    - OS::TripleO::Services::ContrailWebui
+    - OS::TripleO::Services::TripleoFirewall
