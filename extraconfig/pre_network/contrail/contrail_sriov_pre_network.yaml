@@ -52,6 +52,12 @@ parameters:
     type: string
     tags:
       - role_specific
+  DockerInsecureRegistryAddress:
+    description: Optional. The IP Address and Port of an insecure docker
+                 namespace that will be configured in /etc/sysconfig/docker.
+                 The value can be multiple addresses separated by commas.
+    type: comma_delimited_list
+    default: []
   ContrailRegistry:
     default: 'opencontrailnightly'
     description: Contrail Registry
@@ -199,6 +205,7 @@ resources:
         - name: _CONTRAIL_VROUTER_PLUGIN_INIT_IMAGE_
         - name: _CONTRAIL_VROUTER_PLUGIN_INIT_IMAGE_NAME_
         - name: _CONTRAIL_DPDK_COMMAND_ADDITIONAL_ARGS_
+        - name: _DOCKER_INSECURE_REGISTRIES_
         - name: _IS_DPDK_
       outputs:
         - name: result
@@ -227,6 +234,7 @@ resources:
         _CONTRAIL_VROUTER_PLUGIN_INIT_IMAGE_: {get_attr: [DockerContrailVrouterPluginInitImageNormalize, contrail_image]}
         _CONTRAIL_VROUTER_PLUGIN_INIT_IMAGE_NAME_: {get_attr: [DockerContrailVrouterPluginInitImageNormalize, contrail_image_only]}
         _CONTRAIL_DPDK_COMMAND_ADDITIONAL_ARGS_: {get_attr: [ContrailSettingsRoleParametersValue, value, dpdk_options]}
+        _DOCKER_INSECURE_REGISTRIES_: {get_param: DockerInsecureRegistryAddress}
         _IS_DPDK_: {if: [is_dpdk, 'True', '']}
     depends_on:
       - SriovHostParametersDeployment
