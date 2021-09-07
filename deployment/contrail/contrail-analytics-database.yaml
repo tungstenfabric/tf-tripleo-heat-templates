@@ -169,6 +169,8 @@ outputs:
                 privileged: false
                 cap_add:
                   - SYS_NICE
+                security_opt:
+                  - 'seccomp=unconfined'
                 detach: true
                 # Dont specify user
                 # In case if user specified podman inside nodemgr tries to lookup its id
