@@ -59,15 +59,29 @@
   ipv6_subnet: 'fd00:fd00:fd00:6000::/64'
   ipv6_allocation_pools: [{'start': 'fd00:fd00:fd00:6000::10', 'end': 'fd00:fd00:fd00:6000:ffff:ffff:ffff:fffe'}]
   mtu: 1500
+# l3MH network - compute addresses (must be routeable)
 - name: L3mh
   enabled: true
   vip: false
   name_lower: l3mh
   ip_subnet: '10.10.10.0/24'
   allocation_pools: [{'start': '10.10.10.4', 'end': '10.10.10.100'}]
-  gateway_ip: '10.10.10.1'
-  gateway_ipv6: 'fd00:fd00:fd00:7000::1'
-  ipv6_subnet: 'fd00:fd00:fd00:7000::/64'
-  ipv6_allocation_pools: [{'start': 'fd00:fd00:fd00:7000::10', 'end': 'fd00:fd00:fd00:7000:ffff:ffff:ffff:fffe'}]
   mtu: 1500
-
+- name: Tenant1L3mh
+  enabled: true
+  vip: false
+  name_lower: tenant1_l3mh
+  # vlan: 100
+  ip_subnet: '172.16.10.0/24'
+  allocation_pools: [{'start': '172.16.10.10', 'end': '172.16.10.100'}]
+  gateway_ip: 172.16.10.1
+  mtu: 1500
+- name: Tenant2L3mh
+  enabled: true
+  vip: false
+  name_lower: tenant2_l3mh
+  # vlan: 200
+  ip_subnet: '172.16.20.0/24'
+  allocation_pools: [{'start': '172.16.20.10', 'end': '172.16.20.100'}]
+  gateway_ip: 172.16.20.1
+  mtu: 1500

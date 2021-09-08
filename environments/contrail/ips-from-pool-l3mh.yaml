@@ -1,0 +1,29 @@
+resource_registry:
+  OS::TripleO::ComputeL3mh::Ports::L3mhPort: ../../network/ports/l3mh_from_pool.yaml
+  OS::TripleO::ComputeL3mh::Ports::Tenant1L3mhPort: ../../network/ports/tenant1_l3mh_from_pool.yaml
+  OS::TripleO::ComputeL3mh::Ports::Tenant2L3mhPort: ../../network/ports/tenant2_l3mh_from_pool.yaml
+
+  # == Only for exepriments in CI, remove in prods
+  OS::TripleO::ContrailAioL3mh::Ports::L3mhPort: ../../network/ports/l3mh_from_pool.yaml
+  OS::TripleO::ContrailAioL3mh::Ports::Tenant1L3mhPort: ../../network/ports/tenant1_l3mh_from_pool.yaml
+  OS::TripleO::ContrailAioL3mh::Ports::Tenant2L3mhPort: ../../network/ports/tenant2_l3mh_from_pool.yaml
+  # ==
+
+parameter_defaults:
+  ComputeL3mhIPs:
+    l3mh:
+    - 10.10.10.150
+    tenant1_l3mh:
+    - 172.16.10.101
+    tenant2_l3mh:
+    - 172.16.20.101
+
+  # == Only for exepriments in CI, remove in prods
+  ContrailAioL3mhIPs:
+    l3mh:
+    - 10.10.10.160
+    tenant1_l3mh:
+    - 172.16.10.160
+    tenant2_l3mh:
+    - 172.16.20.160
+  # ==

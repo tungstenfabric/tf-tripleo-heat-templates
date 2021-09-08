@@ -67,9 +67,28 @@ parameter_defaults:
         value: 2
       vm.max_map_count:
         value: 128960
-      # uncomment for L3MH to disable rp filtering
-      # net.ipv4.conf.all.rp_filter:
-      #   value: 0
+
+  # L3MH compute example. Adjust to your setup
+  ComputeL3mhParameters:
+    KernelArgs: "default_hugepagesz=1GB hugepagesz=1G hugepages=2"
+    ExtraSysctlSettings:
+      # must be equal to value from 1G kernel args: hugepages=2
+      vm.nr_hugepages:
+        value: 2
+      vm.max_map_count:
+        value: 128960
+      net.ipv4.conf.all.rp_filter:
+        value: 0
+    ContrailSettings:
+      L3MH_CIDR: "10.10.10.0/24"
+      VROUTER_ENCRYPTION: false
+      # 16 bit BGP Autonomous System number for the cluster.
+      BGP_ASN: 64512
+      # Supported values are true/false. When true, system will automatically create BGP peering mesh with all control-nodes that have same BGP AS number as global AS number.
+      BGP_AUTO_MESH: true
+      # Vrouter gateway: adjust to your setup if any
+      VROUTER_GATEWAY: "172.16.10.1,172.16.20.1"
+
 
 # ContrailDefaults - environment passed to provisione container
 # Pass all params as a list of strings
@@ -87,8 +106,6 @@ parameter_defaults:
     BGP_ASN: 64512
     # Supported values are true/false. When true, system will automatically create BGP peering mesh with all control-nodes that have same BGP AS number as global AS number.
     BGP_AUTO_MESH: true
-    # Uncomment and set for L3MH (or set in role specific parameters)
-    # L3MH_CIDR: 10.1.1.0/24 
 
 # Mellanox with kernel node doesnt requre any additions.
 # TODO: in further as soon as Mellanox supports full-offload

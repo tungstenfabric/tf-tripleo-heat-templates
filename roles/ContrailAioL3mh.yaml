@@ -1,7 +1,8 @@
 ###############################################################################
-# Role: ContrailAio                                                           #
+# Testing in CI only                                                          #
+# Role: ContrailAioL3mh                                                       #
 ###############################################################################
-- name: ContrailAio
+- name: ContrailAioL3mh
   description: |
     All-in-one role serving both as a controller, contrail controller and a compute.
   disable_constraints: False
@@ -18,14 +19,16 @@
       subnet: storage_subnet
     StorageMgmt:
       subnet: storage_mgmt_subnet
-    Tenant:
-      subnet: tenant_subnet
     L3mh:
       subnet: l3mh_subnet
+    Tenant1L3mh:
+      subnet: tenant1_l3mh_subnet
+    Tenant2L3mh:
+      subnet: tenant2_l3mh_subnet
   # For systems with both IPv4 and IPv6, you may specify a gateway network for
   # each, such as ['ControlPlane', 'External']
   default_route_networks: ['ControlPlane']
-  HostnameFormatDefault: '%stackname%-contrailaio-%index%'
+  HostnameFormatDefault: '%stackname%-contrailaiol3mh-%index%'
   # Deprecated & backward-compatible values (FIXME: Make parameters consistent)
   # Set uses_deprecated_params to True if any deprecated params are used.
   disable_upgrade_deployment: True

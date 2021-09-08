@@ -10,6 +10,18 @@ parameters:
     default: ''
     description: IP address/subnet on the ctlplane network
     type: string
+  L3mhIpSubnet:
+    default: ''
+    description: IP address/subnet on the additional compute l3mh network
+    type: string
+  Tenant1L3mhIpSubnet:
+    default: ''
+    description: IP address/subnet on the additional l3mh network
+    type: string
+  Tenant2L3mhIpSubnet:
+    default: ''
+    description: IP address/subnet on the additional l3mh network
+    type: string
   ExternalIpSubnet:
     default: ''
     description: IP address/subnet on the external network
@@ -38,10 +50,6 @@ parameters:
     default: ''
     description: IP address/subnet on the management network
     type: string
-  L3MHIpSubnet:
-    default: ''
-    description: IP address/subnet on the m3lh network
-    type: string
   ExternalNetworkVlanID:
     default: 10
     description: Vlan ID for the external network traffic.
@@ -62,6 +70,18 @@ parameters:
     default: 50
     description: Vlan ID for the tenant network traffic.
     type: number
+  L3mhNetworkVlanID:
+    default: 51
+    description: Vlan ID for the additional l3mh network traffic.
+    type: number
+  Tenant1L3mhNetworkVlanID:
+    default: 52
+    description: Vlan ID for the additional l3mh network traffic.
+    type: number
+  Tenant2L3mhNetworkVlanID:
+    default: 53
+    description: Vlan ID for the additional l3mh network traffic.
+    type: number
   ManagementNetworkVlanID:
     default: 60
     description: Vlan ID for the management network traffic.
@@ -69,6 +89,18 @@ parameters:
   ControlPlaneSubnetCidr: # Override this via parameter_defaults
     default: '24'
     description: The subnet CIDR of the control plane network.
+    type: string
+  L3mhSubnetCidr: # Override this via parameter_defaults
+    default: '24'
+    description: The subnet CIDR of the additional l3mh network.
+    type: string
+  Tenant1L3mhSubnetCidr: # Override this via parameter_defaults
+    default: '24'
+    description: The subnet CIDR of the additional l3mh network.
+    type: string
+  Tenant2L3mhSubnetCidr: # Override this via parameter_defaults
+    default: '24'
+    description: The subnet CIDR of the additional l3mh network.
     type: string
   ControlPlaneDefaultRoute: # Override this via parameter_defaults
     description: The default route of the control plane network.
@@ -126,11 +158,27 @@ parameters:
       Unless the default is changed, the parameter is automatically resolved
       from the subnet host_routes attribute.
     type: json
-  L3MHInterfaceRoutes:
+  L3mhInterfaceRoutes:
+    default: []
+    description: >
+      Routes for the tenant network traffic.
+      JSON route e.g. [{'destination':'10.0.0.0/16', 'nexthop':'10.0.0.1'}]
+      Unless the default is changed, the parameter is automatically resolved
+      from the subnet host_routes attribute.
+    type: json
+  Tenant1L3mhInterfaceRoutes:
     default: []
     description: >
       Routes for the l3mh network traffic.
-      JSON route e.g. [{'destination':'10.0.0.0/16', 'nexthop':'10.0.0.1'}]
+      JSON route e.g. [{'destination':'30.1.1.1/32', 'nexthop':'100.0.0.1', route_options: 'nexthop via 200.0.0.1'}]
+      Unless the default is changed, the parameter is automatically resolved
+      from the subnet host_routes attribute.
+    type: json
+  Tenant2L3mhInterfaceRoutes:
+    default: []
+    description: >
+      Routes for the l3mh network traffic.
+      JSON route e.g. [{'destination':'30.1.1.1/32', 'nexthop':'100.0.0.1', route_options: 'nexthop via 200.0.0.1'}]
       Unless the default is changed, the parameter is automatically resolved
       from the subnet host_routes attribute.
     type: json
@@ -139,6 +187,24 @@ parameters:
     description: The maximum transmission unit (MTU) size(in bytes) that is
       guaranteed to pass through the data path of the segments in the
       Tenant network.
+    type: number
+  L3mhMtu:
+    default: 1500
+    description: The maximum transmission unit (MTU) size(in bytes) that is
+      guaranteed to pass through the data path of the segments in the
+      additional l3mh network.
+    type: number
+  Tenant1L3mhMtu:
+    default: 1500
+    description: The maximum transmission unit (MTU) size(in bytes) that is
+      guaranteed to pass through the data path of the segments in the
+      additional l3mh network.
+    type: number
+  Tenant2L3mhMtu:
+    default: 1500
+    description: The maximum transmission unit (MTU) size(in bytes) that is
+      guaranteed to pass through the data path of the segments in the
+      additional l3mh network.
     type: number
   StorageInterfaceRoutes:
     default: []
@@ -193,6 +259,7 @@ parameters:
     description: A list of DNS search domains to be added (in order) to resolv.conf.
     type: comma_delimited_list
 
+
 resources:
   OsNetConfigImpl:
     type: OS::Heat::SoftwareConfig
@@ -201,7 +268,7 @@ resources:
       config:
         str_replace:
           template:
-            get_file: ../../scripts/run-os-net-config.sh
+            get_file: ../../../../scripts/run-os-net-config.sh
           params:
             $network_config:
               network_config:
@@ -223,41 +290,31 @@ resources:
                 - default: true
                   next_hop:
                     get_param: ControlPlaneDefaultRoute
-              - type: vlan
-                vlan_id:
-                  get_param: InternalApiNetworkVlanID
-                device: nic1
-                addresses:
-                - ip_netmask:
-                    get_param: InternalApiIpSubnet
-              - type: vlan
-                vlan_id:
-                  get_param: StorageNetworkVlanID
-                device: nic1
-                addresses:
-                - ip_netmask:
-                    get_param: StorageIpSubnet
-              - type: linux_tap
-                name: tap1
-                use_dhcp: false
-                addresses: []
+              # l3mh interfaces1
               - type: interface
                 name: nic2
+                mtu: {get_param: Tenant1L3mhMtu}
                 use_dhcp: false
                 addresses:
-                - ip_netmask:
-                    get_param: TenantIpSubnet
-              - type: contrail_vrouter
-                name: vhost0
+                - ip_netmask: {get_param: Tenant1L3mhIpSubnet}
+                routes: {get_param: Tenant1L3mhInterfaceRoutes}
+              # l3mh interfaces2
+              - type: interface
+                name: nic3
+                mtu: {get_param: Tenant2L3mhMtu}
                 use_dhcp: false
-                members:
-                  -
-                    type: interface
-                    name: tap1
-                    use_dhcp: false
                 addresses:
-                - ip_netmask:
-                    get_param: L3MHIpSubnet
+                - ip_netmask: {get_param: Tenant2L3mhIpSubnet}
+                routes: {get_param: Tenant2L3mhInterfaceRoutes}
+              # l3mh local interface - compute address 
+              - type: linux_tap
+                name: tap0
+                mtu: {get_param: L3mhMtu}
+                use_dhcp: false
+                addresses:
+                - ip_netmask: {get_param: L3mhIpSubnet}
+                routes: {get_param: L3mhInterfaceRoutes}
+
 outputs:
   OS::stack_id:
     description: The OsNetConfigImpl resource.

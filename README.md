@@ -934,6 +934,8 @@ openstack overcloud deploy --templates tripleo-heat-templates/ \
 
 ```
 
+L3MH case specifics [L3MH-README.md]
+
 # quick VM start
 ```
 source overcloudrc

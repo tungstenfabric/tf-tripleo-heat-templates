@@ -5,11 +5,13 @@ resource_registry:
   OS::TripleO::ContrailAnalytics::Net::SoftwareConfig: ../../network/config/contrail/contrail-controller-nic-config.yaml
   OS::TripleO::ContrailAnalyticsDatabase::Net::SoftwareConfig: ../../network/config/contrail/contrail-controller-nic-config.yaml
   OS::TripleO::Compute::Net::SoftwareConfig: ../../network/config/contrail/compute-nic-config.yaml
+  OS::TripleO::ComputeL3mh::Net::SoftwareConfig: ../../network/config/contrail/compute-nic-config-l3mh.yaml
   OS::TripleO::ContrailDpdk::Net::SoftwareConfig: ../../network/config/contrail/contrail-dpdk-nic-config.yaml
   OS::TripleO::ContrailSriov::Net::SoftwareConfig: ../../network/config/contrail/contrail-sriov-nic-config.yaml
   OS::TripleO::ContrailTsn::Net::SoftwareConfig: ../../network/config/contrail/contrail-tsn-nic-config.yaml
   OS::TripleO::ContrailControllerIssu::Net::SoftwareConfig: ../../network/config/contrail/contrail-controller-nic-config.yaml
-  OS::TripleO::ContrailAio::Net::SoftwareConfig: ../../network/config/contrail/controller-nic-config-aio.yaml
+  OS::TripleO::ContrailAio::Net::SoftwareConfig: ../../network/config/contrail/compute-nic-config.yaml
+  OS::TripleO::ContrailAioL3mh::Net::SoftwareConfig: ../../network/config/contrail/compute-nic-config-l3mh.yaml
 
 parameter_defaults:
   # Customize all these values to match the local environment
@@ -40,3 +42,9 @@ parameter_defaults:
   EC2MetadataIp: 192.168.24.1  # Generally the IP of the Undercloud
   DnsServers: ["172.21.200.60"]
   NtpServer: 10.0.0.1
+  # L3MH options
+  L3mhNetCidr: '10.10.10.0/24'
+  Tenant1L3mhNetCidr: '172.16.10.0/24'
+  Tenant2L3mhNetCidr: '172.16.20.0/24'
+  # Tenant1L3mhNetworkVlanID: 111
+  # Tenant2L3mhNetworkVlanID: 111
