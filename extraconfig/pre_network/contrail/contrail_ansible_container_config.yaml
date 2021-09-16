@@ -53,27 +53,21 @@
         create: yes
       when: _CONTRAIL_VROUTER_MODULE_OPTS_ is defined and _CONTRAIL_VROUTER_MODULE_OPTS_ != ''
 
-    - name: ensure registries.conf.d exists
-      file:
-        state: directory
-        path: /etc/containers/registries.conf.d
-        recurse: yes
-
     - name: contrail vrouter plugin init container if exists
       block:
         - name: contrail vrouter plugin registry
           set_fact:
             contrail_registry: "{{ _CONTRAIL_VROUTER_PLUGIN_INIT_IMAGE_.split('/')[0] }}"
 
-        - name: copy setup_contrail_registry.sh to node
-          when: contrail_registry in _DOCKER_INSECURE_REGISTRIES_
-          copy:
-            mode: 0644
-            dest:  /etc/containers/registries.conf.d/contrail-vrouter-plugin-registry.conf
-            content: |
-              [[registry]]
-              location='{{ contrail_registry }}'
-              insecure=true
+        - name: Setup podman insecure registry for contrail vrouter plugin
+          when:
+            - contrail_registry != ""
+            - contrail_registry in _DOCKER_INSECURE_REGISTRIES_
+          ini_file:
+            path: /etc/containers/registries.conf
+            section: 'registries.insecure'
+            option: 'registries'
+            value: "[ '{{ contrail_registry }}' ]"
 
         - name: remove contrail vrouter plugin init container if exists
           shell: >
@@ -87,19 +81,19 @@
         - _CONTRAIL_VROUTER_PLUGIN_INIT_IMAGE_NAME_ is defined and _CONTRAIL_VROUTER_PLUGIN_INIT_IMAGE_NAME_ != ''
         - _CONTRAIL_VROUTER_PLUGIN_INIT_IMAGE_ is defined and _CONTRAIL_VROUTER_PLUGIN_INIT_IMAGE_ != ''
 
-    - name: contrail vrouter dpdk init registry
+    - name: contrail vrouter init registry
       set_fact:
         contrail_registry: "{{ _CONTRAIL_VROUTER_INIT_IMAGE_.split('/')[0] }}"
 
-    - name: copy setup_contrail_registry.sh to node
-      when: contrail_registry in _DOCKER_INSECURE_REGISTRIES_
-      copy:
-        mode: 0644
-        dest:  /etc/containers/registries.conf.d/contrail-vrouter-init-registry.conf
-        content: |
-          [[registry]]
-          location='{{ contrail_registry }}'
-          insecure=true
+    - name: Setup podman insecure registry for contrail vrouter init
+      when:
+        - contrail_registry != ""
+        - contrail_registry in _DOCKER_INSECURE_REGISTRIES_
+      ini_file:
+        path: /etc/containers/registries.conf
+        section: 'registries.insecure'
+        option: 'registries'
+        value: "[ '{{ contrail_registry }}' ]"
 
     - name: start contrail dpdk init container
       block:
