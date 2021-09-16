@@ -259,7 +259,6 @@ parameters:
     description: A list of DNS search domains to be added (in order) to resolv.conf.
     type: comma_delimited_list
 
-
 resources:
   OsNetConfigImpl:
     type: OS::Heat::SoftwareConfig
@@ -268,7 +267,7 @@ resources:
       config:
         str_replace:
           template:
-            get_file: ../../../../scripts/run-os-net-config.sh
+            get_file: ../../scripts/run-os-net-config.sh
           params:
             $network_config:
               network_config:
