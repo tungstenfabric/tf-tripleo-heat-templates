@@ -57,9 +57,10 @@
 
     - name: remove contrail node-init container if exists
       shell: >
-        {{ container_cli }} container rm --force "{{ _CONTRAIL_NODE_INIT_IMAGE_NAME_ }}"
-      ignore_errors: yes
+        {{ container_cli }} container rm --force $( {{ container_cli }} ps -a --filter 'name=.*contrail-node-init.*' --format "{{'{{'}}.ID{{'}}'}}")
 
+      ignore_errors: yes
+  
     - set_fact:
         ssl_enable: "{{ _SSL_ENABLE_ | default('false')}} | bool"
 
