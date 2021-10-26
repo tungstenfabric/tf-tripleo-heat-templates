@@ -2,8 +2,8 @@ heat_template_version: rocky
 
 description: >
   Software Config to drive os-net-config to configure multiple interfaces
-  for the compute role. This is an example for a Nova compute node using
-  Contrail vrouter and the vhost0 interface.
+  for the ContrailDpdk role. This is an example for a Nova compute node using
+  Contrail dpdk vrouter and the vhost0 interface with l3mh enabled.
 
 parameters:
   ControlPlaneIp:
@@ -259,7 +259,6 @@ parameters:
     description: A list of DNS search domains to be added (in order) to resolv.conf.
     type: comma_delimited_list
 
-
 resources:
   OsNetConfigImpl:
     type: OS::Heat::SoftwareConfig
@@ -268,7 +267,7 @@ resources:
       config:
         str_replace:
           template:
-            get_file: ../../../../scripts/run-os-net-config.sh
+            get_file: ../../scripts/run-os-net-config.sh
           params:
             $network_config:
               network_config:
@@ -290,6 +289,20 @@ resources:
                 - default: true
                   next_hop:
                     get_param: ControlPlaneDefaultRoute
+              - type: vlan
+                vlan_id:
+                  get_param: InternalApiNetworkVlanID
+                device: nic1
+                addresses:
+                - ip_netmask:
+                    get_param: InternalApiIpSubnet
+              - type: vlan
+                vlan_id:
+                  get_param: StorageNetworkVlanID
+                device: nic1
+                addresses:
+                - ip_netmask:
+                    get_param: StorageIpSubnet
               # l3mh interfaces1
               - type: interface
                 name: nic2
@@ -314,6 +327,16 @@ resources:
                 addresses:
                 - ip_netmask: {get_param: L3mhIpSubnet}
                 routes: {get_param: L3mhInterfaceRoutes}
+              # vhost0 - to create ifcfg file and allow 
+              # ifup scripts to run dpdk container
+              # full init is done by dpdk container (based on
+              # env like VROUTER_GATEWAY), so dont 
+              # point here address and NICs 
+              - type: contrail_vrouter_dpdk
+                name: vhost0
+                use_dhcp: false
+                driver: uio_pci_generic
+                cpu_list: '0x03'
 
 outputs:
   OS::stack_id:

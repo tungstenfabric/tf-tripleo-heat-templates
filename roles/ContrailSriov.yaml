@@ -5,8 +5,6 @@
   description: |
     Contrail Sriov Node role
   CountDefault: 0
-  tags:
-    - contrailsriov
   networks:
     InternalApi:
       subnet: internal_api_subnet

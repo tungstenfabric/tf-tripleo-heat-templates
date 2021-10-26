@@ -6,9 +6,6 @@
     Compute with L3MH networking.
   disable_constraints: False
   CountDefault: 0
-  tags:
-    - primary
-    - controller
   networks:
     InternalApi:
       subnet: internal_api_subnet

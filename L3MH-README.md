@@ -3,15 +3,19 @@ Render command example:
 the below is just an example)
 
 ./tripleo-heat-templates/tools/process-templates.py --clean \
-  -r /home/cloud-user/tripleo-heat-templates/roles/ContrailAioL3mh.yaml \
+  -r /home/cloud-user/tripleo-heat-templates/roles/roles_data_contrail_aio.yaml \
   -n network_data_l3mh.yaml \
   -p tripleo-heat-templates/
 
 ./tripleo-heat-templates/tools/process-templates.py \
-  -r /home/cloud-user/tripleo-heat-templates/roles/ContrailAioL3mh.yaml \
+  -r /home/cloud-user/tripleo-heat-templates/roles_data_contrail_aio.yaml\
   -n network_data_l3mh.yaml \
   -p tripleo-heat-templates/
 
+
+To enabled dpdk for regular ContrailDpdk role provide parameters related to L3MH 
+as for ComputeL3mh example and use network/config/contrail/contrail-dpdk-nic-config-l3mh.yaml
+as the nic file (or modify own).
 
 Deploy command example:
 (L3MH requires to use custom network data file and static IPs 
@@ -19,7 +23,7 @@ allocation from pool)
 
 openstack overcloud deploy --templates tripleo-heat-templates/ \
   --stack overcloud --libvirt-type kvm \
-  --roles-file /home/cloud-user/tripleo-heat-templates/roles/ContrailAioL3mh.yaml \
+  --roles-file /home/cloud-user/tripleo-heat-templates/roles_data_contrail_aio.yaml \
   --networks-file tripleo-heat-templates/network_data_l3mh.yaml \
   -e tripleo-heat-templates/environments/rhsm.yaml \
   -e tripleo-heat-templates/environments/network-isolation.yaml \
