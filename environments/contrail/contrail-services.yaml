@@ -60,7 +60,9 @@ parameter_defaults:
 # (to disable just put empty value '')
 # KernelArgs for nodes can be changed here
   ComputeParameters:
-    KernelArgs: "default_hugepagesz=1GB hugepagesz=1G hugepages=2"
+    KernelArgs: "default_hugepagesz=1GB hugepagesz=1G hugepages=2 tsx=off"
+    #TSX is added for rhosp16.2 (see https://access.redhat.com/solutions/6036141)
+    ForceNoTsx: true
     ExtraSysctlSettings:
       # must be equal to value from 1G kernel args: hugepages=2
       vm.nr_hugepages:
@@ -70,7 +72,9 @@ parameter_defaults:
 
   # L3MH compute example. Adjust to your setup
   ComputeL3mhParameters:
-    KernelArgs: "default_hugepagesz=1GB hugepagesz=1G hugepages=2"
+    KernelArgs: "default_hugepagesz=1GB hugepagesz=1G hugepages=2 tsx=off"
+    #TSX is added for rhosp16.2 (see https://access.redhat.com/solutions/6036141)
+    ForceNoTsx: true
     ExtraSysctlSettings:
       # must be equal to value from 1G kernel args: hugepages=2
       vm.nr_hugepages:
@@ -88,6 +92,18 @@ parameter_defaults:
       BGP_AUTO_MESH: true
       # Vrouter gateway: adjust to your setup if any
       VROUTER_GATEWAY: "172.16.10.1,172.16.20.1"
+
+  # Remote compute example. Adjust to your setup
+  RemoteComputeParameters:
+    KernelArgs: "default_hugepagesz=1GB hugepagesz=1G hugepages=2 tsx=off"
+    #TSX is added for rhosp16.2 (see https://access.redhat.com/solutions/6036141)
+    ForceNoTsx: true
+    ExtraSysctlSettings:
+      # must be equal to value from 1G kernel args: hugepages=2
+      vm.nr_hugepages:
+        value: 2
+      vm.max_map_count:
+        value: 128960
 
 
 # ContrailDefaults - environment passed to provisione container
@@ -116,7 +132,9 @@ parameter_defaults:
 # Note: Mellanox with DPDK mode requries to set 'driver: mlnx' in the appropriate NIC file
 
   ContrailDpdkParameters:
-    KernelArgs: "intel_iommu=on iommu=pt default_hugepagesz=1GB hugepagesz=1G hugepages=4 hugepagesz=2M hugepages=1024"
+    KernelArgs: "intel_iommu=on iommu=pt default_hugepagesz=1GB hugepagesz=1G hugepages=4 hugepagesz=2M hugepages=1024 tsx=off"
+    #TSX is added for rhosp16.2 (see https://access.redhat.com/solutions/6036141)
+    ForceNoTsx: true
     ExtraSysctlSettings:
       # must be equal to value from 1G kernel args: hugepages=4
       vm.nr_hugepages:
@@ -142,7 +160,9 @@ parameter_defaults:
 
   # !! Adjust to your setup
   ContrailSriovParameters:
-    KernelArgs: "intel_iommu=on iommu=pt default_hugepagesz=1GB hugepagesz=1G hugepages=4 hugepagesz=2M hugepages=1024"
+    KernelArgs: "intel_iommu=on iommu=pt default_hugepagesz=1GB hugepagesz=1G hugepages=4 hugepagesz=2M hugepages=1024 tsx=off"
+    #TSX is added for rhosp16.2 (see https://access.redhat.com/solutions/6036141)
+    ForceNoTsx: true
     ExtraSysctlSettings:
       # must be equal to value from 1G kernel args: hugepages=4
       vm.nr_hugepages:
