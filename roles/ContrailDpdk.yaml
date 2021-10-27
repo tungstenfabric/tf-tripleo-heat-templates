@@ -5,8 +5,6 @@
   description: |
     Contrail Dpdk Node role
   CountDefault: 0
-  tags:
-    - contraildpdk
   networks:
     InternalApi:
       subnet: internal_api_subnet

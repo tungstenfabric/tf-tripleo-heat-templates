@@ -4,6 +4,7 @@
 - name: ContrailControllerIssu
   CountDefault: 0
   tags:
+    - primary
     - contrailissu
   networks:
     InternalApi:

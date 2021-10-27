@@ -7,7 +7,7 @@
   CountDefault: 0
   tags:
     - primary
-    - contrailcontroller
+    - contrailoperator
   networks:
     External:
       subnet: external_subnet

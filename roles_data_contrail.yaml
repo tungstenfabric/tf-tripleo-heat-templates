@@ -200,9 +200,6 @@
   description: |
     Basic Compute Node role
   CountDefault: 0
-  # # Create external Neutron bridge (unset if using ML2/OVS without DVR)
-  # tags:
-  #   - external_bridge
   networks:
     InternalApi:
       subnet: internal_api_subnet
@@ -449,8 +446,6 @@
   description: |
     Contrail Dpdk Node role
   CountDefault: 0
-  tags:
-    - contraildpdk
   networks:
     InternalApi:
       subnet: internal_api_subnet
@@ -506,8 +501,6 @@
   description: |
     Contrail Sriov Node role
   CountDefault: 0
-  tags:
-    - contrailsriov
   networks:
     InternalApi:
       subnet: internal_api_subnet
@@ -564,8 +557,6 @@
   description: |
     Contrail Tsn Node role
   CountDefault: 0
-  tags:
-    - contrailtsn
   networks:
     InternalApi:
       subnet: internal_api_subnet
@@ -622,9 +613,6 @@
     Compute with L3MH networking.
   disable_constraints: False
   CountDefault: 0
-  tags:
-    - primary
-    - controller
   networks:
     InternalApi:
       subnet: internal_api_subnet
@@ -709,7 +697,8 @@
 - name: ContrailControllerIssu
   CountDefault: 0
   tags:
-    - contrailissu
+    - primary
+    - contrailcontrollerissu
   networks:
     InternalApi:
       subnet: internal_api_subnet
@@ -746,7 +735,7 @@
   CountDefault: 0
   tags:
     - primary
-    - contrailcontroller
+    - contrailoperator
   networks:
     External:
       subnet: external_subnet
