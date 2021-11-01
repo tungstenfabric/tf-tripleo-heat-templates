@@ -1,0 +1,91 @@
+- name: Storage
+  vip: true
+  vlan: 30
+  name_lower: storage
+  ip_subnet: '172.16.1.0/24'
+  allocation_pools: [{'start': '172.16.1.4', 'end': '172.16.1.250'}]
+  ipv6_subnet: 'fd00:fd00:fd00:3000::/64'
+  ipv6_allocation_pools: [{'start': 'fd00:fd00:fd00:3000::10', 'end': 'fd00:fd00:fd00:3000:ffff:ffff:ffff:fffe'}]
+  mtu: 1500
+- name: StorageMgmt
+  name_lower: storage_mgmt
+  vip: true
+  vlan: 40
+  ip_subnet: '172.16.3.0/24'
+  allocation_pools: [{'start': '172.16.3.4', 'end': '172.16.3.250'}]
+  ipv6_subnet: 'fd00:fd00:fd00:4000::/64'
+  ipv6_allocation_pools: [{'start': 'fd00:fd00:fd00:4000::10', 'end': 'fd00:fd00:fd00:4000:ffff:ffff:ffff:fffe'}]
+  mtu: 1500
+- name: InternalApi
+  name_lower: internal_api
+  vip: true
+  vlan: 20
+  ip_subnet: '172.16.2.0/24'
+  allocation_pools: [{'start': '172.16.2.4', 'end': '172.16.2.250'}]
+  ipv6_subnet: 'fd00:fd00:fd00:2000::/64'
+  ipv6_allocation_pools: [{'start': 'fd00:fd00:fd00:2000::10', 'end': 'fd00:fd00:fd00:2000:ffff:ffff:ffff:fffe'}]
+  mtu: 1500
+- name: Tenant
+  vip: false  # Tenant network does not use VIPs
+  name_lower: tenant
+  vlan: 50
+  ip_subnet: '172.16.0.0/24'
+  allocation_pools: [{'start': '172.16.0.4', 'end': '172.16.0.250'}]
+  ipv6_subnet: 'fd00:fd00:fd00:5000::/64'
+  ipv6_allocation_pools: [{'start': 'fd00:fd00:fd00:5000::10', 'end': 'fd00:fd00:fd00:5000:ffff:ffff:ffff:fffe'}]
+  mtu: 1500
+- name: External
+  vip: true
+  name_lower: external
+  vlan: 10
+  ip_subnet: '10.0.0.0/24'
+  allocation_pools: [{'start': '10.0.0.4', 'end': '10.0.0.250'}]
+  gateway_ip: '10.0.0.1'
+  ipv6_subnet: '2001:db8:fd00:1000::/64'
+  ipv6_allocation_pools: [{'start': '2001:db8:fd00:1000::10', 'end': '2001:db8:fd00:1000:ffff:ffff:ffff:fffe'}]
+  gateway_ipv6: '2001:db8:fd00:1000::1'
+  mtu: 1500
+- name: Management
+  # Management network is enabled by default for backwards-compatibility, but
+  # is not included in any roles by default. Add to role definitions to use.
+  enabled: true
+  vip: false  # Management network does not use VIPs
+  name_lower: management
+  vlan: 60
+  ip_subnet: '10.0.1.0/24'
+  allocation_pools: [{'start': '10.0.1.4', 'end': '10.0.1.250'}]
+  gateway_ip: '10.0.1.1'
+  gateway_ipv6: 'fd00:fd00:fd00:6000::1'
+  ipv6_subnet: 'fd00:fd00:fd00:6000::/64'
+  ipv6_allocation_pools: [{'start': 'fd00:fd00:fd00:6000::10', 'end': 'fd00:fd00:fd00:6000:ffff:ffff:ffff:fffe'}]
+  mtu: 1500
+# Remote compute networks - compute addresses (must be routeable)
+{% for i in range(SUBSLUSTERS_COUNT | int) %}
+- name: Tenant0{{i}}
+  enabled: true
+  vip: false
+  name_lower: tenant{{i}}
+  # vlan: {{i+1}}50
+  ip_subnet: '172.20.{{i}}.0/24'
+  allocation_pools: [{'start': '172.20.1{{i}}.10', 'end': '172.20.{{i}}.100'}]
+  gateway_ip: 172.20.{{i}}.1
+  mtu: 1500
+- name: InternalApi{{i}}
+  enabled: true
+  vip: false
+  name_lower: internal_api{{i}}
+  # vlan: {{i+1}}20
+  ip_subnet: '172.21.{{i}}.0/24'
+  allocation_pools: [{'start': '172.21.{{i}}.10', 'end': '172.21.{{i}}.100'}]
+  gateway_ip: 172.21.{{i}}.1
+  mtu: 1500
+- name: Storage{{i}}
+  enabled: true
+  vip: false
+  name_lower: storage{{i}}
+  # vlan: {{i+1}}30
+  ip_subnet: '172.22.{{i}}.0/24'
+  allocation_pools: [{'start': '172.22.{{i}}.10', 'end': '172.22.{{i}}.100'}]
+  gateway_ip: 172.22.{{i}}.1
+  mtu: 1500
+{% endfor %}

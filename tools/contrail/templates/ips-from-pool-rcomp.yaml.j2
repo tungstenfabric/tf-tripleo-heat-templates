@@ -1,0 +1,38 @@
+resource_registry:
+  OS::TripleO::RemoteCompute{{ REMOTE_INDEX }}::Ports::Tenant0RcompPort: ../../network/ports/tenant1_rcomp{{ REMOTE_INDEX }}_from_pool.yaml
+  OS::TripleO::RemoteCompute{{ REMOTE_INDEX }}::Net::SoftwareConfig: ../../network/config/contrail/compute-nic-config-rcomp{{ REMOTE_INDEX }}.yaml
+  OS::TripleO::RemoteCompute{{ REMOTE_INDEX }}::PreNetworkConfig: ../../extraconfig/pre_network/contrail/compute_pre_network.yaml
+  OS::TripleO::RemoteCompute{{ REMOTE_INDEX }}::ExtraConfigPre: ../../extraconfig/pre_deploy/contrail/contrail-init.yaml
+
+parameter_defaults:
+  RemoteCompute{{ REMOTE_INDEX }}IPs:
+    tenant{{ REMOTE_INDEX }}:
+    - 172.20{{ REMOTE_INDEX }}.101
+    internal_api{{ REMOTE_INDEX }}:
+    - 172.21{{ REMOTE_INDEX }}.101
+    storage{{ REMOTE_INDEX }}:
+    - 172.22{{ REMOTE_INDEX }}.101
+
+  Tenant{{ REMOTE_INDEX }}NetCidr: '172.20.{{ REMOTE_INDEX }}.0/24'
+  InternalApi{{ REMOTE_INDEX }}NetCidr: '172.21.{{ REMOTE_INDEX }}.0/24'
+  StorageApi{{ REMOTE_INDEX }}NetCidr: '172.22.{{ REMOTE_INDEX }}.0/24'
+
+  RemoteCompute{{ REMOTE_INDEX }}Parameters:
+    KernelArgs: "default_hugepagesz=1GB hugepagesz=1G hugepages=2"
+    ExtraSysctlSettings:
+      # must be equal to value from 1G kernel args: hugepages=2
+      vm.nr_hugepages:
+        value: 2
+      vm.max_map_count:
+        value: 128960
+      net.ipv4.conf.all.rp_filter:
+        value: 0
+    ContrailSettings:
+      VROUTER_ENCRYPTION: false
+      # 16 bit BGP Autonomous System number for the cluster.
+      BGP_ASN: {{ 64512 + (REMOTE_INDEX | int) + 1 }}
+      # Supported values are true/false. When true, system will automatically create BGP peering mesh with all control-nodes that have same BGP AS number as global AS number.
+      BGP_AUTO_MESH: true
+      # Vrouter gateway: adjust to your setup if any
+      VROUTER_GATEWAY: "172.20.{{ REMOTE_INDEX }}.1"
+      SUBCLUSTER: {{ SUBCLUSTER }}
