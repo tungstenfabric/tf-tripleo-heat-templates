@@ -131,6 +131,10 @@ outputs:
           - get_attr: [ContrailBase, role_data, config_settings]
           - contrail::vrouter::metadata_proxy_shared_secret: {get_param: NeutronMetadataProxySharedSecret}
             tripleo.contrail_vrouter.firewall_rules:
+              '112 contrail_vrouter_l3mh':
+                sport:
+                  - 5269
+                  - 8083
               '111 contrail_vrouter_8085_8097':
                 dport:
                   - 8085
