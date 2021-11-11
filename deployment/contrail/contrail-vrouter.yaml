@@ -134,7 +134,7 @@ outputs:
               '112 contrail_vrouter_l3mh':
                 sport:
                   - 5269
-                  - 8083
+                  - 8093
               '111 contrail_vrouter_8085_8097':
                 dport:
                   - 8085
