@@ -1,0 +1,72 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: issu-pair-del-job
+  namespace: tf
+spec:
+  ttlSecondsAfterFinished: 100
+  completions: 1
+  parallelism: 1
+  backoffLimit: 0
+  template:
+    spec:
+      nodeSelector:
+        contrail-issu: ""
+      tolerations:
+      - effect: NoSchedule
+        operator: Exists
+      - effect: NoExecute
+        operator: Exists
+      restartPolicy: Never
+      hostNetwork: true
+      dnsPolicy: ClusterFirstWithHostNet
+      enableServiceLinks: false
+      containers:
+      - name: issu-pair-del
+        image: tungstenfabric/contrail-controller-config-api:latest
+        imagePullPolicy: Never
+        env:
+        - name: POD_IP
+          valueFrom:
+            fieldRef:
+              fieldPath: status.podIP
+        command:
+          - "bash"
+          - "-c"
+          - |
+            set -ex
+            set -o pipefail
+            exec &> >(tee -a /issu/issu-pair-del-job.log)
+            source /etc/issu/issu.env
+            mkdir -p /etc/contrail
+            ln -s -f /etc/contrailconfigmaps/vnc_api_lib.ini.${POD_IP} /etc/contrail/vnc_api_lib.ini
+            ln -s -f /etc/contrailconfigmaps/contrail-keystone-auth.conf.${POD_IP} /etc/contrail/contrail-keystone-auth.conf
+            source /etc/issu/issu_node_pair.sh del
+        volumeMounts:
+        - mountPath: /etc/issu
+          name: issu-config
+        - mountPath: /etc/contrailconfigmaps
+          name: config1-config-volume
+        - mountPath: /etc/ssl/certs/kubernetes
+          name: ca-certs
+        - mountPath: /etc/certificates
+          name: config1-secret-certificates
+        - mountPath: /issu
+          name: issu-volume
+      volumes:
+      - name: issu-volume
+        hostPath:
+          path: /tmp
+          type: Directory
+      - configMap:
+          name: issu-configmap
+        name: issu-config
+      - configMap:
+          name: config1-config-configmap
+        name: config1-config-volume
+      - configMap:
+          name: csr-signer-ca
+        name: ca-certs
+      - name: config1-secret-certificates
+        secret:
+          secretName: config1-secret-certificates
