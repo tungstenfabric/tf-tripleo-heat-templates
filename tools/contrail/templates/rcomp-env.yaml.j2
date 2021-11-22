@@ -1,0 +1,44 @@
+resource_registry:
+  OS::TripleO::RemoteCompute{{ REMOTE_INDEX }}::Ports::TenantPort: ../../network/ports/tenant_from_pool.yaml
+  OS::TripleO::RemoteCompute{{ REMOTE_INDEX }}::Ports::InternalApiPort: ../../network/ports/internal_api_from_pool.yaml
+  OS::TripleO::RemoteCompute{{ REMOTE_INDEX }}::Ports::StoragePort: ../../network/ports/storage_from_pool.yaml
+  OS::TripleO::RemoteCompute{{ REMOTE_INDEX }}::Net::SoftwareConfig: ../../network/config/contrail/compute-nic-config-rcomp{{ REMOTE_INDEX }}.yaml
+  OS::TripleO::RemoteCompute{{ REMOTE_INDEX }}::PreNetworkConfig: ../../extraconfig/pre_network/contrail/compute_pre_network.yaml
+  OS::TripleO::RemoteCompute{{ REMOTE_INDEX }}ExtraConfigPre: ../../extraconfig/pre_deploy/contrail/contrail-init.yaml
+
+parameter_defaults:
+  # !!! Adjust to correct count
+  RemoteCompute{{ REMOTE_INDEX }}Count: 1
+
+  # !!! Adjust to correct IPs
+  RemoteCompute{{ REMOTE_INDEX }}IPs:
+    tenant:
+    - 172.20.{{ REMOTE_INDEX }}.101
+    internal_api:
+    - 172.21.{{ REMOTE_INDEX }}.101
+    storage:
+    - 172.22.{{ REMOTE_INDEX }}.101
+
+  # !!! Adjust to subscluster Control service node
+  RemoteCompute{{ REMOTE_INDEX }}ExtraConfig:
+    contrail_control_ips: ""
+
+  RemoteCompute{{ REMOTE_INDEX }}Parameters:
+    KernelArgs: "default_hugepagesz=1GB hugepagesz=1G hugepages=2"
+    ExtraSysctlSettings:
+      # must be equal to value from 1G kernel args: hugepages=2
+      vm.nr_hugepages:
+        value: 2
+      vm.max_map_count:
+        value: 128960
+    # !!! Adjust to your setup
+    ContrailSettings:
+      VROUTER_ENCRYPTION: false
+      # 16 bit BGP Autonomous System number for the cluster.
+      !!! Adjust to your setup
+      BGP_ASN: {{ 64512 + (REMOTE_INDEX | int) }}
+      BGP_AUTO_MESH: true
+      # !!! Adjust to your setup if any
+      VROUTER_GATEWAY: "172.20.{{ REMOTE_INDEX }}.1"
+      SUBCLUSTER: {{ SUBCLUSTER }}
+

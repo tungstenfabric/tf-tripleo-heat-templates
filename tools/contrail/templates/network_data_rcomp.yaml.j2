@@ -7,6 +7,19 @@
   ipv6_subnet: 'fd00:fd00:fd00:3000::/64'
   ipv6_allocation_pools: [{'start': 'fd00:fd00:fd00:3000::10', 'end': 'fd00:fd00:fd00:3000:ffff:ffff:ffff:fffe'}]
   mtu: 1500
+{%- if SUBSLUSTERS_COUNT is defined %}
+  subnets:
+{%- for i in range(SUBSLUSTERS_COUNT | int) %}
+{%- set ss = i + 1 %}
+{%- set sn = "172.20." ~ ss %}
+    storage{{ss}}:
+      vlan: {{ss}}30
+      ip_subnet: '{{sn}}.0/24'
+      allocation_pools: [{'start': '{{sn}}.10', 'end': '{{sn}}.100'}]
+      gateway_ip: {{sn}}.1
+      mtu: 1500
+{%- endfor %}
+{%- endif %}
 - name: StorageMgmt
   name_lower: storage_mgmt
   vip: true
@@ -25,6 +38,19 @@
   ipv6_subnet: 'fd00:fd00:fd00:2000::/64'
   ipv6_allocation_pools: [{'start': 'fd00:fd00:fd00:2000::10', 'end': 'fd00:fd00:fd00:2000:ffff:ffff:ffff:fffe'}]
   mtu: 1500
+{%- if SUBSLUSTERS_COUNT is defined %}
+  subnets:
+{%- for i in range(SUBSLUSTERS_COUNT | int) %}
+{%- set ss = i + 1 %}
+{%- set sn = "172.21." ~ ss %}
+    internal_api{{ss}}:
+      vlan: {{ss}}20
+      ip_subnet: '{{sn}}.0/24'
+      allocation_pools: [{'start': '{{sn}}.10', 'end': '{{sn}}.100'}]
+      gateway_ip: {{sn}}.1
+      mtu: 1500
+{%- endfor %}
+{%- endif %}
 - name: Tenant
   vip: false  # Tenant network does not use VIPs
   name_lower: tenant
@@ -34,6 +60,19 @@
   ipv6_subnet: 'fd00:fd00:fd00:5000::/64'
   ipv6_allocation_pools: [{'start': 'fd00:fd00:fd00:5000::10', 'end': 'fd00:fd00:fd00:5000:ffff:ffff:ffff:fffe'}]
   mtu: 1500
+{%- if SUBSLUSTERS_COUNT is defined %}
+  subnets:
+{%- for i in range(SUBSLUSTERS_COUNT | int) %}
+{%- set ss = i + 1 %}
+{%- set sn = "172.22." ~ ss %}
+    tenant{{ss}}:
+      vlan: {{ss}}50
+      ip_subnet: '{{sn}}.0/24'
+      allocation_pools: [{'start': '{{sn}}.10', 'end': '{{sn}}.100'}]
+      gateway_ip: {{sn}}.1
+      mtu: 1500
+{%- endfor %}
+{%- endif %}
 - name: External
   vip: true
   name_lower: external
@@ -59,33 +98,3 @@
   ipv6_subnet: 'fd00:fd00:fd00:6000::/64'
   ipv6_allocation_pools: [{'start': 'fd00:fd00:fd00:6000::10', 'end': 'fd00:fd00:fd00:6000:ffff:ffff:ffff:fffe'}]
   mtu: 1500
-# Remote compute networks - compute addresses (must be routeable)
-{% for i in range(SUBSLUSTERS_COUNT | int) %}
-- name: Tenant0{{i}}
-  enabled: true
-  vip: false
-  name_lower: tenant{{i}}
-  # vlan: {{i+1}}50
-  ip_subnet: '172.20.{{i}}.0/24'
-  allocation_pools: [{'start': '172.20.1{{i}}.10', 'end': '172.20.{{i}}.100'}]
-  gateway_ip: 172.20.{{i}}.1
-  mtu: 1500
-- name: InternalApi{{i}}
-  enabled: true
-  vip: false
-  name_lower: internal_api{{i}}
-  # vlan: {{i+1}}20
-  ip_subnet: '172.21.{{i}}.0/24'
-  allocation_pools: [{'start': '172.21.{{i}}.10', 'end': '172.21.{{i}}.100'}]
-  gateway_ip: 172.21.{{i}}.1
-  mtu: 1500
-- name: Storage{{i}}
-  enabled: true
-  vip: false
-  name_lower: storage{{i}}
-  # vlan: {{i+1}}30
-  ip_subnet: '172.22.{{i}}.0/24'
-  allocation_pools: [{'start': '172.22.{{i}}.10', 'end': '172.22.{{i}}.100'}]
-  gateway_ip: 172.22.{{i}}.1
-  mtu: 1500
-{% endfor %}
