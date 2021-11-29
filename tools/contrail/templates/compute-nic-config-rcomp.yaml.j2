@@ -10,7 +10,7 @@ parameters:
     default: ''
     description: IP address/subnet on the ctlplane network
     type: string
-  Tenant{{ REMOTE_INDEX }}Subnet:
+  TenantSubnet:
     default: ''
     description: IP address/subnet on the additional rcomp network
     type: string
@@ -18,15 +18,15 @@ parameters:
     default: ''
     description: IP address/subnet on the external network
     type: string
-  InternalApi{{ REMOTE_INDEX }}IpSubnet:
+  InternalApiIpSubnet:
     default: ''
     description: IP address/subnet on the internal_api network
     type: string
-  InternalApi{{ REMOTE_INDEX }}DefaultRoute: # Not used by default in this template
+  InternalApiDefaultRoute: # Not used by default in this template
     default: '171.21.{{ REMOTE_INDEX }}.1'
     description: The default route of the internal api network.
     type: string
-  Storage{{ REMOTE_INDEX }}IpSubnet:
+  StorageIpSubnet:
     default: ''
     description: IP address/subnet on the storage network
     type: string
@@ -34,7 +34,7 @@ parameters:
     default: ''
     description: IP address/subnet on the storage_mgmt network
     type: string
-  Tenant{{ REMOTE_INDEX }}IpSubnet:
+  TenantIpSubnet:
     default: ''
     description: IP address/subnet on the tenant network
     type: string
@@ -46,11 +46,11 @@ parameters:
     default: 10
     description: Vlan ID for the external network traffic.
     type: number
-  InternalApi{{ REMOTE_INDEX }}NetworkVlanID:
+  InternalApiNetworkVlanID:
     default: {{ REMOTE_INDEX }}20
     description: Vlan ID for the internal_api network traffic.
     type: number
-  Storage{{ REMOTE_INDEX }}NetworkVlanID:
+  StorageNetworkVlanID:
     default: {{ REMOTE_INDEX }}30
     description: Vlan ID for the storage network traffic.
     type: number
@@ -58,7 +58,7 @@ parameters:
     default: 40
     description: Vlan ID for the storage mgmt network traffic.
     type: number
-  Tenant{{ REMOTE_INDEX }}NetworkVlanID:
+  TenantNetworkVlanID:
     default: {{ REMOTE_INDEX }}50
     description: Vlan ID for the tenant network traffic.
     type: number
@@ -70,7 +70,7 @@ parameters:
     default: '24'
     description: The subnet CIDR of the control plane network.
     type: string
-  Tenant{{ REMOTE_INDEX }}SubnetCidr: # Override this via parameter_defaults
+  TenantSubnetCidr: # Override this via parameter_defaults
     default: '24'
     description: The subnet CIDR of the additional remote compute network.
     type: string
@@ -106,7 +106,7 @@ parameters:
       guaranteed to pass through the data path of the segments in the network.
       (The parameter is automatically resolved from the ctlplane network's mtu attribute.)
     type: number
-  InternalApi{{ REMOTE_INDEX }}InterfaceRoutes:
+  InternalApiInterfaceRoutes:
     default: []
     description: >
       Routes for the internal_api network traffic.
@@ -114,7 +114,7 @@ parameters:
       Unless the default is changed, the parameter is automatically resolved
       from the subnet host_routes attribute.
     type: json
-  InterfaceTenant{{ REMOTE_INDEX }}Routes:
+  InterfaceTenantRoutes:
     default: []
     description: >
       Routes for the internal_api network traffic.
@@ -122,7 +122,7 @@ parameters:
       Unless the default is changed, the parameter is automatically resolved
       from the subnet host_routes attribute.
     type: json
-  Tenant{{ REMOTE_INDEX }}InterfaceRoutes:
+  TenantInterfaceRoutes:
     default: []
     description: >
       Routes for the tenant network traffic.
@@ -130,13 +130,13 @@ parameters:
       Unless the default is changed, the parameter is automatically resolved
       from the subnet host_routes attribute.
     type: json
-  Tenant{{ REMOTE_INDEX }}Mtu:
+  TenantMtu:
     default: 1500
     description: The maximum transmission unit (MTU) size(in bytes) that is
       guaranteed to pass through the data path of the segments in the
       Tenant network.
     type: number
-  Storage{{ REMOTE_INDEX }}InterfaceRoutes:
+  StorageInterfaceRoutes:
     default: []
     description: >
       Routes for the storage network traffic.
@@ -160,13 +160,13 @@ parameters:
       Unless the default is changed, the parameter is automatically resolved
       from the subnet host_routes attribute.
     type: json
-  Storage{{ REMOTE_INDEX }}Mtu:
+  StorageMtu:
     default: 1500
     description: The maximum transmission unit (MTU) size(in bytes) that is
       guaranteed to pass through the data path of the segments in the
       Storage network.
     type: number
-  InternalApi{{ REMOTE_INDEX }}Mtu:
+  InternalApiMtu:
     default: 1500
     description: The maximum transmission unit (MTU) size(in bytes) that is
       guaranteed to pass through the data path of the segments in the
@@ -221,26 +221,38 @@ resources:
                     get_param: ControlPlaneDefaultRoute
               - type: vlan
                 vlan_id:
-                  get_param: InternalApi{{ REMOTE_INDEX }}NetworkVlanID
+                  get_param: InternalApiNetworkVlanID
                 device: nic1
                 addresses:
                 - ip_netmask:
-                    get_param: InternalApi{{ REMOTE_INDEX }}IpSubnet
+                    get_param: InternalApiIpSubnet
+                routes:
+                  get_param: InternalApiInterfaceRoutes
               - type: vlan
                 vlan_id:
-                  get_param: Storage{{ REMOTE_INDEX }}NetworkVlanID
+                  get_param: StorageNetworkVlanID
                 device: nic1
                 addresses:
                 - ip_netmask:
-                    get_param: Storage{{ REMOTE_INDEX }}IpSubnet
-              # remote compute interfaces1
-              - type: interface
-                name: nic2
-                mtu: {get_param: Tenant{{ REMOTE_INDEX }}Mtu}
+                    get_param: StorageIpSubnet
+                routes:
+                  get_param: StorageInterfaceRoutes
+              - type: contrail_vrouter
+                name: vhost0
+                mtu:
+                  get_param: TenantMtu
                 use_dhcp: false
+                members:
+                  - type: interface
+                    name: nic2
+                    use_dhcp: false
+                    mtu:
+                      get_param: TenantMtu
                 addresses:
-                - ip_netmask: {get_param: Tenant{{ REMOTE_INDEX }}Subnet}
-                routes: {get_param: Tenant{{ REMOTE_INDEX }}InterfaceRoutes}
+                - ip_netmask:
+                    get_param: TenantIpSubnet
+                routes:
+                  get_param: TenantInterfaceRoutes
 
 outputs:
   OS::stack_id:

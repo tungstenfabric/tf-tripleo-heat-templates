@@ -7,12 +7,12 @@
   disable_constraints: False
   CountDefault: 0
   networks:
-    InternalApi{{ REMOTE_INDEX }}:
-      subnet: internal_api{{ REMOTE_INDEX }}_subnet
-    Storage{{ REMOTE_INDEX }}:
-      subnet: storage{{ REMOTE_INDEX }}_subnet
-    Tenant{{ REMOTE_INDEX }}:
-      subnet: tenant{{REMOTE_INDEX}}_subnet
+    InternalApi:
+      subnet: internal_api{{ REMOTE_INDEX }}
+    Storage:
+      subnet: storage{{ REMOTE_INDEX }}
+    Tenant:
+      subnet: tenant{{REMOTE_INDEX}}
   HostnameFormatDefault: '%stackname%-remotecompute{{ REMOTE_INDEX }}-%index%'
   RoleParametersDefault:
     TunedProfileName: "virtual-host"

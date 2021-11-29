@@ -6,8 +6,13 @@ Currently the following combinations of Operating System/OpenStack/Deployer/Cont
 | RHEL 8.2          | OSP16             |
 
 
-This kind of deploy is supposed to be 'Spine-Leaf' deploy
-[https://access.redhat.com/documentation/en-us/red_hat_openstack_platform/16.2/html-single/spine_leaf_networking/index]
+This kind of deploy is supposed to be ['Spine-Leaf' deploy](https://access.redhat.com/documentation/en-us/red_hat_openstack_platform/16.2/html-single/spine_leaf_networking/index)
+and/or [distributed compute nodes (DCN)](https://access.redhat.com/documentation/en-us/red_hat_openstack_platform/16.2/html/distributed_compute_node_and_storage_deployment/index)
+
+This readme is mostly about Contrail specific part.
+All scripts are provided 'as is' and as just an example.
+Main instruction to prepare setup for deployment must be RedHat documentation 
+pointed above.
 
 In this example there is K8S cluster used for Contrail Control plane.
 Similar way OpenShift can be used for same purposes.
@@ -38,27 +43,25 @@ are provided as Virtual Machines hosted on KVM hosts
   OpenStack remote compute with SUBCLUSTER param
 
 
-## Topology example scheme (w/o spine-leaf details)
-### Layer 1
+## Topology example scheme (w/o spine-leaf and/or DCN details)
 ```
-+---------------------------------------------------------------+
-|      +-------------------------+        K8S/Openshift cluster |
-|      | VM CN Controller 3      |                              |
-|    +-+-----------------------+ |    +-----------------------+ |
-|    | VM CN Controller 2      | |    |  VM 2 Control         | |
-|  +-+-----------------------+ | |  +-+---------------------+ | |
-|  | VM CN Controller 1      | | |  | VM 1 Control          | | |
-|  | +---------------------+ | | |  | +-------------------+ | | |
-|  | | Contrail Config     | | | |  | | Contrail Control  | | | |
-|  | | Contrail Controller | | | |  | | ( SUBCLUSTER XXX) | | | |
-|  | | Contrail Databases  | | | |  | +-------------------+ |-+ |
-|  | | Contrail Control    | | |-+  +-----------------------+   |
-|  | +---------------------+ |-+                                |
-|  +-------------------------+                                  |
-+------+--------------+-------------------+-------+-------------+
++-----------------------------------------------------------------+
+|      +-------------------------+        K8S/Openshift cluster   |
+|      | VM CN Controller 3      |                                |
+|    +-+-----------------------+ |    +-------------------------+ |
+|    | VM CN Controller 2      | |    |  VM Control subcluser X | |
+|  +-+-----------------------+ | |  +-+-----------------------+ | |
+|  | VM CN Controller 1      | | |  | VM Control subcluster 1 | | |
+|  | +---------------------+ | | |  | +---------------------+ | | |
+|  | | Contrail Config     | | | |  | | Contrail Control    | | | |
+|  | | Contrail Controller | | | |  | | ( SUBCLUSTER XXX)   | | | |
+|  | | Contrail Databases  | | | |  | +---------------------+ |-+ |
+|  | | Contrail Control    | | |-+  +-------------------------+   |
+|  | +---------------------+ |-+                                  |
+|  +-------------------------+                                    |
++------+--------------+-------------------+-------+---------------+
        |              |                   |       |
 +------+--------------+-------------------+-------+--------+
-|                                                          |
 |                          Network                         |
 +------+--------------+-------------------+-------+--------+
        |              |                   |       |
@@ -67,9 +70,9 @@ are provided as Virtual Machines hosted on KVM hosts
 |                        +-----------------+                               |
 |                        | VM Controller 3 |                               |
 |                      +-+---------------+ |    +------------------------+ |
-|                      | VM Controller 2 | |    | VM Compute 2           | |
+|                      | VM Controller 2 | |    | VM Compute subcluser 2 | |
 | +----------------+ +-+---------------+ | |  +-+----------------------+ | |
-| | VM Undercloud  | | VM Controller 1 | | |  | VM Compute 1           | | |
+| | VM Undercloud  | | VM Controller 1 | | |  | VM Compute subcluser 1 | | |
 | |                | | +-------------+ | | |  | +--------------------+ | | |
 | |                | | | Openstack   | | | |  | | Openstack Compute  | | | |
 | |                | | | Controller  | | | |  | | Vrouter Agent      | | | |
@@ -87,35 +90,48 @@ are provided as Virtual Machines hosted on KVM hosts
  - 32G Memory
  - 80G SDD
 
-2. Deploy Contrail Control plane in K8S cluster by tf-operator [https://github.com/tungstenfabric/tf-operator] with at least one worker node(s).
+2. Deploy Contrail Control plane in K8S cluster by [tf-operator](https://github.com/tungstenfabric/tf-operator) with at least one worker node(s).
 The worker will be used for Contrail Control serving a subcluster (1 for testing, production minimum is 2).
-In case of OpenShift for Contrail Control plane check readme [https://github.com/tungstenfabric/tf-openshift].
+In case of OpenShift for Contrail Control plane check [readme](https://github.com/tungstenfabric/tf-openshift).
 
 3. Label worker(s) node with subcluster label:
-```
-kubectl label node <worker_nodename> subcluster=<subcluster_id>
+```bash
+# for each subcluser nodes
+kubectl label node <worker_nodename> subcluster=<subcluster_name>
 ```
 
-4. Edit manager manifest - add one more control with node nodeselector and Subcluster param
+4. Ensure RHOSP FQDNs are resolvable on K8S master nodes
+E.g.
+```bash
+cat /etc/hosts
 
+#RHOSP VIPs
+192.168.21.201  overcloud.internalapi.dev.localdomain
+192.168.21.200  overcloud.dev.localdomain
+
+#RHOSP Computes
+192.168.21.122  overcloud-remotecompute1-0.tenant.dev.localdomain
+#... other compute addresses if any
 ```
+
+```bash
 kubectl edit manager -n tf
 ```
 
-Add record to controls:
+Add record to controls for each subcluster:
 
 ```yaml
     controls:
     - metadata:
         labels:
           tf_cluster: cluster1
-        name: control<subcluster_id>
+        name: control<subcluster_name>
       spec:
         commonConfiguration:
           nodeSelector:
-            subcluster: <subcluster_id>
+            subcluster: <subcluster_name>
         serviceConfiguration:
-          subcluster: <subcluster_id>
+          subcluster: <subcluster_name>
           containers:
           - name: control
             image: contrail-controller-control-control
@@ -128,54 +144,95 @@ Add record to controls:
           - name: provisioner
             image: contrail-provisioner
 ```
+5. Edit manager manifest - add one more control with node nodeselector and Subcluster param
 
 # Prepare Openstack managed hosts
 
-1. Prepare Openstack hosts and run undercloud setup as described here [https://github.com/tungstenfabric/tf-tripleo-heat-templates/tree/stable/train#readme]
+1. Prepare Openstack hosts and run undercloud setup by [README.md]
 
-2. ssh to undercloud node
-
-3. Run script to generate remote computes heat templates
-```bash
-cd /home/stack/tripleo-heat-templates/tools/contrail
-subcluster_ids=0,1,2
-./remote_compute.sh $subcluster_ids 
-```
-This script generate one network_data_rcomp.yaml, and the set of files for each subcluster, e.g.
-tripleo-heat-templates/roles/RemoteCompute0.yaml
-tripleo-heat-templates/environments/contrail/ips-from-pool-rcomp0.yaml
-tripleo-heat-templates/network/config/contrail/compute-nic-config-rcomp0.yaml
-
-4. Add generated role(s) tripleo-heat-templates/roles/RemoteCompute0.yaml into your role file (e.g. roles_data.yaml)
-
-5. Adjust generated files and othere templates to your setup (network CIDRs, routes, etc)
-
-6. Prepare contrail templates with use of generated network data file 
+2. Run script to generate remote computes heat templates
 ```bash
 cd
-./tripleo-heat-templates/tools/process-templates.py --clean \
-  -r /home/stack/roles_data.yaml  -n /home/stack/tripleo-heat-templates/network_data_rcomp.yaml \
-  -p tripleo-heat-templates/
+# comma separated list of names
+subcluster_names=pop1,pop2
+./tripleo-heat-templates/tools/contrail/remote_compute.sh $subcluster_names 
+```
+This script generate one network_data_rcomp.yaml, and the set of files for each subcluster, e.g.
+tripleo-heat-templates/roles/RemoteCompute1.yaml
+tripleo-heat-templates/environments/contrail/ips-from-pool-rcomp1.yaml
+tripleo-heat-templates/network/config/contrail/compute-nic-config-rcomp1.yaml
 
+3. !!IMPORTANT: Adjust generated files and othere templates to your setup (network CIDRs, routes, etc)
+
+4. Prepare contrail templates with use of generated network data file 
+
+4.1. Modify contrail-services.yaml to provide data about Contrail Control plane on K8S
+```yaml
+  ExtraHostFileEntries:
+    - 'IP1    <FQDN K8S master1>    <Short name master1>'
+    - 'IP2    <FQDN K8S master2>    <Short name master2>'
+    - 'IP3    <FQDN K8S master3>    <Short name master3>'
+
+  ExternalContrailConfigIPs: <comma separated list of IP/FQDNs of K8S master nodes>
+  ExternalContrailControlIPs: <comma separated list of IP/FQDNs of K8S master nodes>
+  ExternalContrailAnalyticsIPs: <comma separated list of IP/FQDNs of K8S master nodes>
+
+  ControllerExtraConfig:
+    contrail_internal_api_ssl: True
+  ComputeExtraConfig:
+    contrail_internal_api_ssl: True
+  # add contrail_internal_api_ssl for all other roles if any
+```
+
+4.2. Enable Contrail TLS with self-signed certeficates in environments/contrail/contrail-tls.yaml
+```yaml
+resource_registry:
+  OS::TripleO::Services::ContrailCertmongerUser: OS::Heat::None
+
+parameter_defaults:
+  ContrailSslEnabled: true
+  ContrailServiceCertFile: '/etc/contrail/ssl/certs/server.pem'
+  ContrailServiceKeyFile: '/etc/contrail/ssl/private/server-privkey.pem'
+  ContrailCA: 'local'
+  ContrailCaCertFile: '/etc/contrail/ssl/certs/ca-cert.pem'
+  ContrailCaKeyFile: '/etc/contrail/ssl/private/ca-key.pem'
+  ContrailCaCert: |
+    <Root CA certificate from K8S setup>
+  ContrailCaKey: |
+    <Root CA private key from K8S setup>
+```
+
+4.3. Process heat templates to generate role and network files
+```bash
+cd
+# generate role file (adjust to your role list)
+openstack overcloud roles generate --roles-path tripleo-heat-templates/roles \
+  -o /home/stack/roles_data.yaml Controller RemoteCompute1
+# clean old files if any 
+./tripleo-heat-templates/tools/process-templates.py --clean \
+  -r /home/stack/roles_data.yaml \
+  -n /home/stack/tripleo-heat-templates/network_data_rcomp.yaml \
+  -p tripleo-heat-templates/
+# generated tripleo stack files
 ./tripleo-heat-templates/tools/process-templates.py \
-  -r /home/stack/roles_data.yaml  -n /home/stack/tripleo-heat-templates/network_data_rcomp.yaml \
+  -r /home/stack/roles_data.yaml \
+  -n /home/stack/tripleo-heat-templates/network_data_rcomp.yaml \
   -p tripleo-heat-templates/
 ```
 
-7. Run overcloud deploy
-
+5. Run overcloud deploy
 ```bash
+# use generated role file, network data file and files for remote computes 
 openstack overcloud deploy --templates tripleo-heat-templates/ \
   --stack overcloud --libvirt-type kvm \
-  --roles-file /home/stack/roles_data.yaml  -n /home/stack/tripleo-heat-templates/network_data_rcomp.yaml \
-  -e overcloud_containers.yaml \
-  -e /home/stack/rhsm.yaml \
-  -e /home/stack/tripleo-heat-templates/environments/contrail/contrail-services.yaml \
-  -e /home/stack/tripleo-heat-templates/environments/contrail/contrail-net-single.yaml \
-  -e /home/stack/tripleo-heat-templates/environments/contrail/contrail-plugins.yaml \
-  -e misc_opts.yaml \
-  -e contrail-parameters.yaml \
+  --roles-file /home/stack/roles_data.yaml \
+  -n /home/stack/tripleo-heat-templates/network_data_rcomp.yaml \
+  -e tripleo-heat-templates/environments/rhsm.yaml \
+  -e tripleo-heat-templates/environments/network-isolation.yaml \
+  -e tripleo-heat-templates/environments/contrail/contrail-services.yaml \
+  -e tripleo-heat-templates/environments/contrail/contrail-net.yaml \
+  -e tripleo-heat-templates/environments/contrail/contrail-plugins.yaml \
+  -e tripleo-heat-templates/environments/contrail/contrail-tls.yaml \
   -e containers-prepare-parameter.yaml \
-  -e /home/stack/tripleo-heat-templates/environments/contrail/ips-from-pool-rcomp0.yaml
-```
-(you need to include all ips-from-pool-rcomp0.yaml like files into deploy command)
+  -e rhsm.yaml \
+  -e /home/stack/tripleo-heat-templates/environments/contrail/rcomp1-env.yaml
