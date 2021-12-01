@@ -233,7 +233,7 @@ outputs:
                     - VROUTER_MODULE_OPTIONS: {get_param: ContrailVrouterModuleOptions}
                       KERNEL_INIT_VHOST0:
                         yaql:
-                          expression: not $.containsKey("L3MH_CIDR") or $["L3MH_CIDR"].isEmpty()
+                          expression: $.containsKey("L3MH_CIDR") and not $["L3MH_CIDR"].isEmpty() and "true" or "false"
                           data: {get_attr: [ContrailBase, role_data, contrail_settings]}
                 env_file:
                   list_concat:
