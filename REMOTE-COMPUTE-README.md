@@ -94,6 +94,18 @@ are provided as Virtual Machines hosted on KVM hosts
 The worker will be used for Contrail Control serving a subcluster (1 for testing, production minimum is 2).
 In case of OpenShift for Contrail Control plane check [readme](https://github.com/tungstenfabric/tf-openshift).
 
+In case if RHOSP uses TLS everywhere it is needed to deploy with CA bundle
+that includes both own root CA and IPA CA data, e.g.
+```bash
+# assuming that k8s cluster ca is in ca.crt.pem and IPA CA is in ipa.crt
+# (ipa.crt can be copied from undercloud node from /etc/ipa/ca.crt)
+cat ca.crt.pem ipa.crt > ca-bundle.pem
+# assuming that k8s cluster CA key is in ca.key.pem
+export SSL_CACERT=$(cat ~/ca-bundle.pem)
+export SSL_CAKEY=$(cat ~/ca.key.pem)
+... other actions to deploy from tf-operator ...
+```
+
 3. Label worker(s) node with subcluster label:
 ```bash
 # for each subcluser nodes
@@ -184,7 +196,9 @@ tripleo-heat-templates/network/config/contrail/compute-nic-config-rcomp1.yaml
   # add contrail_internal_api_ssl for all other roles if any
 ```
 
-4.2. Enable Contrail TLS with self-signed certeficates in environments/contrail/contrail-tls.yaml
+4.2. Enable Contrail TLS
+4.2.1 Case if RHOSP doesnt use TLS everywhere or use Self-signed root CA
+Prepare self-signed certificates in environments/contrail/contrail-tls.yaml
 ```yaml
 resource_registry:
   OS::TripleO::Services::ContrailCertmongerUser: OS::Heat::None
@@ -200,6 +214,32 @@ parameter_defaults:
     <Root CA certificate from K8S setup>
   ContrailCaKey: |
     <Root CA private key from K8S setup>
+```
+
+4.2.2 Case if RHOSP uses TLS everwhere
+- Make CA bundle file
+```bash
+# assuming that k8s cluster ca is in ca.crt.pem
+cat /etc/ipa/ca.crt ca.crt.pem > ca-bundle.pem
+```
+
+- Prepare environment file ca-bundle.yaml
+```bash
+# create file
+cat <<EOF > ca-bundle.yaml
+resource_registry:
+  OS::TripleO::NodeTLSCAData: tripleo-heat-templates/puppet/extraconfig/tls/ca-inject.yaml
+parameter_defaults:
+  ContrailCaCertFile: "/etc/contrail/ssl/certs/ca-cert.pem"
+  SSLRootCertificatePath: "/etc/contrail/ssl/certs/ca-cert.pem"
+  SSLRootCertificate: |
+EOF
+# append cert data
+cat ca-bundle.pem | while read l ; do
+  echo "    $l" >> ca-bundle.yaml
+done
+# check
+cat ca-bundle.yaml
 ```
 
 4.3. Process heat templates to generate role and network files
@@ -222,6 +262,7 @@ openstack overcloud roles generate --roles-path tripleo-heat-templates/roles \
 
 5. Run overcloud deploy
 ```bash
+# Example for the case when RHOSP uses TLS everwhere
 # use generated role file, network data file and files for remote computes 
 openstack overcloud deploy --templates tripleo-heat-templates/ \
   --stack overcloud --libvirt-type kvm \
@@ -233,6 +274,11 @@ openstack overcloud deploy --templates tripleo-heat-templates/ \
   -e tripleo-heat-templates/environments/contrail/contrail-net.yaml \
   -e tripleo-heat-templates/environments/contrail/contrail-plugins.yaml \
   -e tripleo-heat-templates/environments/contrail/contrail-tls.yaml \
+  -e tripleo-heat-templates/environments/ssl/tls-everywhere-endpoints-dns.yaml \
+  -e tripleo-heat-templates/environments/services/haproxy-public-tls-certmonger.yaml \
+  -e tripleo-heat-templates/environments/ssl/enable-internal-tls.yaml \
+  -e ca-bundle.yaml \
   -e containers-prepare-parameter.yaml \
   -e rhsm.yaml \
   -e /home/stack/tripleo-heat-templates/environments/contrail/rcomp1-env.yaml
+```
