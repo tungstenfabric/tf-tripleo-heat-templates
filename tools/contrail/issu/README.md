@@ -39,7 +39,8 @@ kubectl get pods -n tf config1-config-statefulset-0 -o yaml
 
 2. choose one master node to run ISSU scripts and label it
 ```bash
-kubectl label nodes node-10-100-0-147.localdomain contrail-issu=""
+# ajdust to use your node name
+kubectl label nodes node1 contrail-issu=""
 ```
 
 3. Collect data from operator environment, e.g.
@@ -215,5 +216,6 @@ kubectl get pods -n tf config1-config-statefulset-0 -o yaml
 
 15. Remove label from issu node
 ```bash
-kubectl label nodes node-10-100-0-147.localdomain contrail-issu=
+# ajdust to use your node name
+kubectl label nodes node1 contrail-issu=
 ```
