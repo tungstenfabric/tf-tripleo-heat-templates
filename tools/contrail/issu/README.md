@@ -67,6 +67,7 @@ kubectl create configmap -n tf issu-configmap \
 
 6. Prepare jobs
 ```bash
+sudo mkdir -p /var/log/contrail/issu
 mkdir -p issu-jobs
 cp tf-tripleo-heat-templates/tools/contrail/issu/*.yaml \
   issu-jobs/
@@ -83,7 +84,7 @@ kubectl apply -f issu-jobs/issu-pair-add-job.yaml
 Wait till job completed and validate log
 ```bash
 kubectl get pods -n tf -w | grep issu
-cat /tmp/issu-pair-add-job.log
+cat /var/log/contrail/issu/issu-pair-add-job.log
 ....
 INFO: provision_control.py --host_name node-10-100-0-147.localdomain ... exit with code 0
 ```
@@ -96,7 +97,7 @@ kubectl apply -f issu-jobs/issu-presync-job.yaml
 Wait till job completed and validate log
 ```bash
 kubectl get pods -n tf -w | grep issu
-cat /tmp/issu-presync-job.log
+cat /var/log/contrail/issu/issu-presync-job.log
 ...
 Done syncing Configdb uuid
 Done syncing bgp keyspace
@@ -112,7 +113,7 @@ kubectl apply -f issu-jobs/issu-sync-job.yaml
 ```
 - Check sync job runs normally
 ```bash
-cat /tmp/issu-sync-job.log
+cat /var/log/contrail/issu/issu-sync-job.log
 ...
 Config Sync initiated...
 Config Sync done...
@@ -136,7 +137,7 @@ kubectl apply -f issu-jobs/issu-postsync-job.yaml
 Check sync job runs normally
 ```bash
 kubectl get pods -n tf -w | grep issu
-cat /tmp/issu-postsync-job.log
+cat /var/log/contrail/issu/issu-postsync-job.log
 ```
 
 12. Finalizy sync ZK data
@@ -146,7 +147,7 @@ kubectl apply -f issu-jobs/issu-post-zk-sync-job.yaml
 ```
 Check sync job runs normally
 ```bash
-cat /tmp/issu-post-zk-sync-job.log
+cat /var/log/contrail/issu/issu-post-zk-sync-job.log
 ```
 
 13. Delete pairing of Control nodes between old and new clusters
@@ -157,7 +158,7 @@ kubectl apply -f issu-jobs/issu-pair-del-job.yaml
 Wait till job completed and validate log
 ```bash
 kubectl get pods -n tf -w | grep issu
-cat /tmp/issu-pair-del-job.log
+cat /var/log/contrail/issu/issu-pair-del-job.log
 ...
 ```
 Note, there are might be errors like
