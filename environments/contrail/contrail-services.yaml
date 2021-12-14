@@ -195,3 +195,9 @@ parameter_defaults:
       # NIC_OFFLOAD_ENABLE: true
       # SERVICE_CORE_MASK: '0x03'
       # DPDK_CTRL_THREAD_MASK: '0x03'
+
+  # !! Adjust to your setup
+  ContrailTsnParameters:
+    KernelArgs: "intel_iommu=on iommu=pt default_hugepagesz=1GB hugepagesz=1G hugepages=4 hugepagesz=2M hugepages=1024 tsx=off"
+    #TSX is added for rhosp16.2 (see https://access.redhat.com/solutions/6036141)
+    ForceNoTsx: true
