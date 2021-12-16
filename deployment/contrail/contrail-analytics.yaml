@@ -308,9 +308,6 @@ outputs:
                 tripleo_containers_to_stop:
                   - contrail_analytics_nodemgr
                   - contrail_analytics_api
-                  - contrail_analytics_collector
                   - contrail_analytics_provisioner
                   - contrail_analytics_queryengine
-                  - contrail_redis
-                  - contrail_stunnel
                 tripleo_delegate_to: "{{ groups['contrail_analytics'] | default([]) }}"

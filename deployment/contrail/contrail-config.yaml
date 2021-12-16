@@ -287,8 +287,4 @@ outputs:
                 tripleo_containers_to_stop:
                   - contrail_config_provisioner
                   - contrail_config_nodemgr
-                  - contrail_config_api
-                  - contrail_config_schema
-                  - contrail_config_svc_monitor
-                  - contrail_config_device_manager
                 tripleo_delegate_to: "{{ groups['contrail_config'] | default([]) }}"
