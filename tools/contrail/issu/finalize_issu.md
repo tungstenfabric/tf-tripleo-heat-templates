@@ -37,9 +37,11 @@ Wait till job completed and validate log
 ```bash
 kubectl get pods -n tf -w | grep issu
 cat /var/log/contrail/issu/issu-pair-del-job.log
+....
+INFO: operation finished successfully
 ...
 ```
-Note, there are might be errors like
+Note, there are might be errors in log like
 ```bash
 vnc_api.exceptions.NoIdError: Unknown id: Error: oper 1 url /fqname-to-id body {"fq_name": ["default-domain", "default-project", "ip-fabric", "__default__",
  "overcloud-contrailcontroller-0.dev.localdomain"], "type": "bgp-router"} response Name ['default-domain',
@@ -47,7 +49,6 @@ vnc_api.exceptions.NoIdError: Unknown id: Error: oper 1 url /fqname-to-id body {
  'ip-fabric',
  '__default__',
  'overcloud-contrailcontroller-0.dev.localdomain'] not found
-++ echo 'provision_control.py --host_name overcloud-contrailcontroller-0.dev.localdomain ... exit with code 1'
 ```
 Ignore these kind of output as it is Ok situation and node is already removed.
 
@@ -93,10 +94,11 @@ Ensure config pod is restarted and removed containers are not present in contain
 kubectl get pods -n tf config1-config-statefulset-0 -o yaml
 ```
 
-6. Remove label from issu node
+6. Remove label from issu node and issu-config configmap
 ```bash
 # ajdust to use your node name
-kubectl label nodes node1 contrail-issu=
+kubectl label nodes node1 contrail-issu-
+kubectl delete configmap -n tf issu-configmap
 ```
 
 7. Return to main updae workflow

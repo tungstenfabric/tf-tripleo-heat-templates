@@ -1,4 +1,7 @@
-#!/bin/bash -x
+#!/bin/bash
+
+set -ex
+set -o pipefail
 
 oper=${1}
 if [ -z "$oper" ] ; then
@@ -52,16 +55,25 @@ function provision() {
   local provision_script=$1
   shift 1
   local opts="$@"
-
-  python /opt/contrail/utils/${provision_script} --host_name $name \
+  local ret=0
+  python /opt/contrail/utils/${provision_script} \
+    --host_name $name \
     --host_ip $ip \
     --api_server_ip $api \
     --api_server_port $api_port \
     --oper $oper \
     --api_server_use_ssl true \
-    $AUTH_PARAMS $opts
-  local ret=$?
-  echo "INFO: ${provision_script} --host_name $name ... exit with code $ret"
+    $AUTH_PARAMS $opts || ret=1
+  if [[ "$ret" == '0' || "$oper" == 'del' ]] ; then
+    if [[ "$ret" != '0' ]] ; then
+      # it is ok if on del operation id is not found
+      ret=0
+      echo "INFO: ignoring errors for delete operations"
+    fi
+    echo "INFO: ${provision_script} --host_name $name --oper $oper done successfully"
+  else
+    echo "ERROR: ${provision_script} --host_name $name --oper $oper failed"
+  fi
   return $ret
 }
 
@@ -102,3 +114,5 @@ if [[ "$oper" == 'del' ]] ; then
     provision $ip ${node_name[$ip]} $issu_api_server_ip $issu_api_server_port provision_database_node.py $analyticsdb_container_id
   done
 fi
+
+echo "INFO: operation finished successfully"
