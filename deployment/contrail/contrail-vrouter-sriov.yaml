@@ -316,12 +316,6 @@ outputs:
           - {get_attr: [ContrailVrouterBase, role_data, post_update_tasks]}
           - *reinit_vhost_tasks
 
-      fast_forward_upgrade_tasks:
-        get_attr: [ContrailVrouterBase, role_data, fast_forward_upgrade_tasks]
-
-      fast_forward_post_upgrade_tasks:
-        get_attr: [ContrailVrouterBase, role_data, fast_forward_post_upgrade_tasks]
-
       upgrade_tasks:
         list_concat:
           - {get_attr: [ContrailBase, role_data, upgrade_tasks_common]}

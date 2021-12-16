@@ -246,17 +246,6 @@ outputs:
                   state: absent
               when: 'contrail_var_lib_unnamed_volume.stat.exists == true'
 
-      fast_forward_upgrade_tasks:
-        - name: Stop contrail vrouter dpdk services
-          service: name={{ item }} state=stopped enabled=no
-          when:
-            - step|int == 1
-            - release == 'ocata'
-          with_items:
-            - supervisor-vrouter
-
-      fast_forward_post_upgrade_tasks: []
-
       upgrade_tasks:
         list_concat:
           - {get_attr: [ContrailVrouterIssu, role_data, upgrade_tasks]}
