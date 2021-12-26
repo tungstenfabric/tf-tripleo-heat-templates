@@ -202,7 +202,7 @@ hostnamectl set-hostname ${undercloud_name}.${undercloud_suffix}
 hostnamectl set-hostname --transient ${undercloud_name}.${undercloud_suffix}
 ```
 Get the undercloud ip and set the correct entries in /etc/hosts, ie (assuming the mgmt nic is eth0):
-```
+```bash 
 undercloud_ip=`ip addr sh dev eth0 |grep "inet " |awk '{print $2}' |awk -F"/" '{print $1}'`
 echo ${undercloud_ip} ${undercloud_name}.${undercloud_suffix} ${undercloud_name} >> /etc/hosts
 ```
@@ -211,7 +211,7 @@ https://access.redhat.com/documentation/en-us/red_hat_openstack_platform/16.2/ht
 
 ### OSP16
 Register with Satellite (can be done with CDN as well)
-```css
+```bash
 satellite_fqdn=satellite.englab.juniper.net
 act_key=osp16
 org=Juniper
@@ -225,7 +225,7 @@ https://access.redhat.com/documentation/en-us/red_hat_enterprise_linux/8/html/in
 
 ## Install the undercloud
 ### prepare config for undercloud installation
-```
+```bash
 yum install -y python-tripleoclient tmux
 su - stack
 cp /usr/share/python-tripleoclient/undercloud.conf.sample ~/undercloud.conf
@@ -233,13 +233,12 @@ cp /usr/share/python-tripleoclient/undercloud.conf.sample ~/undercloud.conf
 ### for TLS with RedHat IDM (FreeIPA) case update config
 #### (see details in RH documentaion https://access.redhat.com/documentation/en-us/red_hat_openstack_platform/16.2/html/advanced_overcloud_customization/sect-enabling_ssltls_on_the_overcloud)
 An exmaple:
-```
-### !!! Set to OTP that was saved from IDM VM from the file ~/undercloud_otp
+```bash
+# !!! Set to OTP that was saved from IDM VM from the file ~/undercloud_otp
 FREE_IPA_OTP="<otp>"
-### !!! Adjust this IP to your setup
+# !!! Adjust this IP to your setup
 prov_freeipa_ip=10.87.64.4
-The following parameters need to be set within [DEFAULT] section
-###
+# The following parameters need to be set within [DEFAULT] section
 cat << EOF >> ~/undercloud.conf
 undercloud_hostname: ${undercloud_name}.${undercloud_suffix}
 undercloud_nameservers: $prov_freeipa_ip
@@ -248,6 +247,10 @@ enable_novajoin: True
 ipa_otp: "$FREE_IPA_OTP"
 EOF
 
+# If use RedHat Virtualization for virtualized controllers enable staging-ovirt driver
+cat <<EOF >> ~/undercloud.conf
+enabled_hardware_types = ipmi,redfish,ilo,idrac,staging-ovirt
+EOF
 ```
 
 ### create file containers-prepare-parameter.yaml
@@ -272,13 +275,12 @@ parameter_defaults:
 ```
 
 ### install undercloud
-```
+```bash
 openstack undercloud install
 source stackrc
 ```
-
-## forwarding
-```
+### enable forwarding
+```bash
 sudo iptables -A FORWARD -i br-ctlplane -o eth0 -j ACCEPT
 sudo iptables -A FORWARD -i eth0 -o br-ctlplane -m state --state RELATED,ESTABLISHED -j ACCEPT
 sudo iptables -t nat -A POSTROUTING -o eth0 -j MASQUERADE
@@ -286,15 +288,15 @@ sudo iptables -t nat -A POSTROUTING -o eth0 -j MASQUERADE
 
 ## set overcloud nameserver
 ### for regular case
-```
+```bash
 undercloud_nameserver=8.8.8.8
 ```
 ### for TLS with RedHat IDM (FreeIPA) case
-```
+```bash
 undercloud_nameserver=$prov_freeipa_ip
 ```
 ### set nameserver
-```
+```bash
 openstack subnet set `openstack subnet show ctlplane-subnet -c id -f value` --dns-nameserver ${undercloud_nameserver}
 ```
 
@@ -311,7 +313,6 @@ mkdir images
 cd images
 ```
 
-
 ### OSP16
 ```bash
 sudo yum install -y rhosp-director-images rhosp-director-images-ipa
@@ -322,10 +323,13 @@ for i in /usr/share/rhosp-director-images/overcloud-full-latest-16.2.tar /usr/sh
 cd
 openstack overcloud image upload --image-path /home/stack/images/
 ```
+
+
 ## Ironic preparation
 
-### create list with ironic nodes (adjust!!!)
-Take the ironic_node lists from the KVM hosts from above.
+### If use KVM and IPMI for power management for virtualized controllers
+- Create list with ironic nodes (adjust!!!)
+Take the ironic_node lists from the KVM hosts.
 ```bash
 cd
 cat << EOM > ironic_list
@@ -350,7 +354,7 @@ cat << EOM > ironic_list
 EOM
 ```
 
-### add overcloud nodes to ironic
+- Add overcloud nodes to ironic
 ```bash
 ipmi_password=ADMIN
 ipmi_user=ADMIN
@@ -374,12 +378,72 @@ while IFS= read -r line; do
                                         -c uuid -f value`
   openstack baremetal port create --node ${uuid} ${mac}
 done < <(cat ironic_list)
+```
 
+### If use RedHat Virtualization for virtualized controllers
+- Ensure staging-ovirt driver is enabled
+```bash
+openstack baremetal driver list | grep staging-ovirt
+```
+
+- Create list with ironic nodes (adjust!!!)
+Take the ironic_node lists from the RHVH hosts.
+
+IMPORTANT: In case of Contrail Control plane to be deployed in a Kubernetes cluster remove Contrail nodes.
+Kuberentes and Contrail are to be deployed separately.
+E.g. for Kuberenetes use [Kubespray](https://github.com/kubernetes-sigs/kubespray.git)
+Contrail Controllers to be deployed by [TF Operator](https://github.com/tungstenfabric/tf-operator).
+
+```bash
+cd
+cat << EOM > ironic_list
+52:54:00:16:54:d8 controller-0          control
+52:54:00:d6:2b:03 contrail-controller-0 contrail-controller
+52:54:00:d6:2b:13 contrail-controller-0 contrail-controller
+52:54:00:d6:2b:23 contrail-controller-0 contrail-controller
+EOM
+```
+
+- Add overcloud nodes to ironic
+```bash
+pm_user="admin@internal"
+pm_password="qwe123QWE"
+# ensure RHVM is resolved and accessible
+pm_addr="vmengine.dev.clouddomain"
+while IFS= read -r line; do
+  mac=`echo $line|awk '{print $1}'`
+  name=`echo $line|awk '{print $2}'`
+  profile=`echo $line|awk '{print $4}'`
+  uuid=`openstack baremetal node create \
+    --property cpus=4 \
+    --property memory_mb=16348 \
+    --property local_gb=100 \
+    --property cpu_arch=x86_64 \
+    --driver "staging-ovirt" \
+    --power-interface staging-ovirt \
+    --console-interface no-console \
+    --management-interface staging-ovirt \
+    --vendor-interface no-vendor \
+    --driver-info ovirt_username=${pm_user}  \
+    --driver-info ovirt_password=${pm_password} \
+    --driver-info ovirt_address=${pm_addr} \
+    --driver-info ovirt_vm_name=${name} \
+    --name=${name} \
+    --property capabilities=profile:${profile},boot_option:local \
+    -c uuid -f value`
+  openstack baremetal port create --node ${uuid} ${mac}
+done < <(cat ironic_list)
+```
+
+- If custom kernel/ramdisk to be used modify baremetal nodes kernel and ramdisk info
+```bash
 DEPLOY_KERNEL=$(openstack image show bm-deploy-kernel -f value -c id)
 DEPLOY_RAMDISK=$(openstack image show bm-deploy-ramdisk -f value -c id)
 
 for i in `openstack baremetal node list -c UUID -f value`; do
-  openstack baremetal node set $i --driver-info deploy_kernel=$DEPLOY_KERNEL --driver-info deploy_ramdisk=$DEPLOY_RAMDISK
+  openstack baremetal node set $i \
+    --driver-info deploy_kernel=$DEPLOY_KERNEL \
+    --driver-info deploy_ramdisk=$DEPLOY_RAMDISK
 done
 
 for i in `openstack baremetal node list -c UUID -f value`; do
@@ -390,7 +454,7 @@ done
 ### introspect the nodes
 ```bash
 for node in $(openstack baremetal node list -c UUID -f value) ; do
-  openstack baremetal node manage $node
+  openstack baremetal node manage --wait 0 $node
 done
 openstack overcloud node introspect --all-manageable --provide
 ```
