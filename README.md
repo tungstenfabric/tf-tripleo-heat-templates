@@ -192,7 +192,7 @@ ssh-copy-id ${undercloud_ip}
 ssh ${undercloud_ip}
 ```
 
-# on the undercloud
+# Undercloud deploy
 
 ## Undercloud preparation
 ```bash
@@ -279,6 +279,7 @@ parameter_defaults:
 openstack undercloud install
 source stackrc
 ```
+
 ### enable forwarding
 ```bash
 sudo iptables -A FORWARD -i br-ctlplane -o eth0 -j ACCEPT
@@ -307,21 +308,53 @@ sudo ip addr add 10.2.0.254/24 dev vlan720
 sudo ip link set dev vlan720 up
 ```
 
+# If external Contrail Control plane in a Kubernetes cluster to be used (side-by-side deployment)
+Prepare and deploy separately Contrail Control plane in a Kubernetes cluster.
+E.g. for Kuberenetes use [Kubespray](https://github.com/kubernetes-sigs/kubespray.git)
+Contrail Controllers to be deployed by [TF Operator](https://github.com/tungstenfabric/tf-operator).
+NOTE: In case of RedHat IDM (FreeIPA) used in RHOSP) it is needed to ensure that
+for Contrail in Kuberentes uses CA certificate bundle that contains
+own self-igned certificate and IPA CA. Example how to provide variable for TF Operator:
+```bash
+cat k8s-root-ca.pem /etc/ipa/ca.crt  > ca-bundle.pem
+export SSL_CACERT=$(cat ~/ca-bundle.pem)
+export SSL_CAKEY=$(cat ~/k8s-root-ca-key.pem)
+```
+Ensure Kubernetes nodes can connect to Internal API and Tenant networks.
+Ensure Kubernetes nodes can resolve RHOSP FQDNs for Overcloud VIPs and for Compute nodes in CtlPlane and Tenant networks.
+
+
+# Overcloud deploy
+
 ## Overcloud image download and upload to glance
 ```bash
 mkdir images
 cd images
-```
 
-### OSP16
-```bash
 sudo yum install -y rhosp-director-images rhosp-director-images-ipa
-for i in /usr/share/rhosp-director-images/overcloud-full-latest-16.2.tar /usr/share/rhosp-director-images/ironic-python-agent-latest-16.2.tar ; do tar -xvf $i; done
-```
+for i in  /usr/share/rhosp-director-images/overcloud-full-latest-16.2.tar \
+          /usr/share/rhosp-director-images/ironic-python-agent-latest-16.2.tar ; do
+  tar -xvf $i
+done
 
-```bash
+openstack overcloud image upload --image-path .
+
 cd
-openstack overcloud image upload --image-path /home/stack/images/
+
+# prepare kernel and ramdisk images
+openstack image create \
+  --container-format aki \
+  --disk-format aki \
+  --public \
+  --file /var/lib/ironic/httpboot/agent.kernel \
+  bm-deploy-kernel
+
+openstack image create \
+  --container-format ari \
+  --disk-format ari \
+  --public \
+  --file /var/lib/ironic/httpboot/agent.ramdisk \
+  bm-deploy-ramdisk
 ```
 
 
@@ -381,6 +414,8 @@ done < <(cat ironic_list)
 ```
 
 ### If use RedHat Virtualization for virtualized controllers
+[More info in the  RedHat documentation](https://access.redhat.com/documentation/en-us/red_hat_openstack_platform/16.2/html/director_installation_and_usage/creating-virtualized-control-planes)
+
 - Ensure staging-ovirt driver is enabled
 ```bash
 openstack baremetal driver list | grep staging-ovirt
@@ -390,17 +425,16 @@ openstack baremetal driver list | grep staging-ovirt
 Take the ironic_node lists from the RHVH hosts.
 
 IMPORTANT: In case of Contrail Control plane to be deployed in a Kubernetes cluster remove Contrail nodes.
-Kuberentes and Contrail are to be deployed separately.
-E.g. for Kuberenetes use [Kubespray](https://github.com/kubernetes-sigs/kubespray.git)
-Contrail Controllers to be deployed by [TF Operator](https://github.com/tungstenfabric/tf-operator).
+Kuberentes and Contrail are to be deployed separately and are not managed by RHOSP.
+
 
 ```bash
 cd
 cat << EOM > ironic_list
 52:54:00:16:54:d8 controller-0          control
 52:54:00:d6:2b:03 contrail-controller-0 contrail-controller
-52:54:00:d6:2b:13 contrail-controller-0 contrail-controller
-52:54:00:d6:2b:23 contrail-controller-0 contrail-controller
+52:54:00:d6:2b:13 contrail-controller-1 contrail-controller
+52:54:00:d6:2b:23 contrail-controller-2 contrail-controller
 EOM
 ```
 
@@ -413,7 +447,7 @@ pm_addr="vmengine.dev.clouddomain"
 while IFS= read -r line; do
   mac=`echo $line|awk '{print $1}'`
   name=`echo $line|awk '{print $2}'`
-  profile=`echo $line|awk '{print $4}'`
+  profile=`echo $line|awk '{print $3}'`
   uuid=`openstack baremetal node create \
     --property cpus=4 \
     --property memory_mb=16348 \
@@ -424,7 +458,7 @@ while IFS= read -r line; do
     --console-interface no-console \
     --management-interface staging-ovirt \
     --vendor-interface no-vendor \
-    --driver-info ovirt_username=${pm_user}  \
+    --driver-info ovirt_username=${pm_user} \
     --driver-info ovirt_password=${pm_password} \
     --driver-info ovirt_address=${pm_addr} \
     --driver-info ovirt_vm_name=${name} \
@@ -435,17 +469,20 @@ while IFS= read -r line; do
 done < <(cat ironic_list)
 ```
 
-- If custom kernel/ramdisk to be used modify baremetal nodes kernel and ramdisk info
+- Set kernel and ramdisk images
 ```bash
 DEPLOY_KERNEL=$(openstack image show bm-deploy-kernel -f value -c id)
 DEPLOY_RAMDISK=$(openstack image show bm-deploy-ramdisk -f value -c id)
-
+# ensure kernel and deploy vars are read correctly
+echo $DEPLOY_KERNEL
+echo $DEPLOY_RAMDISK
+# set custom deploy kernel and ramdisk
 for i in `openstack baremetal node list -c UUID -f value`; do
   openstack baremetal node set $i \
     --driver-info deploy_kernel=$DEPLOY_KERNEL \
     --driver-info deploy_ramdisk=$DEPLOY_RAMDISK
 done
-
+# check properties
 for i in `openstack baremetal node list -c UUID -f value`; do
   openstack baremetal node show $i -c properties -f value
 done
@@ -470,8 +507,8 @@ contrail-analytics-database; do
   openstack flavor create $i --ram 4096 --vcpus 1 --disk 40
   openstack flavor set --property "capabilities:boot_option"="local" \
                        --property "capabilities:profile"="${i}" ${i}
-  openstack flavor set --property resources:CUSTOM_BAREMETAL=1 --property resources:DISK_GB='0'
-                       --property resources:MEMORY_MB='0'
+  openstack flavor set --property resources:CUSTOM_BAREMETAL=1 --property resources:DISK_GB='0' \
+                       --property resources:MEMORY_MB='0' \
                        --property resources:VCPU='0' ${i}
 done
 ```
@@ -491,8 +528,9 @@ source stackrc
 ```
 
 ### Create file rhsm.yaml with redhat credentials
+!!! Adjust to your setup.
+For RHOSP16.2 use 8.2 release.
 ```yaml
-
 parameter_defaults:
   RhsmVars:
     rhsm_repos:
@@ -507,24 +545,22 @@ parameter_defaults:
     rhsm_password: "YOUR_REDHAT_PASSWORD"
     rhsm_org_id: "YOUR_REDHAT_ID"
     rhsm_pool_ids: "YOUR_REDHAT_POOL_ID"
+    rhsm_release: "8.4"
 ```
-
 
 
 ### Get and upload the containers into local registry
 
 #### OSP16
-
 ```bash
 sudo openstack tripleo container image prepare \
-  -e ~/containers-prepare-parameter.yaml
+  -e ~/containers-prepare-parameter.yaml \
   -e ~/rhsm.yaml > ~/overcloud_containers.yaml
 
 sudo openstack overcloud container image upload --config-file ~/overcloud_containers.yaml
-
 ```
-#### tripleo
 
+#### Contrail
 ```bash
 registry=${CONTAINER_REGISTRY:-'docker.io/tungstenfabric'}
 tag=${CONTRAIL_CONTAINER_TAG:-'latest'}
@@ -570,40 +606,102 @@ openstack overcloud container image upload --config-file /tmp/contrail_container
 
 
 ## overcloud config files
+
 ### nic templates
 ```bash
 tripleo-heat-templates/network/config/contrail/compute-nic-config.yaml
 tripleo-heat-templates/network/config/contrail/contrail-controller-nic-config.yaml
 tripleo-heat-templates/network/config/contrail/controller-nic-config.yaml
 ```
+
 ### overcloud network config
 ```
 tripleo-heat-templates/environments/contrail/contrail-net.yaml
 ```
+
 ### overcloud service config
 ```bash
 tripleo-heat-templates/environments/contrail/contrail-services.yaml
 ```
-### for TLS with RedHat IDM (FreeIPA) case
-#### add options for cloud name
-```bash
-cat << EOF >> tripleo-heat-templates/environments/contrail/contrail-tls.yaml
-  CloudName: overcloud.$undercloud_suffix
-  CloudNameInternal: overcloud.internalapi.$undercloud_suffix
-  CloudNameCtlplane: overcloud.ctlplane.$undercloud_suffix
-EOF
-```bash
-#### set option DnsServers to $prov_freeipa_ip in the overcloud network config file
+
+### For Contral Control plane deployed separetly in a Kubernetes cluster
+
+- Modify contrail-services.yaml to point to use external Contrail Control plane
+```yaml
+  # Disable RHOSP Contrail Control plane roles
+  ContrailControllerCount: 0
+  ContrailAnalyticsCount: 0
+  ContrailAnalyticsDatabaseCount: 0
+  ContrailControlOnlyCount: 0
+
+  # Add hosts entries to resolve externak Kubernetes nodes FQDN (or use proper DNS configured)
+  ExtraHostFileEntries:
+    - 'IP1    <FQDN K8S master1>    <Short name master1>'
+    - 'IP2    <FQDN K8S master2>    <Short name master2>'
+    - 'IP3    <FQDN K8S master3>    <Short name master3>'
+
+  # Provide Contrail Control plane IPs
+  ExternalContrailConfigIPs: <comma separated list of IP/FQDNs of K8S master nodes>
+  ExternalContrailControlIPs: <comma separated list of IP/FQDNs of K8S master nodes>
+  ExternalContrailAnalyticsIPs: <comma separated list of IP/FQDNs of K8S master nodes>
+
+  # Enable SSL for neutron plugin and compute nodes
+  ControllerExtraConfig:
+    contrail_internal_api_ssl: True
+  ComputeExtraConfig:
+    contrail_internal_api_ssl: True
+  ContrailDpdkExtraConfig:
+    contrail_internal_api_ssl: True
+  # ... add same for all compute roles ..."
+
 ```
+
+- For TLS with RedHat IDM (FreeIPA) provide CA bundle including CA certificate from Kubernetes cluster
+This is to distribute self signed root CA of K8S cluster on Contrail Controller nodes as trusted CA in RHOSP
+
+- Copy CA from kubernetes cluster into the file k8s-root-ca.pem
+
+- Make CA bundle file
+```bash
+cat /etc/ipa/ca.crt k8s-root-ca.pem > ca-bundle.pem
+```
+
+- Modify tripleo-heat-templates/environments/contrail/contrail-tls.yaml to include
+```yaml
+resource_registry:
+  # ... othere definitions ...
+
+  OS::TripleO::NodeTLSCAData: tripleo-heat-templates/puppet/extraconfig/tls/ca-inject.yaml
+
+parameter_defaults:
+  #... other definitions ...
+
+  # Contrail to use CA bundle
+  ContrailCaCertFile: "/etc/contrail/ssl/certs/ca-cert.pem"
+  SSLRootCertificatePath: "/etc/contrail/ssl/certs/ca-cert.pem"
+  # SSLRootCertificate: |
+  #   <ca-bundle.pem content>
+  SSLRootCertificate: |
+```
+- Append CA bundle content to SSLRootCertificate parameter (ensure SSLRootCertificate: is latest line in the file)
+```bash
+cat ca-bundle.pem | while read l ; do
+  echo "    $l" >> tripleo-heat-templates/environments/contrail/contrail-tls.yaml
+done
+```
+
+#### set option DnsServers to $prov_freeipa_ip in the overcloud network config file
+```bash
 vi tripleo-heat-templates/environments/contrail/contrail-net.yaml
 ```
+
 #### process templates to generate file for OS::TripleO::{{role}}ServiceServerMetadataHook definitions
 These files are used by the file  ~/tripleo-heat-templates/environments/ssl/enable-internal-tls.yaml
 that is generated during that processing
 ```bash
-  python ~/tripleo-heat-templates/tools/process-templates.py  --safe \
-    -r ~/tripleo-heat-templates/roles_data_contrail_aio.yaml \
-    -p ~/tripleo-heat-templates/
+python3 ~/tripleo-heat-templates/tools/process-templates.py --safe \
+  -r ~/tripleo-heat-templates/roles_data_contrail_aio.yaml \
+  -p ~/tripleo-heat-templates/
 ```
 
 ### for compute nodes hugepages are enabled by default
@@ -622,50 +720,38 @@ vi tripleo-heat-templates/environments/contrail/contrail-services.yaml
         value: 128960
 ```
 
-
 ### for dpdk nodes
 ```bash
 vi tripleo-heat-templates/environments/contrail/contrail-services.yaml
 ```
+
 #### enable hugepages and iommu in kernel args (use suitable values for your setup), e.g.
 ```yaml
-  # For Intel CPU
   ContrailDpdkParameters:
+    # For Intel CPU
     KernelArgs: "intel_iommu=on iommu=pt default_hugepagesz=1GB hugepagesz=1G hugepages=4 hugepagesz=2M hugepages=1024"
+    # For AMD CPU uncomment
+    # KernelArgs: "amd_iommu=on iommu=pt default_hugepagesz=1GB hugepagesz=1G hugepages=4 hugepagesz=2M hugepages=1024"
+    TunedProfileName: "cpu-partitioning"
+    IsolCpusList: "1-16"
     ExtraSysctlSettings:
       # must be equal to value from kernel args: hugepages=4
       vm.nr_hugepages:
         value: 4
       vm.max_map_count:
         value: 128960
-```
-```
-  # For AMD CPU
-  ContrailDpdkParameters:
-    KernelArgs: "amd_iommu=on iommu=pt default_hugepagesz=1GB hugepagesz=1G hugepages=4 hugepagesz=2M hugepages=1024"
-    ExtraSysctlSettings:
-      # must be equal to value from kernel args: hugepages=2
-      vm.nr_hugepages:
-        value: 4
-      vm.max_map_count:
-        value: 128960
-```
-#### adjust performance settings according to your setup, e.g.
-```
-  ContrailDpdkParameters:
-    TunedProfileName: "cpu-partitioning"
-    IsolCpusList: "1-16"
     ContrailSettings:
       # service threads pinning
       # SERVICE_CORE_MASK: 3,4
       # dpdk ctrl threads pinning
       # DPDK_CTRL_THREAD_MASK: 5,6
       # others params for ContrailSettings as role based are not merged with global
-      DPDK_UIO_DRIVER: uio_pci_generic
+      DPDK_UIO_DRIVER: "vfio-pci"
       VROUTER_GATEWAY: 10.0.0.1
       BGP_ASN: 64512
       BGP_AUTO_MESH: true
 ```
+
 #### set cpu_list options in NIC file accordingly for forwarding threads
 ```
 vi tripleo-heat-templates/network/config/contrail/contrail-dpdk-nic-config.yaml
@@ -675,11 +761,13 @@ vi tripleo-heat-templates/network/config/contrail/contrail-dpdk-nic-config.yaml
     name: vhost0
     cpu_list: '0x03'
 ```
+
 #### optionally provide additional parameters
 ```
   ContrailDpdkParameters:
     ContrailDpdkOptions: "--vr_mempool_sz 131072 --dpdk_txd_sz 2048 --dpdk_rxd_sz 2048 --vr_flow_entries=4000000"
 ```
+
 #### modify NIC file to set network params and DPDK driver according to your setup, e.g.
 ```
 vi tripleo-heat-templates/network/config/contrail/contrail-dpdk-nic-config.yaml
@@ -703,8 +791,10 @@ vi tripleo-heat-templates/network/config/contrail/contrail-dpdk-nic-config.yaml
 ```
 
 ## deploy the stack
-### OSP16
-```
+
+### OSP16 w/o TLS
+```bash
+role_file=~/tripleo-heat-templates/roles_data_contrail_aio.yaml
 openstack overcloud deploy --templates tripleo-heat-templates/ \
   --stack overcloud --libvirt-type kvm \
   --roles-file $role_file \
@@ -716,8 +806,11 @@ openstack overcloud deploy --templates tripleo-heat-templates/ \
   -e containers-prepare-parameter.yaml \
   -e rhsm.yaml
 ```
+
 ### OSP16 for TLS everwhere with RedHat IDM (FreeIPA) case
-```
+```bash
+role_file=~/tripleo-heat-templates/roles_data_contrail_aio.yaml
+
 python3 tripleo-heat-templates/tools/process-templates.py --clean \
   -r $role_file \
   -p tripleo-heat-templates/

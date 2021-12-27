@@ -149,7 +149,7 @@ parameter_defaults:
     # TunedProfileName: "cpu-partitioning"
     # IsolCpusList: "3-20"
     ContrailSettings:
-      DPDK_UIO_DRIVER: uio_pci_generic
+      DPDK_UIO_DRIVER: 'vfio-pci'
       VROUTER_ENCRYPTION: false
       BGP_ASN: 64512
       BGP_AUTO_MESH: true
@@ -186,12 +186,12 @@ parameter_defaults:
     # TunedProfileName: "cpu-partitioning"
     # IsolCpusList: "3-20"
     ContrailSettings:
-      # Adjust for ContrailSriovMode: dpdk
-      # DPDK_UIO_DRIVER: uio_pci_generic
       VROUTER_ENCRYPTION: false
       BGP_ASN: 64512
       BGP_AUTO_MESH: true
       LACP_RATE: 0
+      # Adjust for ContrailSriovMode: dpdk
+      # DPDK_UIO_DRIVER: 'vfio-pci'
       # NIC_OFFLOAD_ENABLE: true
       # SERVICE_CORE_MASK: '0x03'
       # DPDK_CTRL_THREAD_MASK: '0x03'

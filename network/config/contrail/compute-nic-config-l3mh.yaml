@@ -319,7 +319,7 @@ resources:
                 addresses:
                 - ip_netmask: {get_param: Tenant2L3mhIpSubnet}
                 routes: {get_param: Tenant2L3mhInterfaceRoutes}
-              # l3mh local interface - compute address 
+              # l3mh local interface - compute address
               - type: linux_tap
                 name: comp0
                 mtu: {get_param: L3mhMtu}

@@ -390,12 +390,22 @@ cat << EOF > infra.yaml
     ovirt_host_network:
       state: present
       auth: "{{ ovirt_auth }}"
-      state: present
       networks:
       - name: "{{ datacenter_name }}-{{ item.1.name }}"
         boot_protocol: none
       name: "{{ item.0.name }}"
       interface: "{{ item.1.phy_dev }}"
+    with_subelements:
+      - "{{ nodes }}"
+      - networks
+  - name: Remove vNICs network_filter
+    ovirt.ovirt.ovirt_vnic_profile:
+      state: present
+      auth: "{{ ovirt_auth }}"
+      name: "{{ datacenter_name }}-{{ item.1.name }}"
+      network: "{{ datacenter_name }}-{{ item.1.name }}"
+      data_center: "{{ datacenter_name }}"
+      network_filter: ""
     with_subelements:
       - "{{ nodes }}"
       - networks
@@ -557,6 +567,7 @@ cat << EOF > overcloud.yaml
       disk_format: cow
       graphical_console:
         protocol:
+          - spice
           - vnc
       serial_console: yes
       nics: "{{ item.nics }}"
@@ -664,6 +675,7 @@ cat << EOF > undercloud.yaml
       disk_format: cow
       graphical_console:
         protocol:
+          - spice
           - vnc
       serial_console: yes
       nics:
@@ -761,6 +773,7 @@ cat << EOF > ipa.yaml
       disk_format: cow
       graphical_console:
         protocol:
+          - spice
           - vnc
       serial_console: yes
       nics:

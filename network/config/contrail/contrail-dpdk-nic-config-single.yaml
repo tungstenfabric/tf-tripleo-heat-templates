@@ -180,8 +180,8 @@ parameters:
     default: []
     description: A list of DNS search domains to be added (in order) to resolv.conf.
     type: comma_delimited_list
-  ContrailDpdkDriver: # Override this via parameter_defaults
-    default: 'uio_pci_generic'
+  ContrailDpdkDriver:
+    default: 'vfio-pci'
     description: The default DPDK driver
     type: string
 
