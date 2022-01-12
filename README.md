@@ -645,6 +645,10 @@ tripleo-heat-templates/environments/contrail/contrail-services.yaml
   ExternalContrailControlIPs: <comma separated list of IP/FQDNs of K8S master nodes>
   ExternalContrailAnalyticsIPs: <comma separated list of IP/FQDNs of K8S master nodes>
 
+  # Use rbac (tf-operator enables RBAC in case if Keystone auth is used)
+  #(If rbac is not desire disable it in TF Operator and adjust this setting)
+  AAAMode: rbac
+
   # Enable SSL for neutron plugin and compute nodes
   ControllerExtraConfig:
     contrail_internal_api_ssl: True
