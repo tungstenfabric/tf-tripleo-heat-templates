@@ -76,7 +76,7 @@
 
         - name: create contrail vrouter plugin init container
           shell: >
-            {{ container_cli }} run -t --network host --name "{{ _CONTRAIL_VROUTER_PLUGIN_INIT_IMAGE_NAME_ }}" --privileged -v /lib/modules:/lib/modules -v /usr/src:/usr/src "{{ _CONTRAIL_VROUTER_PLUGIN_INIT_IMAGE_ }}"
+            {{ container_cli }} run -t --network host --name "{{ _CONTRAIL_VROUTER_PLUGIN_INIT_IMAGE_NAME_ }}" --privileged -v /lib/modules:/lib/modules -v /usr/src:/usr/src -v /var/lib:/var/lib -v /etc/sysconfig/network-scripts:/etc/sysconfig/network-scripts "{{ _CONTRAIL_VROUTER_PLUGIN_INIT_IMAGE_ }}"
       when:
         - _CONTRAIL_VROUTER_PLUGIN_INIT_IMAGE_NAME_ is defined and _CONTRAIL_VROUTER_PLUGIN_INIT_IMAGE_NAME_ != ''
         - _CONTRAIL_VROUTER_PLUGIN_INIT_IMAGE_ is defined and _CONTRAIL_VROUTER_PLUGIN_INIT_IMAGE_ != ''
