@@ -1,5 +1,5 @@
 [gerrit]
-host=review.opencontrail.org
+host=gerrit.tungsten.io
 port=29418
 project=tungstenfabric/tf-tripleo-heat-templates.git
-defaultbranch=stable/queens
+defaultbranch=R21.3/queens
