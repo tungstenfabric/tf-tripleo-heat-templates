@@ -2,4 +2,4 @@
 host=gerrit.tungsten.io
 port=29418
 project=tungstenfabric/tf-tripleo-heat-templates.git
-defaultbranch=stable/train
+defaultbranch=R21.3/train
