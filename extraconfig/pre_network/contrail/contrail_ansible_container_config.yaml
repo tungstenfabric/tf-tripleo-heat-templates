@@ -71,7 +71,7 @@
 
         - name: remove contrail vrouter plugin init container if exists
           shell: >
-            {{ container_cli }} container rm --force"{{ _CONTRAIL_VROUTER_PLUGIN_INIT_IMAGE_NAME_ }}"
+            {{ container_cli }} container rm --force "{{ _CONTRAIL_VROUTER_PLUGIN_INIT_IMAGE_NAME_ }}"
           ignore_errors: yes
 
         - name: create contrail vrouter plugin init container
