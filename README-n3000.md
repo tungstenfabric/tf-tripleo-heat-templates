@@ -7,7 +7,7 @@ Following combinations of Operating System/OpenStack/Deployer/Contrail are suppo
 
 | Operating System | OpenStack    | Deployer                 | TF version         |
 | ---------------- | ------------ | ------------------------ | ------------------ |
-| RHEL 8.2         | RHOSP 16.1   | TripleO (RHOSP Director) | TF R2011           |
+| RHEL 8.4         | RHOSP 16.2   | TripleO (RHOSP Director) | TF stable/train    |
 
 
 ## 1.1. Limitations
@@ -40,7 +40,7 @@ KVM host:
 In case of different infrastructure requirements / assumptions, one need to modify relevant configuration according to his setup.
 
 > Note:
-> This documentation assumes RHEL 8.2 or Centos 8.2 as operating system on KVM host
+> This documentation assumes RHEL 8.4 or Centos 8.4 as operating system on KVM host
 
 ## 2.1 Example topology
 Deployment configuration assumes following logical topology:
@@ -396,7 +396,7 @@ Restart interfaces and bridges after script.
 
 ### 3.3.5 Prepare Undercloud VM image
 **Download and customize image**
-Download rhel-8.2-x86_64-kvm.qcow2 from [RedHat Portal](https://access.redhat.com/downloads/content/479/ver=/rhel---8/8.2/x86_64/product-software) to ~/images directory.
+Download rhel-8.4-x86_64-kvm.qcow2 from [RedHat Portal](https://access.redhat.com/downloads/content/479/ver=/rhel---8/8.4/x86_64/product-software) to ~/images directory.
 
 Customize image:
 ```bash
@@ -405,7 +405,7 @@ cat customize-undercloud-img.sh
 
 export LIBGUESTFS_BACKEND=direct
 
-cloud_image=~/images/rhel-8.2-update-2-x86_64-kvm.qcow2
+cloud_image=~/images/rhel-8.4-update-2-x86_64-kvm.qcow2
 libvirt_path=/home/libvirt-images
 undercloud_name=director
 undercloud_hostname=director
@@ -474,7 +474,7 @@ virt-install --name ${undercloud_name} \
 > Libvirt `default` network is used as *main* VM network providing access from/to "external"
 
 > Note 2:
-> For Undercloud VM sizing one can consult [RH documentation](https://access.redhat.com/documentation/en-us/red_hat_openstack_platform/16.1/html-single/director_installation_and_usage/index#determining-environment-scale)
+> For Undercloud VM sizing one can consult [RH documentation](https://access.redhat.com/documentation/en-us/red_hat_openstack_platform/16.2/html-single/director_installation_and_usage/index#determining-environment-scale)
 
 ### 3.3.6 Prepare Controllers' VMs
 Openstack Controller and Tungsten Fabric Controller are setup as VMs thus one have to prepare them (only to define VMs, they will be provisioned by undercloud). To do that following script can be used:
@@ -604,9 +604,9 @@ Password:
 $ sudo subscription-manager list --available --all --matches="Red Hat OpenStack"
 (...truncated...)
 $ sudo subscription-manager attach --pool=POOL_ID
-$ sudo subscription-manager release --set=8.2
+$ sudo subscription-manager release --set=8.4
 ```
-Set required for RHOSP Director role repositories (check also [RH documentation](https://access.redhat.com/documentation/en-us/red_hat_openstack_platform/16.1/html-single/director_installation_and_usage/index#undercloud-repositories))
+Set required for RHOSP Director role repositories (check also [RH documentation](https://access.redhat.com/documentation/en-us/red_hat_openstack_platform/16.2/html-single/director_installation_and_usage/index#undercloud-repositories))
 ```bash
 sudo subscription-manager repos --disable=*
 sudo subscription-manager repos \
@@ -614,21 +614,20 @@ sudo subscription-manager repos \
   --enable=rhel-8-for-x86_64-appstream-eus-rpms \
   --enable=rhel-8-for-x86_64-highavailability-eus-rpms \
   --enable=ansible-2.9-for-rhel-8-x86_64-rpms \
-  --enable=openstack-16.1-for-rhel-8-x86_64-rpms \
+  --enable=openstack-16.2-for-rhel-8-x86_64-rpms \
   --enable=fast-datapath-for-rhel-8-x86_64-rpms \
   --enable=advanced-virt-for-rhel-8-x86_64-rpms
 ```
 
-Set the container-tools repository module to version 2.0:
+Set the container-tools repository module to version 3.0:
 ```bash
 sudo dnf module disable -y container-tools:rhel8
-sudo dnf module enable -y container-tools:2.0
+sudo dnf module enable -y container-tools:3.0
 ```
 
-Set the virt repository module to version 8.2:
+Set the virt repository module to version rhel:
 ```bash
-sudo dnf module disable -y virt:rhel
-sudo dnf module enable -y virt:8.2
+sudo dnf module enable -y virt:rhel
 ```
 
 Perform an update on your system to ensure that you have the latest base system packages and install additional tools:
@@ -670,28 +669,15 @@ cat containers-prepare-parameter.yaml
 parameter_defaults:
   ContainerImagePrepare:
   - push_destination: true
+    excludes:
+      - ceph
     set:
-      ceph_alertmanager_image: ose-prometheus-alertmanager
-      ceph_alertmanager_namespace: registry.redhat.io/openshift4
-      ceph_alertmanager_tag: 4.1
-      ceph_grafana_image: rhceph-4-dashboard-rhel8
-      ceph_grafana_namespace: registry.redhat.io/rhceph
-      ceph_grafana_tag: 4
-      ceph_image: rhceph-4-rhel8
-      ceph_namespace: registry.redhat.io/rhceph
-      ceph_node_exporter_image: ose-prometheus-node-exporter
-      ceph_node_exporter_namespace: registry.redhat.io/openshift4
-      ceph_node_exporter_tag: v4.1
-      ceph_prometheus_image: ose-prometheus
-      ceph_prometheus_namespace: registry.redhat.io/openshift4
-      ceph_prometheus_tag: 4.1
-      ceph_tag: latest
       name_prefix: openstack-
       name_suffix: ''
       namespace: registry.redhat.io/rhosp-rhel8
-      neutron_driver: ovn
+      neutron_driver: null
       rhel_containers: false
-      tag: '16.1'
+      tag: '16.2'
     tag_from_label: '{version}-{release}'
   ContainerImageRegistryCredentials:
     registry.redhat.io:
@@ -763,14 +749,14 @@ Obtaining operating system images for overcloud nodes - install proper (accordin
 To check available ones and install:
 ```bash
 dnf --showduplicate list rhosp-director-images
-sudo dnf install rhosp-director-images-16.1-20201003.1.el8ost.noarch
+sudo dnf install rhosp-director-images-16.2
 ```
 Extract images:
 ```bash
 mkdir images
 cd images
-overcloud_full_path='/usr/share/rhosp-director-images/overcloud-full-latest-16.1.tar'
-ironic_agent_path='/usr/share/rhosp-director-images/ironic-python-agent-latest-16.1.tar'
+overcloud_full_path='/usr/share/rhosp-director-images/overcloud-full-latest-16.2.tar'
+ironic_agent_path='/usr/share/rhosp-director-images/ironic-python-agent-latest-16.2.tar'
 for i in $overcloud_full_path $ironic_agent_path; do tar -xvf $i; done
 ```
 Upload:
@@ -781,7 +767,7 @@ Image "overcloud-full-initrd" was uploaded.
 Image "overcloud-full" was uploaded.
 ```
 ## 4.6 Prepare custom images supporting Intel PAC N3000 card
-Intel PAC N3000 card requires installation of additional drivers and tools (they are not inluded in base distro OS nor available in package repositories). For that reason one has to take extra steps to prepare overcloud image which will be installed on servers (DPDK compute nodes supporting Intel N3000). Image customization has to be done on same operating system as target overcloud OS - RHEL 8.2 in this case (e.g. can be done on RHOSP Director node).
+Intel PAC N3000 card requires installation of additional drivers and tools (they are not inluded in base distro OS nor available in package repositories). For that reason one has to take extra steps to prepare overcloud image which will be installed on servers (DPDK compute nodes supporting Intel N3000). Image customization has to be done on same operating system as target overcloud OS - RHEL 8.4 in this case (e.g. can be done on RHOSP Director node).
 
 > Note:
 > To customize image one will need `libguestfs-tools` package (should be already installed)
@@ -789,8 +775,8 @@ It is recommended to create directory for overcloud customized images. Then copy
 ```bash
 $ mkdir images-dpdk
 $ cd images-dpdk
-$ for i in /usr/share/rhosp-director-images/overcloud-full-latest-16.1.tar \
-/usr/share/rhosp-director-images/ironic-python-agent-latest-16.1.tar;
+$ for i in /usr/share/rhosp-director-images/overcloud-full-latest-16.2.tar \
+/usr/share/rhosp-director-images/ironic-python-agent-latest-16.2.tar;
 do tar -xvf $i; done
 ```
 To be able to distinguish overcloud images ("standard" and customized ones), rename new ones (in below example sufix `-dpdk` is added):
@@ -807,30 +793,20 @@ $ mkdir mount-dir-overcloud
 ## libgcrypt version problem (tested on libgcrypt-1.8.5-4.el8.x86_64.rpm)
 $ guestmount -a overcloud-full-dpdk.qcow2 -i --rw mount-dir-overcloud
 $ ls mount-dir-overcloud/lib/modules/
-4.18.0-193.19.1.el8_2.x86_64
+4.18.0-305.25.1.el8_4.x86_64
 ```
-In this case overcloud image has `4.18.0-193.19.1.el8_2.x86_64` kernel version.
+In this case overcloud image has `4.18.0-305.25.1.el8_4.x86_64` kernel version.
 
 ```
 
 If necessary install required kernel version on system where customization will be done:
 ```bash
 dnf --showduplicates list kernel
-(...)
-Installed packages
-kernel.x86_64                                     4.18.0-193.14.3.el8_2                                    @anaconda
-kernel.x86_64                                     4.18.0-193.29.1.el8_2                                    @rhel-8-for-x86_64-baseos-eus-rpms
-Available packages
-(...)
-kernel.x86_64                                     4.18.0-193.14.3.el8_2                                    rhel-8-for-x86_64-baseos-eus-rpms
-kernel.x86_64                                     4.18.0-193.19.1.el8_2                                    rhel-8-for-x86_64-baseos-eus-rpms
-kernel.x86_64                                     4.18.0-193.28.1.el8_2                                    rhel-8-for-x86_64-baseos-eus-rpms
-(...)
-sudo dnf install kernel-4.18.0-193.19.1.el8_2.x86_64
+sudo dnf install kernel-4.18.0-305.25.1.el8_4.x86_64
 ```
 Update uio.ko.xz(you find it in release package) driver
 ```bash
-driver_path='lib/modules/4.18.0-193.19.1.el8_2.x86_64/kernel/drivers/uio/'
+driver_path='lib/modules/4.18.0-305.25.1.el8_4.x86_64/kernel/drivers/uio/'
 cp uio.ko.xz ./mount-dir-overcloud/$driver_path
 ```
 
@@ -848,7 +824,7 @@ export LIBGUESTFS_BACKEND=direct,
 RH_USER="RH_ACCOUNT_USERNAME"
 #Ajust
 RH_PASSWORD='RH_ACCOUNT_PASSWORD'
-kernel_ver=4.18.0-193.19.1.el8_2.x86_64
+kernel_ver=4.18.0-305.25.1.el8_4.x86_64
 #Ajust local_repo should include (uio.ko.xz, n3000-1.3.8-3-rte-el8-setup.sh)
 local_repo=http://10.7.0.1/tripleo
 export SUPERMIN_KERNEL=/boot/vmlinuz-${kernel_ver}
@@ -945,11 +921,12 @@ nodes:
     pm_user: "IPMI_USER" # <- Ajust
     pm_password: "IPMI_PASSWORD" # <- Ajust
     pm_addr: "IPMI_IP_ADDRESS_OF_COMPUTE"   # <- Adjust
-    capabilities: "profile:compute-dpdk,boot_mode:uefi,boot_option:local"
+    capabilities: "profile:compute-dpdk,boot_option:local,boot_mode:bios,disk_label:gpt"
 
 ```
 > Note:
-> Compute node is set as `UEFI` enabled
+> Compute node is set as `BIOS` enabled
+> `UEFI` mode also possible
 
 Validate file and then import nodes:
 ```bash
@@ -1049,7 +1026,7 @@ cp -r /usr/share/openstack-tripleo-heat-templates/ tripleo-heat-templates
 Clone and copy upstream TF TripleO templates
 ```bash
 git clone https://github.com/tungstenfabric/tf-tripleo-heat-templates \
- -b R2011/train
+ -b stable/train
 cp -r tf-tripleo-heat-templates/* tripleo-heat-templates/
 ```
 
@@ -1085,7 +1062,7 @@ parameter_defaults:
   RhsmVars:
     rhsm_repos:
       - fast-datapath-for-rhel-8-x86_64-rpms
-      - openstack-16.1-for-rhel-8-x86_64-rpms
+      - openstack-16.2-for-rhel-8-x86_64-rpms
       - ansible-2.9-for-rhel-8-x86_64-rpms
       - rhel-8-for-x86_64-highavailability-eus-rpms
       - rhel-8-for-x86_64-appstream-eus-rpms
@@ -1095,7 +1072,7 @@ parameter_defaults:
     rhsm_password: "YOUR_REDHAT_PASSWORD" # <- Ajust
     rhsm_org_id: "YOUR_REDHAT_ID" # <- Ajust
     rhsm_pool_ids: "YOUR_REDHAT_POOL_ID" # <- Ajust
-    rhsm_release: 8.2
+    rhsm_release: 8.4
 ```
 
 ### 4.10.3 Overcloud config files
@@ -1111,7 +1088,7 @@ One can fine additional examples (for specific configs) in directory: `tripleo-h
 
 In context of this tutorial note that overcloud controllers use network isolation based on separate NICs (vNICs as they are in virtual machines). Additionally each VM is attached to all networks but not all of them are required for their roles (used interfaces are presented in chapter 2.1 Example topology). ContrailDPDK (compute) has also specific network settings (with vRouter DPDK attached to smartnic). As a result example files have to be modified to reflect ones setup. E.g. for Contrail DPDK role its NIC template needs to be adjusted so that `vhost0` interface is binded to VF0 from Intel PAC N3000 card (after VF creationg) e.g.:
 
-cat tripleo-heat-templates/network/config/contrail/controller-nic-config.yaml
+cat tripleo-heat-templates/network/config/contrail/contrail-dpdk-nic-config.yaml
 
 ```yaml
               - type: contrail_vrouter_dpdk
@@ -1120,7 +1097,7 @@ cat tripleo-heat-templates/network/config/contrail/controller-nic-config.yaml
                 members:
                   -
                     type: interface
-                    name: ens801f0v0
+                    name: ens801f0
                     use_dhcp: false
                 addresses:
                 - ip_netmask:
@@ -1165,6 +1142,9 @@ parameter_defaults:
   - ../contrail-vrouter-agent-dpdk:smartnic
   DockerContrailVrouterKernelInitDpdkImageName:
   - ../contrail-vrouter-kernel-init-dpdk:smartnic
+  DockerContrailVrouterPluginInitImageName:
+  - ../contrail-vrouter-plugin-n3000-init-redhat #(without tag)
+
 ```
 ##### Set additional parameters for TFDpdk role
 To enable Intel PAC N3000 full hardware offload, TF vRouter DPDK has to be started with additional command line options. To support deployments with those options set, new parameters for TFDpdk role have been added:
@@ -1266,9 +1246,10 @@ ContrailImageTag: R2011-2021-08-11
   # Specify contaner images for `contrail-vrouter-agent-dpdk` and `contrail-vrouter-kernel-init-dpdk`
 DockerContrailVrouterAgentDpdkContainerName: director1.ctlplane.localdomain:8787/tungstenfabric/contrail-vrouter-agent-dpdk:smartnic-R2011-based
 DockerContrailVrouterKernelInitDpdkImageName: director1.ctlplane.localdomain:8787/tungstenfabric/contrail-vrouter-kernel-init-dpdk:2021-08-11
+DockerContrailVrouterPluginInitImageName: contrail-vrouter-plugin-n3000-init-redhat
 ```
 ```yaml
-ContrailDpdkImage: overcloud-full-dpd
+ContrailDpdkImage: overcloud-full-dpdk
 ```
 ```yaml
 KernelArgs: "default_hugepagesz=1GB hugepagesz=1G hugepages=2"
@@ -1373,7 +1354,10 @@ TF file with roles definition: `tripleo-heat-templates/roles_data_contrail_aio.y
 Note: for ROSP16/RHEL8 not all services are needed (e.g. `Docker`, `SkydiveAgent` or `SkydiveAnalyzer`)
 
 ## 4.11 Deploy stack
-
+Make sure the cache has beed removed
+```
+rm -rf /var/lib/mistral/overcloud
+```
 ```
 openstack overcloud deploy --templates tripleo-heat-templates/ \
   --stack overcloud --libvirt-type kvm \
@@ -1408,18 +1392,7 @@ Update nodes.yaml
     pm_user: "vBMC_USER" # <- Ajust
     pm_user: "vBMC_PASSWORD" # <- Ajust
     pm_addr: "IPMI_IP_ADDRESS_OF_COMPUTE"   # <- Adjust
-    capabilities: "profile:compute-dpdk,boot_mode:uefi,boot_option:local"
-```
-Modify MAC address on 2nd CN
-```bash
-source stackrc
-openstack server list
-ssh heat-admin@<2CN_IP_ADDRESS>
-sudo ifdown vhost0
-sudo ifconfig ens801f0v0 hw ether $(cat /sys/class/net/vhost0/address) # +1
-#TODO
-#Create MAC generator
-sudo ifup vhost0
+    capabilities: "profile:compute-dpdk,boot_option:local,boot_mode:bios,disk_label:gpt"
 ```
 
 Ansible logs: ```/var/lib/mistral/overcloud/ansible.log```
