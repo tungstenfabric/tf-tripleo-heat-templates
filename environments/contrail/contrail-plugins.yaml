@@ -70,7 +70,7 @@ resource_registry:
 
 parameter_defaults:
   NeutronCorePlugin: neutron_plugin_contrail.plugins.opencontrail.contrail_plugin.NeutronPluginContrailCoreV2
-  NeutronServicePlugins: ''
+  NeutronServicePlugins: 'contrail-tags'
   NeutronTunnelTypes: ''
   NeutronMechanismDrivers: ''
   NeutronTypeDrivers: ''
