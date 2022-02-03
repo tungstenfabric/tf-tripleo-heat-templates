@@ -467,9 +467,8 @@ Contrail Controllers to be deployed by [TF Operator](https://github.com/tungsten
 ```bash
 # Overcloud VMs definitions
 # Adjust values to your setup!!!
-# E.g. for deploying Contrail Control plane in a Kuberentes cluster
-# use approach similar to undercloud node to boot VM from RHEL8.4
-# and to initilize hostname and NICs via cloud-init
+# For deploying Contrail Control plane in a Kuberentes cluster
+# remove contrail controller nodes as they are not managed by RHOSP. They to be created at next steps.
 cat << EOF > vms.yaml
 ---
 vms:
@@ -593,7 +592,164 @@ ansible-playbook \
   overcloud.yaml
 ```
 
-## Create undercloud VM
+# Create Contrail Control plane VMs for K8S based deployment
+This is for side-by-side deployment where Contrail Control plane is
+deployed as separate K8S based cluster.
+
+## Customize VM image for K8S VMs
+```bash
+cd
+cloud_image=images/rhel-8.4-x86_64-kvm.qcow2
+root_password=contrail123
+stack_password=contrail123
+export LIBGUESTFS_BACKEND=direct
+qemu-img create -f qcow2 images/k8s.qcow2 100G
+virt-resize --expand /dev/sda3 ${cloud_image} images/k8s.qcow2
+virt-customize  -a k8s.qcow2 \
+  --run-command 'xfs_growfs /' \
+  --root-password password:${root_password} \
+  --password stack:password:${stack_password} \
+  --run-command 'echo "stack ALL=(root) NOPASSWD:ALL" | tee -a /etc/sudoers.d/stack' \
+  --chmod 0440:/etc/sudoers.d/stack \
+  --run-command 'sed -i "s/PasswordAuthentication no/PasswordAuthentication yes/g" /etc/ssh/sshd_config' \
+  --run-command 'systemctl enable sshd' \
+  --selinux-relabel
+```
+
+## Define K8S VMs
+```bash
+# !!! Adjust to your setup (addresses in ctlplane and tenant networks)
+cat << EOF > k8s-vms.yaml
+---
+vms:
+  - name: contrail-controller-0
+    disk_size_gb: 100
+    memory_gb: 16
+    cpu_cores: 4
+    nics:
+      - name: eth0
+        interface: virtio
+        profile_name: "{{ datacenter_name }}-ctlplane"
+        mac_address: "52:54:00:16:54:d8"
+      - name: eth1
+        interface: virtio
+        profile_name: "{{ datacenter_name }}-tenant"
+    cluster: node-10-0-10-148
+    storage: node-10-0-10-148-overcloud
+    image: "images/k8s.qcow2"
+    cloud_init:
+      host_name: "contrail-controller-0.{{ overcloud_domain }}"
+      dns_search: "{{ overcloud_domain }}"
+      dns_servers: "{{ ipa_ctlplane_ip }}"
+      nic_name: "eth0"
+      nic_boot_protocol_v6: none
+      nic_boot_protocol: static
+      nic_ip_address: "192.168.24.7"
+      nic_gateway: "{{ undercloud_ctlplane_ip }}"
+      nic_netmask: "255.255.255.0"
+    cloud_init_nics:
+      - nic_name: "eth1"
+        nic_boot_protocol_v6: none
+        nic_boot_protocol: static
+        nic_ip_address: "10.0.0.201"
+        nic_netmask: "255.255.255.0"
+  - name: contrail-controller-1
+    disk_size_gb: 100
+    memory_gb: 16
+    cpu_cores: 4
+    nics:
+      - name: eth0
+        interface: virtio
+        profile_name: "{{ datacenter_name }}-ctlplane"
+        mac_address: "52:54:00:d6:2b:03"
+      - name: eth1
+        interface: virtio
+        profile_name: "{{ datacenter_name }}-tenant"
+    cluster: node-10-0-10-149
+    storage: node-10-0-10-149-overcloud
+    image: "images/k8s.qcow2"
+    cloud_init:
+      host_name: "contrail-controller-1.{{ overcloud_domain }}"
+      dns_search: "{{ overcloud_domain }}"
+      dns_servers: "{{ ipa_ctlplane_ip }}"
+      nic_name: "eth0"
+      nic_boot_protocol_v6: none
+      nic_boot_protocol: static
+      nic_ip_address: "192.168.24.8"
+      nic_gateway: "{{ undercloud_ctlplane_ip }}"
+      nic_netmask: "255.255.255.0"
+    cloud_init_nics:
+      - nic_name: "eth1"
+        nic_boot_protocol_v6: none
+        nic_boot_protocol: static
+        nic_ip_address: "10.0.0.202"
+        nic_netmask: "255.255.255.0"
+  - name: contrail-controller-2
+    disk_size_gb: 100
+    memory_gb: 16
+    cpu_cores: 4
+    nics:
+      - name: eth0
+        interface: virtio
+        profile_name: "{{ datacenter_name }}-ctlplane"
+        mac_address: "52:54:00:d6:2b:23"
+      - name: eth1
+        interface: virtio
+        profile_name: "{{ datacenter_name }}-tenant"
+    cluster: node-10-0-10-150
+    storage: node-10-0-10-150-overcloud
+    image: "images/k8s.qcow2"
+    cloud_init:
+      host_name: "contrail-controller-1.{{ overcloud_domain }}"
+      dns_search: "{{ overcloud_domain }}"
+      dns_servers: "{{ ipa_ctlplane_ip }}"
+      nic_name: "eth0"
+      nic_boot_protocol_v6: none
+      nic_boot_protocol: static
+      nic_ip_address: "192.168.24.9"
+      nic_gateway: "{{ undercloud_ctlplane_ip }}"
+      nic_netmask: "255.255.255.0"
+    cloud_init_nics:
+      - nic_name: "eth1"
+        nic_boot_protocol_v6: none
+        nic_boot_protocol: static
+        nic_ip_address: "10.0.0.203"
+        nic_netmask: "255.255.255.0"EOF
+EOF
+
+ansible-playbook \
+  --extra-vars="@common-env.yaml" \
+  --extra-vars="@k8s-vms.yaml" \
+  overcloud.yaml
+```
+
+## SSH to K8S nodes and configure VLANs for RHOSP Internal API networks
+```bash
+# Example
+
+# ssh to a node
+ssh stack@192.168.24.7
+
+# !!!Adjust to your setup and repeate for all Contrail Controller nodes
+cat <<EOF | sudo tee /etc/sysconfig/network-scripts/ifcfg-vlan710
+ONBOOT=yes
+BOOTPROTO=static
+HOTPLUG=no
+NM_CONTROLLED=no
+PEERDNS=no
+USERCTL=yes
+VLAN=yes
+DEVICE=vlan710
+PHYSDEV=eth0
+IPADDR=10.1.0.7
+NETMASK=255.255.255.0
+EOF
+sudo ifup vlan710
+
+# Do same for external vlan if needed
+```
+
+# Create Undercloud VM
 
 ## Customize VM image for Undercloud VM
 ```bash
@@ -699,6 +855,8 @@ ansible-playbook --extra-vars="@common-env.yaml" undercloud.yaml
 ```
 
 
+# Create FreeIPA VM
+
 ## Customize VM image for RedHat IDM (FreeIPA) VM
 This is for TLS everwhere deployment.
 ```bash
@@ -795,6 +953,7 @@ EOF
 
 ansible-playbook --extra-vars="@common-env.yaml" ipa.yaml
 ```
+
 
 ## Access to RHVM via a web browser
 RHVM can be accessed only using the engine FQDN or one of the engine alternate FQDNs (eg. https://vmengine.dev.clouddomain).
