@@ -37,7 +37,6 @@ parameter_defaults:
   ExternalNetworkVlanID: 720
   StorageNetworkVlanID: 730
   StorageMgmtNetworkVlanID: 740
-  TenantNetworkVlanID: 3211
   # Services
   EC2MetadataIp: 192.168.24.1  # Generally the IP of the Undercloud
   DnsServers: ["172.21.200.60"]

@@ -228,22 +228,13 @@ resources:
               - type: interface
                 name: nic2
                 use_dhcp: false
-              - type: vlan
-                vlan_id:
-                  get_param: TenantNetworkVlanID
-                device: nic2
-                use_dhcp: false
               - type: contrail_vrouter
                 name: vhost0
                 use_dhcp: false
                 members:
                   -
                     type: interface
-                    name:
-                      str_replace:
-                        template: vlanVLANID
-                        params:
-                          VLANID: {get_param: TenantNetworkVlanID}
+                    name: nic2
                     use_dhcp: false
                 addresses:
                 - ip_netmask:
