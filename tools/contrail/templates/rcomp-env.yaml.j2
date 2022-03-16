@@ -8,7 +8,7 @@ resource_registry:
 
 parameter_defaults:
   # !!! Adjust to correct count
-  RemoteCompute{{ REMOTE_INDEX }}Count: 1
+  RemoteCompute{{ REMOTE_INDEX }}Count: 0
 
   # !!! Adjust to correct IPs
   RemoteCompute{{ REMOTE_INDEX }}IPs:
@@ -19,8 +19,9 @@ parameter_defaults:
     storage:
     - 172.22.{{ REMOTE_INDEX }}.101
 
-  # !!! Adjust to subscluster Control service node
   RemoteCompute{{ REMOTE_INDEX }}ExtraConfig:
+    contrail_internal_api_ssl: True
+    # !!! Adjust to subscluster Control service node
     contrail_control_ips: ""
 
   RemoteCompute{{ REMOTE_INDEX }}Parameters:

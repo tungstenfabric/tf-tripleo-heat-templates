@@ -11,7 +11,7 @@ and/or [distributed compute nodes (DCN)](https://access.redhat.com/documentation
 
 This readme is mostly about Contrail specific part.
 All scripts are provided 'as is' and as just an example.
-Main instruction to prepare setup for deployment must be RedHat documentation 
+Main instruction to prepare setup for deployment must be RedHat documentation
 pointed above.
 
 In this example there is K8S cluster used for Contrail Control plane.
@@ -167,16 +167,16 @@ Add record to controls for each subcluster:
 cd
 # comma separated list of names
 subcluster_names=pop1,pop2
-./tripleo-heat-templates/tools/contrail/remote_compute.sh $subcluster_names 
+./tripleo-heat-templates/tools/contrail/remote_compute.sh $subcluster_names
 ```
 This script generate one network_data_rcomp.yaml, and the set of files for each subcluster, e.g.
 tripleo-heat-templates/roles/RemoteCompute1.yaml
-tripleo-heat-templates/environments/contrail/ips-from-pool-rcomp1.yaml
+tripleo-heat-templates/environments/contrail/rcomp1-env.yaml
 tripleo-heat-templates/network/config/contrail/compute-nic-config-rcomp1.yaml
 
 3. !!IMPORTANT: Adjust generated files and othere templates to your setup (network CIDRs, routes, etc)
 
-4. Prepare contrail templates with use of generated network data file 
+4. Prepare contrail templates with use of generated network data file
 
 4.1. Modify contrail-services.yaml to provide data about Contrail Control plane on K8S
 ```yaml
@@ -248,7 +248,7 @@ cd
 # generate role file (adjust to your role list)
 openstack overcloud roles generate --roles-path tripleo-heat-templates/roles \
   -o /home/stack/roles_data.yaml Controller RemoteCompute1
-# clean old files if any 
+# clean old files if any
 ./tripleo-heat-templates/tools/process-templates.py --clean \
   -r /home/stack/roles_data.yaml \
   -n /home/stack/tripleo-heat-templates/network_data_rcomp.yaml \
@@ -263,7 +263,7 @@ openstack overcloud roles generate --roles-path tripleo-heat-templates/roles \
 5. Run overcloud deploy
 ```bash
 # Example for the case when RHOSP uses TLS everwhere
-# use generated role file, network data file and files for remote computes 
+# use generated role file, network data file and files for remote computes
 openstack overcloud deploy --templates tripleo-heat-templates/ \
   --stack overcloud --libvirt-type kvm \
   --roles-file /home/stack/roles_data.yaml \
