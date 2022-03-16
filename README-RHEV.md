@@ -61,13 +61,24 @@ sudo dnf upgrade -y --nobest
 # Enable firewall
 sudo dnf install -y firewalld
 sudo systemctl enable --now firewalld
-# Ensure that your management interface is in a firewall zone via
-# (see more in RedHAt documentation about firewall rules)
+
+# Check current active zone
+sudo firewall-cmd --get-active-zones
+# exmaple of zones:
+#     public
+#       interfaces:  eth0
+
+# Add virbr0 interface into the active zone for ovirtmgmt, e.g.
+sudo firewall-cmd --zone=public --change-interface=virbr0 --permanent
+sudo firewall-cmd --zone=public --add-forward --permanent
+# Ensure used interfaces in one zone
 sudo firewall-cmd --get-active-zones
 # exmaple of zones:
 #     [stack@node-10-0-10-147 ~]$ sudo firewall-cmd --get-active-zones
 #     public
-#       interfaces: ovirtmgmt eth0
+#       interfaces:  eth0 virbr0
+```
+
 # Enable https and cockpit for RHVM web access and monitoring
 sudo firewall-cmd --permanent \
   --add-service=https \
@@ -91,10 +102,10 @@ sudo systemctl enable --now rpcbind
 # prepare special user required by Red Hat Virtualization
 getent group kvm || sudo groupadd kvm -g 36
 sudo useradd vdsm -u 36 -g kvm
-exports=""
+exports="/storage *(rw,all_squash,anonuid=36,anongid=36)\n"
 for s in vmengine undercloud ipa overcloud ; do
   sudo mkdir -p /storage/$s
-  exports+="/storage/$s *(rw)\n"
+  exports+="/storage/$s *(rw,all_squash,anonuid=36,anongid=36)\n"
 done
 sudo chown -R 36:36 /storage
 sudo chmod -R 0755 /storage
@@ -153,6 +164,16 @@ sudo hosted-engine --deploy
 #   Please specify the full shared storage connection path to use (example: host:/path): 10.0.10.147:/storage/vmengine
 #   ...
 ```
+
+### NOTE: before proceed with NFS task during deploy ensure required interfaces are in one zone for IP forwarding
+```bash
+sudo firewall-cmd --get-active-zones
+# exmaple of zones:
+#     [stack@node-10-0-10-147 ~]$ sudo firewall-cmd --get-active-zones
+#     public
+#       interfaces: ovirtmgmt eth0 virbr0
+```
+
 
 ## To enable virh cli to use ovirt auth
 ```bash
