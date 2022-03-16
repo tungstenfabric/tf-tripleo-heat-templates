@@ -984,3 +984,102 @@ Make sure, that FQDN can be resolved.
 
 ## Access to VMs via serical console
 See [RedHat documentation](https://access.redhat.com/documentation/en-us/red_hat_virtualization/4.4/html/virtual_machine_management_guide/starting_the_virtual_machine)
+
+
+
+# Appendix
+
+## Examples of ansible tasks to operate with RHVM
+Based on [ovirt ansible documentation](https://docs.ansible.com/ansible/latest/collections/ovirt/ovirt/index.html)
+
+```bash
+# List datacenters
+cat << EOF > list_dcs.yaml
+- hosts: localhost
+  tasks:
+  - name: Get RHVM token
+    ovirt_auth:
+      url: "https://{{ ovirt_hostname }}/ovirt-engine/api"
+      username: "{{ ovirt_user }}"
+      password: "{{ ovirt_password }}"
+      insecure: true
+  - ovirt.ovirt.ovirt_datacenter_info:
+      auth: "{{ ovirt_auth }}"
+      pattern: "{{ filter | default('*') }}"
+    register: result
+  - debug:
+      msg: "{{ result.ovirt_datacenters | map(attribute='name') | list }}"
+EOF
+# list in default data center
+ansible-playbook --extra-vars="@common-env.yaml" list_dcs.yaml
+ansible-playbook --extra-vars="@common-env.yaml" -e filter='name=Def*' list_dcs.yaml
+
+# List clusters for datacenter
+cat << EOF > list_clusters.yaml
+- hosts: localhost
+  tasks:
+  - name: Get RHVM token
+    ovirt_auth:
+      url: "https://{{ ovirt_hostname }}/ovirt-engine/api"
+      username: "{{ ovirt_user }}"
+      password: "{{ ovirt_password }}"
+      insecure: true
+  - ovirt.ovirt.ovirt_cluster_info:
+      auth: "{{ ovirt_auth }}"
+      pattern: "{{ filter | default('*') }}"
+    register: result
+  - debug:
+      msg: "{{ result.ovirt_clusters | map(attribute='name') | list }}"
+EOF
+ansible-playbook --extra-vars="@common-env.yaml" list_clusters.yaml
+ansible-playbook --extra-vars="@common-env.yaml" -e filter='datacenter=Default' list_clusters.yaml
+
+# List hosts
+cat << EOF > list_hosts.yaml
+- hosts: localhost
+  tasks:
+  - name: Get RHVM token
+    ovirt_auth:
+      url: "https://{{ ovirt_hostname }}/ovirt-engine/api"
+      username: "{{ ovirt_user }}"
+      password: "{{ ovirt_password }}"
+      insecure: true
+  - name: List host in datacenter
+    ovirt_host_info:
+      auth: "{{ ovirt_auth }}"
+      pattern: "{{ filter | default('*') }}"
+    register: host_list
+  - debug:
+      msg: "{{ host_list['ovirt_hosts'] | map(attribute='name') | list }}"
+EOF
+ansible-playbook --extra-vars="@common-env.yaml" list_hosts.yaml
+ansible-playbook --extra-vars="@common-env.yaml" -e filter='datacenter=Default' list_hosts.yaml
+ansible-playbook --extra-vars="@common-env.yaml" -e filter='cluster=Default' list_hosts.yaml
+
+# Remove particular host
+cat << EOF > remove_host.yaml
+- hosts: localhost
+  tasks:
+  - debug:
+      msg: "host is required"
+    failed_when: host is not defined
+  - debug:
+      msg: "cluster is required"
+    failed_when: cluster is not defined
+  - name: Get RHVM token
+    ovirt_auth:
+      url: "https://{{ ovirt_hostname }}/ovirt-engine/api"
+      username: "{{ ovirt_user }}"
+      password: "{{ ovirt_password }}"
+      insecure: true
+  - name: Remove host from RHVM
+    ovirt_host:
+      state: absent
+      auth: "{{ ovirt_auth }}"
+      name: "{{ host }}"
+      cluster: "{{ cluster }}"
+EOF
+ansible-playbook --extra-vars="@common-env.yaml" -e host=<host name> -e cluster=<cluster name> remove_host.yaml
+
+
+```
