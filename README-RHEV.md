@@ -245,6 +245,8 @@ EOF
 
 # Hypervisor nodes
 # !! Adjust to your setup
+# Important: ensure you use correct node name for already registered first hypervisor
+# (it is registed at the RHVM deploy command hosted-engine --deploy)
 cat << EOF > nodes.yaml
 ---
 nodes:
@@ -295,18 +297,23 @@ storage:
   - name: undercloud
     mountpoint: "/storage/undercloud"
     host: node-10-0-10-147.dev.clouddomain
+    address: node-10-0-10-147.dev.clouddomain
   - name: ipa
     mountpoint: "/storage/ipa"
     host: node-10-0-10-147.dev.clouddomain
+    address: node-10-0-10-147.dev.clouddomain
   - name: node-10-0-10-148-overcloud
     mountpoint: "/storage/overcloud"
     host: node-10-0-10-148.dev.clouddomain
+    address: node-10-0-10-148.dev.clouddomain
   - name: node-10-0-10-149-overcloud
     mountpoint: "/storage/overcloud"
     host: node-10-0-10-149.dev.clouddomain
+    address: node-10-0-10-149.dev.clouddomain
   - name: node-10-0-10-150-overcloud
     mountpoint: "/storage/overcloud"
     host: node-10-0-10-150.dev.clouddomain
+    address: node-10-0-10-150.dev.clouddomain
 EOF
 
 # Playbook to register hypervisor nodes in RHVM, create storage pools and networks
@@ -387,7 +394,7 @@ cat << EOF > infra.yaml
       domain_function: "data"
       host: "{{ item.host }}"
       nfs:
-        address: "{{ item.host }}"
+        address: "{{ item.address | default(item.host) }}"
         path: "{{ item.mountpoint }}"
         version: "auto"
     retries: 5
