@@ -216,7 +216,8 @@ sudo dnf distro-sync -y --nobest
 ## Prepare ansible env files
 ```bash
 # Common variables
-# !! Adjust to your setup
+# !!! Adjust to your setup - especially undercloud_mgmt_ip and 
+#     ipa_mgmt_ip to allow SSH to this machines (e.g. choose IPs from ovirtmgmt network)
 cat << EOF > common-env.yaml
 ---
 ovirt_hostname: vmengine.dev.clouddomain
@@ -582,7 +583,7 @@ cat << EOF > overcloud.yaml
   - name: Deploy VMs
     ovirt.ovirt.ovirt_vm:
       auth: "{{ ovirt_auth }}"
-      state: present
+      state: "{{ item.state | default('present') }}"
       cluster: "{{ item.cluster }}"
       name: "{{ item.name }}"
       memory: "{{ item.memory_gb }}GiB"
@@ -646,11 +647,12 @@ virt-customize  -a k8s.qcow2 \
 
 ## Define K8S VMs
 ```bash
-# !!! Adjust to your setup (addresses in ctlplane and tenant networks)
+# !!! Adjust to your setup (addresses in ctlplane, tenant and mgmt networks)
 cat << EOF > k8s-vms.yaml
 ---
 vms:
   - name: contrail-controller-0
+    state: running
     disk_size_gb: 100
     memory_gb: 16
     cpu_cores: 4
@@ -666,6 +668,7 @@ vms:
     storage: node-10-0-10-148-overcloud
     image: "images/k8s.qcow2"
     cloud_init:
+      # ctlplane network
       host_name: "contrail-controller-0.{{ overcloud_domain }}"
       dns_search: "{{ overcloud_domain }}"
       dns_servers: "{{ ipa_ctlplane_ip }}"
@@ -676,12 +679,20 @@ vms:
       nic_gateway: "{{ undercloud_ctlplane_ip }}"
       nic_netmask: "255.255.255.0"
     cloud_init_nics:
+      # tenant network
       - nic_name: "eth1"
         nic_boot_protocol_v6: none
         nic_boot_protocol: static
         nic_ip_address: "10.0.0.201"
         nic_netmask: "255.255.255.0"
+      # mgmt network
+      - nic_name: "eth2"
+        nic_boot_protocol_v6: none
+        nic_boot_protocol: static
+        nic_ip_address: "10.0.10.210"
+        nic_netmask: "255.255.255.0"
   - name: contrail-controller-1
+    state: running
     disk_size_gb: 100
     memory_gb: 16
     cpu_cores: 4
@@ -712,7 +723,14 @@ vms:
         nic_boot_protocol: static
         nic_ip_address: "10.0.0.202"
         nic_netmask: "255.255.255.0"
+      # mgmt network
+      - nic_name: "eth2"
+        nic_boot_protocol_v6: none
+        nic_boot_protocol: static
+        nic_ip_address: "10.0.10.211"
+        nic_netmask: "255.255.255.0"
   - name: contrail-controller-2
+    state: running
     disk_size_gb: 100
     memory_gb: 16
     cpu_cores: 4
@@ -743,6 +761,12 @@ vms:
         nic_boot_protocol: static
         nic_ip_address: "10.0.0.203"
         nic_netmask: "255.255.255.0"EOF
+      # mgmt network
+      - nic_name: "eth2"
+        nic_boot_protocol_v6: none
+        nic_boot_protocol: static
+        nic_ip_address: "10.0.10.212"
+        nic_netmask: "255.255.255.0"
 EOF
 
 ansible-playbook \
@@ -990,8 +1014,8 @@ Make sure, that FQDN can be resolved.
 
 
 ## Access to VMs via serical console
-See [RedHat documentation](https://access.redhat.com/documentation/en-us/red_hat_virtualization/4.4/html/virtual_machine_management_guide/starting_the_virtual_machine)
-
+[RedHat documentation](https://access.redhat.com/documentation/en-us/red_hat_virtualization/4.4/html/virtual_machine_management_guide/starting_the_virtual_machine)
+[oVirt documentation](https://www.ovirt.org/documentation/virtual_machine_management_guide)
 
 
 # Appendix
