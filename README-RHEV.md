@@ -598,7 +598,7 @@ cat << EOF > overcloud.yaml
           - spice
           - vnc
       serial_console: yes
-      nics: "{{ item.nics }}"
+      nics: "{{ item.nics | default(omit) }}"
       disks:
         - name: "{{ item.name }}"
           bootable: True
@@ -664,6 +664,9 @@ vms:
       - name: eth1
         interface: virtio
         profile_name: "{{ datacenter_name }}-tenant"
+      - name: eth2
+        interface: virtio
+        profile_name: "ovirtmgmt"
     cluster: node-10-0-10-148
     storage: node-10-0-10-148-overcloud
     image: "images/k8s.qcow2"
@@ -704,6 +707,9 @@ vms:
       - name: eth1
         interface: virtio
         profile_name: "{{ datacenter_name }}-tenant"
+      - name: eth2
+        interface: virtio
+        profile_name: "ovirtmgmt"
     cluster: node-10-0-10-149
     storage: node-10-0-10-149-overcloud
     image: "images/k8s.qcow2"
@@ -742,6 +748,9 @@ vms:
       - name: eth1
         interface: virtio
         profile_name: "{{ datacenter_name }}-tenant"
+      - name: eth2
+        interface: virtio
+        profile_name: "ovirtmgmt"
     cluster: node-10-0-10-150
     storage: node-10-0-10-150-overcloud
     image: "images/k8s.qcow2"
