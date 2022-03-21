@@ -19,6 +19,13 @@ parameter_defaults:
     storage:
     - 172.22.{{ REMOTE_INDEX }}.101
 
+  # !!! Adjust
+  OvercloudRemoteCompute{{ REMOTE_INDEX }}Flavor: compute_leaf{{ REMOTE_INDEX }}
+
+  # !!! Adjust to your setup according to way you choose for network management
+  # more in [RedHat doc](https://access.redhat.com/documentation/en-us/red_hat_openstack_platform/16.2/html/distributed_compute_node_and_storage_deployment/preparing_overcloud_templates_for_dcn_deployment#proc_using-manageNetworks-to-reuse-network-resources)
+  #ManageNetworks: false
+
   RemoteCompute{{ REMOTE_INDEX }}ExtraConfig:
     contrail_internal_api_ssl: True
     # !!! Adjust to subscluster Control service node

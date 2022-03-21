@@ -311,6 +311,8 @@ sudo ip link set dev vlan720 up
 # If external Contrail Control plane in a Kubernetes cluster to be used (side-by-side deployment)
 Prepare and deploy separately Contrail Control plane in a Kubernetes cluster.
 E.g. for Kuberenetes use [Kubespray](https://github.com/kubernetes-sigs/kubespray.git)
+(Note that K8S needs to have nodes with synced date & time. Configure it before deploy K8S with
+help of kubespray.)
 Contrail Controllers to be deployed by [TF Operator](https://github.com/tungstenfabric/tf-operator).
 NOTE: In case of RedHat IDM (FreeIPA) used in RHOSP) it is needed to ensure that
 for Contrail in Kuberentes uses CA certificate bundle that contains
