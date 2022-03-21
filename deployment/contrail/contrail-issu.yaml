@@ -770,10 +770,10 @@ outputs:
                   list_concat:
                     - get_attr: [ContrailBase, role_data, contrail_base_volumes]
                     - - list_join:
-                      - ':'
-                      - - {get_param: DockerContrailKafkaLogPath}
-                        - /var/log/kafka
-                        - z
+                          - ':'
+                          - - {get_param: DockerContrailKafkaLogPath}
+                            - /var/log/kafka
+                            - z
                 environment:
                   map_merge:
                     - get_attr: [ContrailBase, role_data, contrail_base_env]
