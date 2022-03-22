@@ -683,8 +683,8 @@ parameter_defaults:
   #... other definitions ...
 
   # Contrail to use CA bundle
-  ContrailCaCertFile: "/etc/contrail/ssl/certs/ca-cert.pem"
-  SSLRootCertificatePath: "/etc/contrail/ssl/certs/ca-cert.pem"
+  ContrailCaCertFile: "/etc/pki/ca-trust/source/anchors/contrail-ca-cert.pem"
+  SSLRootCertificatePath: "/etc/pki/ca-trust/source/anchors/contrail-ca-cert.pem"
   # SSLRootCertificate: |
   #   <ca-bundle.pem content>
   SSLRootCertificate: |

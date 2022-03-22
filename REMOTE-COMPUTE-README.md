@@ -174,17 +174,24 @@ tripleo-heat-templates/roles/RemoteCompute1.yaml
 tripleo-heat-templates/environments/contrail/rcomp1-env.yaml
 tripleo-heat-templates/network/config/contrail/compute-nic-config-rcomp1.yaml
 
-3. !!IMPORTANT: Adjust generated files and othere templates to your setup (network CIDRs, routes, etc)
+3. !!IMPORTANT: Adjust generated files and othere templates to your setup (storage, network CIDRs, routes, etc)
+Check carefully [the RedHat documentation](https://access.redhat.com/documentation/en-us/red_hat_openstack_platform/16.2/html/distributed_compute_node_and_storage_deployment/planning_a_distributed_compute_node_dcn_deployment)
 
 4. Prepare contrail templates with use of generated network data file
 
 4.1. Modify contrail-services.yaml to provide data about Contrail Control plane on K8S
 ```yaml
+  # FQDN resolving
   ExtraHostFileEntries:
     - 'IP1    <FQDN K8S master1>    <Short name master1>'
     - 'IP2    <FQDN K8S master2>    <Short name master2>'
-    - 'IP3    <FQDN K8S master3>    <Short name master3>'
+    - 'IP3    <FQDN K8S master3>        <Short name master3>'
+    - 'IP4    <FQDN K8S pop1 worker1>   <Short name pop1 worker1>'
+    - 'IP5    <FQDN K8S pop1 worker2>   <Short name pop1 worker2>'
+    - 'IP6    <FQDN K8S pop2 worker1>   <Short name pop2 worker1>'
+    - 'IP7    <FQDN K8S pop2 worker1>   <Short name pop2 worker2>'
 
+  # main control plane
   ExternalContrailConfigIPs: <comma separated list of IP/FQDNs of K8S master nodes>
   ExternalContrailControlIPs: <comma separated list of IP/FQDNs of K8S master nodes>
   ExternalContrailAnalyticsIPs: <comma separated list of IP/FQDNs of K8S master nodes>
@@ -230,8 +237,8 @@ cat <<EOF > ca-bundle.yaml
 resource_registry:
   OS::TripleO::NodeTLSCAData: tripleo-heat-templates/puppet/extraconfig/tls/ca-inject.yaml
 parameter_defaults:
-  ContrailCaCertFile: "/etc/contrail/ssl/certs/ca-cert.pem"
-  SSLRootCertificatePath: "/etc/contrail/ssl/certs/ca-cert.pem"
+  ContrailCaCertFile: "/etc/pki/ca-trust/source/anchors/contrail-ca-cert.pem"
+  SSLRootCertificatePath: "/etc/pki/ca-trust/source/anchors/contrail-ca-cert.pem"
   SSLRootCertificate: |
 EOF
 # append cert data
@@ -242,7 +249,21 @@ done
 cat ca-bundle.yaml
 ```
 
-4.3. Process heat templates to generate role and network files
+4.3. Prepare central site specifica parameters
+```bash
+# !!! Adjust to your setup
+# Check more options in RedHat doc
+cat <<EOF > central-env.yaml
+parameter_defaults:
+  ManageNetworks: true
+  ControlPlaneSubnet: leaf0
+  ControlControlPlaneSubnet: leaf0
+  NovaComputeAvailabilityZone: 'central'
+  CinderStorageAvailabilityZone: 'central'
+EOF
+```
+
+4.4. Process heat templates to generate role and network files
 ```bash
 cd
 # generate role file (adjust to your role list)
@@ -260,7 +281,7 @@ openstack overcloud roles generate --roles-path tripleo-heat-templates/roles \
   -p tripleo-heat-templates/
 ```
 
-5. Run overcloud deploy
+5. Deploy central location
 ```bash
 # Example for the case when RHOSP uses TLS everwhere
 # use generated role file, network data file and files for remote computes
@@ -277,8 +298,30 @@ openstack overcloud deploy --templates tripleo-heat-templates/ \
   -e tripleo-heat-templates/environments/ssl/tls-everywhere-endpoints-dns.yaml \
   -e tripleo-heat-templates/environments/services/haproxy-public-tls-certmonger.yaml \
   -e tripleo-heat-templates/environments/ssl/enable-internal-tls.yaml \
-  -e ca-bundle.yaml \
   -e containers-prepare-parameter.yaml \
   -e rhsm.yaml \
+  -e ca-bundle.yaml \
+  -e central-env.yaml
+```
+
+6. Deploy remote sites, e.g.
+```bash
+# Deploy remote site 1
+openstack overcloud deploy --templates tripleo-heat-templates/ \
+  --stack overcloud --libvirt-type kvm \
+  --roles-file /home/stack/roles_data.yaml \
+  -n /home/stack/tripleo-heat-templates/network_data_rcomp.yaml \
+  -e tripleo-heat-templates/environments/rhsm.yaml \
+  -e tripleo-heat-templates/environments/network-isolation.yaml \
+  -e tripleo-heat-templates/environments/contrail/contrail-services.yaml \
+  -e tripleo-heat-templates/environments/contrail/contrail-net.yaml \
+  -e tripleo-heat-templates/environments/contrail/contrail-plugins.yaml \
+  -e tripleo-heat-templates/environments/contrail/contrail-tls.yaml \
+  -e tripleo-heat-templates/environments/ssl/tls-everywhere-endpoints-dns.yaml \
+  -e tripleo-heat-templates/environments/services/haproxy-public-tls-certmonger.yaml \
+  -e tripleo-heat-templates/environments/ssl/enable-internal-tls.yaml \
+  -e containers-prepare-parameter.yaml \
+  -e rhsm.yaml \
+  -e ca-bundle.yaml \
   -e /home/stack/tripleo-heat-templates/environments/contrail/rcomp1-env.yaml
 ```

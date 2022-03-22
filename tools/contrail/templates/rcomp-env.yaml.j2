@@ -7,6 +7,13 @@ resource_registry:
   OS::TripleO::RemoteCompute{{ REMOTE_INDEX }}ExtraConfigPre: ../../extraconfig/pre_deploy/contrail/contrail-init.yaml
 
 parameter_defaults:
+
+  # Disable controllers
+  ControllerCount: 0
+
+  # Disable network management (reuse network created on central site)
+  ManageNetworks: false
+
   # !!! Adjust to correct count
   RemoteCompute{{ REMOTE_INDEX }}Count: 0
 
@@ -19,12 +26,12 @@ parameter_defaults:
     storage:
     - 172.22.{{ REMOTE_INDEX }}.101
 
-  # !!! Adjust
-  OvercloudRemoteCompute{{ REMOTE_INDEX }}Flavor: compute_leaf{{ REMOTE_INDEX }}
-
-  # !!! Adjust to your setup according to way you choose for network management
+  # !!! Adjust to your setup
   # more in [RedHat doc](https://access.redhat.com/documentation/en-us/red_hat_openstack_platform/16.2/html/distributed_compute_node_and_storage_deployment/preparing_overcloud_templates_for_dcn_deployment#proc_using-manageNetworks-to-reuse-network-resources)
-  #ManageNetworks: false
+  OvercloudRemoteCompute{{ REMOTE_INDEX }}Flavor: compute_leaf{{ REMOTE_INDEX }}
+  RemoteCompute{{ REMOTE_INDEX }}ControlPlaneSubnet: leaf{{ REMOTE_INDEX }}
+  NovaComputeAvailabilityZone: '{{ SUBCLUSTER }}'
+  CinderStorageAvailabilityZone: '{{ SUBCLUSTER }}'
 
   RemoteCompute{{ REMOTE_INDEX }}ExtraConfig:
     contrail_internal_api_ssl: True
