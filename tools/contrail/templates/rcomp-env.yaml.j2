@@ -1,4 +1,6 @@
 resource_registry:
+  OS::TripleO::Services::NovaAZConfig: ../../deployment/nova/nova-az-config.yaml
+
   OS::TripleO::RemoteCompute{{ REMOTE_INDEX }}::Ports::TenantPort: ../../network/ports/tenant_from_pool.yaml
   OS::TripleO::RemoteCompute{{ REMOTE_INDEX }}::Ports::InternalApiPort: ../../network/ports/internal_api_from_pool.yaml
   OS::TripleO::RemoteCompute{{ REMOTE_INDEX }}::Ports::StoragePort: ../../network/ports/storage_from_pool.yaml
@@ -7,6 +9,9 @@ resource_registry:
   OS::TripleO::RemoteCompute{{ REMOTE_INDEX }}ExtraConfigPre: ../../extraconfig/pre_deploy/contrail/contrail-init.yaml
 
 parameter_defaults:
+
+  # !!! Adjust to your setup
+  RootStackName: '{{ SUBCLUSTER }}'
 
   # Disable controllers
   ControllerCount: 0
@@ -18,6 +23,7 @@ parameter_defaults:
   RemoteCompute{{ REMOTE_INDEX }}Count: 0
 
   # !!! Adjust to correct IPs
+  ControlPlaneDefaultRoute: 192.168.{{ 24 + (REMOTE_INDEX | int) }}.254
   RemoteCompute{{ REMOTE_INDEX }}IPs:
     tenant:
     - 172.20.{{ REMOTE_INDEX }}.101
@@ -30,6 +36,7 @@ parameter_defaults:
   # more in [RedHat doc](https://access.redhat.com/documentation/en-us/red_hat_openstack_platform/16.2/html/distributed_compute_node_and_storage_deployment/preparing_overcloud_templates_for_dcn_deployment#proc_using-manageNetworks-to-reuse-network-resources)
   OvercloudRemoteCompute{{ REMOTE_INDEX }}Flavor: compute_leaf{{ REMOTE_INDEX }}
   RemoteCompute{{ REMOTE_INDEX }}ControlPlaneSubnet: leaf{{ REMOTE_INDEX }}
+  NovaAZAttach: false
   NovaComputeAvailabilityZone: '{{ SUBCLUSTER }}'
   CinderStorageAvailabilityZone: '{{ SUBCLUSTER }}'
 
@@ -56,4 +63,3 @@ parameter_defaults:
       # !!! Adjust to your setup if any
       VROUTER_GATEWAY: "172.20.{{ REMOTE_INDEX }}.1"
       SUBCLUSTER: {{ SUBCLUSTER }}
-
