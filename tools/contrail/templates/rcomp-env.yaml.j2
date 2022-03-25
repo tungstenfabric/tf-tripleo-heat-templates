@@ -57,7 +57,7 @@ parameter_defaults:
     ContrailSettings:
       VROUTER_ENCRYPTION: false
       # 16 bit BGP Autonomous System number for the cluster.
-      !!! Adjust to your setup
+      # !!! Adjust to your setup
       BGP_ASN: {{ 64512 + (REMOTE_INDEX | int) }}
       BGP_AUTO_MESH: true
       # !!! Adjust to your setup if any
