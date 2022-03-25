@@ -255,11 +255,15 @@ cat ca-bundle.yaml
 # Check more options in RedHat doc
 cat <<EOF > central-env.yaml
 parameter_defaults:
+  GlanceBackend: swift
   ManageNetworks: true
   ControlPlaneSubnet: leaf0
   ControlControlPlaneSubnet: leaf0
+  NovaCrossAZAttach: false
   NovaComputeAvailabilityZone: 'central'
   CinderStorageAvailabilityZone: 'central'
+  ControllerExtraConfig:
+    nova::availability_zone::default_schedule_zone: central
 EOF
 ```
 
@@ -305,10 +309,19 @@ openstack overcloud deploy --templates tripleo-heat-templates/ \
 ```
 
 6. Deploy remote sites, e.g.
+6.1. Export environment form cenral site
 ```bash
-# Deploy remote site 1
+mkdir -p ~/dcn-common
+openstack overcloud export \
+  --stack overcloud \
+  --config-download-dir /var/lib/mistral/overcloud \
+  --output-file ~/dcn-common/central-export.yaml
+```
+
+6.2. Deploy remote site 1
+```bash
 openstack overcloud deploy --templates tripleo-heat-templates/ \
-  --stack overcloud --libvirt-type kvm \
+  --stack pop1 --libvirt-type kvm \
   --roles-file /home/stack/roles_data.yaml \
   -n /home/stack/tripleo-heat-templates/network_data_rcomp.yaml \
   -e tripleo-heat-templates/environments/rhsm.yaml \
@@ -323,5 +336,6 @@ openstack overcloud deploy --templates tripleo-heat-templates/ \
   -e containers-prepare-parameter.yaml \
   -e rhsm.yaml \
   -e ca-bundle.yaml \
+  -e dcn-common/central-export.yaml \
   -e /home/stack/tripleo-heat-templates/environments/contrail/rcomp1-env.yaml
 ```
