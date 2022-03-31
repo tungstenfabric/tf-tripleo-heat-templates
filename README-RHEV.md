@@ -81,7 +81,6 @@ sudo firewall-cmd --get-active-zones
 #     [stack@node-10-0-10-147 ~]$ sudo firewall-cmd --get-active-zones
 #     public
 #       interfaces:  eth0 virbr0
-```
 
 # Enable https and cockpit for RHVM web access and monitoring
 sudo firewall-cmd --permanent \

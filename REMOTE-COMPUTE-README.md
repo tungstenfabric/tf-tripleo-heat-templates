@@ -100,9 +100,12 @@ that includes both own root CA and IPA CA data, e.g.
 # assuming that k8s cluster ca is in ca.crt.pem and IPA CA is in ipa.crt
 # (ipa.crt can be copied from undercloud node from /etc/ipa/ca.crt)
 cat ca.crt.pem ipa.crt > ca-bundle.pem
+
 # assuming that k8s cluster CA key is in ca.key.pem
-export SSL_CACERT=$(cat ~/ca-bundle.pem)
-export SSL_CAKEY=$(cat ~/ca.key.pem)
+export CERT_SIGNER="SelfSignedCA"
+export TF_ROOT_CA_KEY_BASE64=$(cat ca.key.pem | base64 -w 0)
+export TF_ROOT_CA_CERT_BASE64=$(cat ca-bundle.pem | base64 -w 0)
+
 ... other actions to deploy from tf-operator ...
 ```
 
@@ -144,6 +147,7 @@ Add record to controls for each subcluster:
             subcluster: <subcluster_name>
         serviceConfiguration:
           subcluster: <subcluster_name>
+          asnNumber: <asn>
           containers:
           - name: control
             image: contrail-controller-control-control
@@ -181,10 +185,15 @@ Check carefully [the RedHat documentation](https://access.redhat.com/documentati
 
 4.1. Modify contrail-services.yaml to provide data about Contrail Control plane on K8S
 ```yaml
+  # Set keystone admin port to be on internal_api
+  ServiceNetMap:
+    # ... others options...
+    KeystoneAdminApiNetwork: internal_api
+
   # FQDN resolving
   ExtraHostFileEntries:
-    - 'IP1    <FQDN K8S master1>    <Short name master1>'
-    - 'IP2    <FQDN K8S master2>    <Short name master2>'
+    - 'IP1    <FQDN K8S master1>        <Short name master1>'
+    - 'IP2    <FQDN K8S master2>        <Short name master2>'
     - 'IP3    <FQDN K8S master3>        <Short name master3>'
     - 'IP4    <FQDN K8S pop1 worker1>   <Short name pop1 worker1>'
     - 'IP5    <FQDN K8S pop1 worker2>   <Short name pop1 worker2>'
@@ -251,23 +260,72 @@ cat ca-bundle.yaml
 
 4.3. Prepare central site specifica parameters
 ```bash
-# !!! Adjust to your setup
-# Check more options in RedHat doc
+# !!! IMPORTANTN: Adjust to your setup
+# (Check more options in RedHat doc)
 cat <<EOF > central-env.yaml
 parameter_defaults:
   GlanceBackend: swift
   ManageNetworks: true
   ControlPlaneSubnet: leaf0
   ControlControlPlaneSubnet: leaf0
-  NovaCrossAZAttach: false
+  InternalApiInterfaceRoutes:
+    - destination: 10.30.0.0/24
+      nexthop: 10.1.0.254
+    - destination: 10.40.0.0/24
+      nexthop: 10.1.0.254
+  StorageMgmtInterfaceRoutes:
+    - destination: 10.33.0.0/24
+      nexthop: 10.4.0.254
+    - destination: 10.33.0.0/24
+      nexthop: 10.4.0.254
+  StorageInterfaceRoutes:
+    - destination: 10.32.0.0/24
+      nexthop: 10.3.0.254
+    - destination: 10.42.0.0/24
+      nexthop: 10.3.0.254
+  TenantInterfaceRoutes:
+    - destination: 172.20.1.0/24
+      nexthop: 172.20.1.254
+  ControlPlaneStaticRoutes:
+    - destination: 172.30.1.0/24
+      nexthop: 192.168.24.254
+    - destination: 172.40.1.0/24
+      nexthop: 192.168.24.254
   NovaComputeAvailabilityZone: 'central'
-  CinderStorageAvailabilityZone: 'central'
   ControllerExtraConfig:
     nova::availability_zone::default_schedule_zone: central
+  NovaCrossAZAttach: false
+  CinderStorageAvailabilityZone: 'central'
+EOF
+
+# If use tenant network on openstack controllers adjust nic file, .e.g:
+# vi tripleo-heat-templates/network/config/contrail/controller-nic-config.yaml
+               - type: interface
+                 name: nic2
+                 use_dhcp: false
+                 addresses:
+                 - ip_netmask:
+                     get_param: TenantIpSubnet
+                 routes:
+                   get_param: TenantInterfaceRoutes
+```
+
+4.4. Prepare VIP mapping
+```bash
+# !!! Adjust to your setup
+# Check more options in RedHat doc
+cat <<EOF > leaf-vips.yaml
+parameter_defaults:
+  VipSubnetMap:
+    ctlplane: leaf0
+    redis: internal_api_subnet
+    InternalApi: internal_api_subnet
+    Storage: storage_subnet
+    StorageMgmt: storage_mgmt_subnet
 EOF
 ```
 
-4.4. Process heat templates to generate role and network files
+4.5. Process heat templates to generate role and network files
 ```bash
 cd
 # generate role file (adjust to your role list)
@@ -305,11 +363,53 @@ openstack overcloud deploy --templates tripleo-heat-templates/ \
   -e containers-prepare-parameter.yaml \
   -e rhsm.yaml \
   -e ca-bundle.yaml \
-  -e central-env.yaml
+  -e central-env.yaml \
+  -e leaf-vips.yaml
 ```
 
-6. Deploy remote sites, e.g.
-6.1. Export environment form cenral site
+6. Enable kyestone auth for K8S cluster if it was deployed w/o keystone auth enabled
+```bash
+# Ensure that all K8S nodes are able to resolve overcloud VIPs FQDNs like overcloud.internalapi.5c7.local
+[stack@node1 ~]$ grep overcloud.internalapi.5c7.local  /etc/hosts
+10.1.0.125 overcloud.internalapi.5c7.local
+...
+
+# Edit manager object to put keystone parameters and set linklocal parameters
+kubectl -n tf edit managers cluster1
+
+# Example of configuration
+apiVersion: tf.tungsten.io/v1alpha1
+kind: Manager
+metadata:
+  name: cluster1
+  namespace: tf
+spec:
+  commonConfiguration:
+    authParameters:
+      authMode: keystone
+      keystoneAuthParameters:
+        address: overcloud.internalapi.5c7.local
+        adminPassword: c0ntrail123
+        authProtocol: https
+        region: regionOne
+...
+    config:
+      metadata:
+        labels:
+          tf_cluster: cluster1
+        name: config1
+      spec:
+        commonConfiguration:
+          nodeSelector:
+            node-role.kubernetes.io/master: ""
+        serviceConfiguration:
+          linklocalServiceConfig:
+            ipFabricServiceHost: "overcloud.internalapi.5c7.local"
+...
+```
+
+7. Deploy remote sites, e.g.
+7.1. Export environment form cenral site
 ```bash
 mkdir -p ~/dcn-common
 openstack overcloud export \
@@ -337,5 +437,20 @@ openstack overcloud deploy --templates tripleo-heat-templates/ \
   -e rhsm.yaml \
   -e ca-bundle.yaml \
   -e dcn-common/central-export.yaml \
+  -e leaf-vips.yaml \
   -e /home/stack/tripleo-heat-templates/environments/contrail/rcomp1-env.yaml
+```
+
+6.3. Follow next steps from [RedHat documentaion, e.g](https://access.redhat.com/documentation/en-us/red_hat_openstack_platform/16.2/html/distributed_compute_node_and_storage_deployment/assembly_deploying-storage-at-the-edge)
+
+```
+7.1. Deploying edge sites with storage
+  8. You must ensure that nova cell_v2 host mappings are created in the nova API database after the edge locations are deployed. Run the following command on the undercloud:
+```
+```bash
+TRIPLEO_PLAN_NAME=overcloud \
+  ansible -i /usr/bin/tripleo-ansible-inventory \
+    nova_api[0] -b -a \
+    "{{ container_cli }} exec -it nova_api \
+      nova-manage cell_v2 discover_hosts --by-service --verbose"
 ```

@@ -24,6 +24,16 @@ parameter_defaults:
 
   # !!! Adjust to correct IPs
   ControlPlaneDefaultRoute: 192.168.{{ 24 + (REMOTE_INDEX | int) }}.254
+  InternalApiInterfaceRoutes:
+    - destination: 172.16.2.0/24
+      nexthop: 172.21.{{ REMOTE_INDEX }}.254
+  StorageInterfaceRoutes:
+    - destination: 172.16.1.0/24
+      nexthop: 172.22.{{ REMOTE_INDEX }}.254
+  TenantInterfaceRoutes:
+    - destination: 172.16.0.0/24
+      nexthop: 172.20.{{ REMOTE_INDEX }}.254
+
   RemoteCompute{{ REMOTE_INDEX }}IPs:
     tenant:
     - 172.20.{{ REMOTE_INDEX }}.101
@@ -37,6 +47,7 @@ parameter_defaults:
   OvercloudRemoteCompute{{ REMOTE_INDEX }}Flavor: compute_leaf{{ REMOTE_INDEX }}
   RemoteCompute{{ REMOTE_INDEX }}ControlPlaneSubnet: leaf{{ REMOTE_INDEX }}
   NovaAZAttach: false
+  NovaCrossAZAttach: false
   NovaComputeAvailabilityZone: '{{ SUBCLUSTER }}'
   CinderStorageAvailabilityZone: '{{ SUBCLUSTER }}'
 

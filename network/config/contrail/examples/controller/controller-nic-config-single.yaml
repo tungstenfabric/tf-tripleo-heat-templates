@@ -206,12 +206,14 @@ resources:
                       - - get_param: ControlPlaneIp
                         - get_param: ControlPlaneSubnetCidr
                 routes:
-                - ip_netmask: 169.254.169.254/32
-                  next_hop:
-                    get_param: EC2MetadataIp
-                - default: true
-                  next_hop:
-                    get_param: ControlPlaneDefaultRoute
+                  list_concat:
+                    - - ip_netmask: 169.254.169.254/32
+                        next_hop:
+                          get_param: EC2MetadataIp
+                      - default: true
+                        next_hop:
+                          get_param: ControlPlaneDefaultRoute
+                    - get_param: ControlPlaneStaticRoutes
 
 outputs:
   OS::stack_id:

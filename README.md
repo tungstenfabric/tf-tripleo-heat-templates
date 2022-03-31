@@ -137,7 +137,7 @@ For RHEV case: See [README-RHEV.md](README-RHEV.md)
 
 ## Setup tripleo controlplane
 
-### Setup IDM VM (FreeIPA) 
+### Setup IDM VM (FreeIPA)
 ```bash
 freeipa_ip=`virsh domifaddr ${freeipa_name} |grep ipv4 |awk '{print $4}' |awk -F"/" '{print $1}'`
 ssh-copy-id ${freeipa_ip}
@@ -182,7 +182,7 @@ sudo systemctl restart chronyd
 sudo chronyc -n sources
 # example of output:
 # 210 Number of sources = 1
-# MS Name/IP address         Stratum Poll Reach LastRx Last sample               
+# MS Name/IP address         Stratum Poll Reach LastRx Last sample
 # ===============================================================================
 # ^* 10.84.5.101                   4   7   377   125  -8499ns[  -11us] +/-   27ms
 ```
