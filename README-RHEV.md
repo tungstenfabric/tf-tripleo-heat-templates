@@ -16,6 +16,10 @@ The example below is based on [Red Hat Virtualization Manager As Self-Hosted eng
 
 See more about installation options in the RedHat [documentation](https://access.redhat.com/documentation/en-us/red_hat_virtualization/4.4/html/product_guide/installation)
 
+IMPORTNANT: this readme uses NFS as a storage for VMs, note that you need to plan you storage layout
+and consider other options (including localfs on dedicated disks) for desired balance of performance,
+flexibility and relybility.
+
 
 # Repare Red Hat Virtualization Manager hosts
 More about hosts preparateion in [RedHat instruction](https://access.redhat.com/documentation/en-us/red_hat_virtualization/4.4/html/installing_red_hat_virtualization_as_a_self-hosted_engine_using_the_command_line/installing_hosts_for_rhv_she_cli_deploy#Red_Hat_Enterprise_Linux_hosts_SHE_cli_deploy)
@@ -95,6 +99,15 @@ sudo firewall-cmd --permanent \
   --add-port 1110/tcp --add-port 1110/udp
 
 # Prepare NFS Storage
+# adjust sysctl settings
+cat << EOF | sudo tee /etc/sysctl.d/99-nfs-tf-rhv.conf
+net.ipv4.tcp_mem=4096 65536 4194304
+net.ipv4.tcp_rmem=4096 65536 4194304
+net.ipv4.tcp_wmem=4096 65536 4194304
+net.core.rmem_max=8388608
+net.core.wmem_max=8388608
+EOF
+sudo sysctl --system
 # install and enable NFS services
 sudo dnf install -y nfs-utils
 sudo systemctl enable --now nfs-server
@@ -216,7 +229,7 @@ sudo dnf distro-sync -y --nobest
 ## Prepare ansible env files
 ```bash
 # Common variables
-# !!! Adjust to your setup - especially undercloud_mgmt_ip and 
+# !!! Adjust to your setup - especially undercloud_mgmt_ip and
 #     ipa_mgmt_ip to allow SSH to this machines (e.g. choose IPs from ovirtmgmt network)
 cat << EOF > common-env.yaml
 ---
