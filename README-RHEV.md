@@ -88,6 +88,7 @@ sudo firewall-cmd --permanent \
   --add-service=https \
   --add-service=cockpit \
   --add-service nfs
+
 sudo firewall-cmd --permanent \
   --add-port 2223/tcp \
   --add-port 5900-6923/tcp \
@@ -138,6 +139,7 @@ if [[ "$latest_kv" != "$active_kv" ]] ; then
   echo "Perform reboot..."
   sudo reboot
 fi
+
 ```
 
 ## Make sure, that FQDNs can be resolved by DNS or /etc/hosts on all nodes

@@ -164,6 +164,29 @@ ifdown eth1
 ifup eth1
 ```
 
+#### ensure time is synced on server
+```bash
+# Example of custom chrony settings for internal NTP
+# Dont apply if default settings are suitable or adjust server to your internal address
+cat << EOF sudo tee /etc/chrony.conf
+server 10.84.5.101 iburst minpoll 6 maxpoll 10
+bindcmdaddress 127.0.0.1
+bindcmdaddress ::1
+deny all
+driftfile /var/lib/chrony/drift
+logdir /var/log/chrony
+rtcsync
+makestep 1.0 3
+EOF
+sudo systemctl restart chronyd
+sudo chronyc -n sources
+# example of output:
+# 210 Number of sources = 1
+# MS Name/IP address         Stratum Poll Reach LastRx Last sample               
+# ===============================================================================
+# ^* 10.84.5.101                   4   7   377   125  -8499ns[  -11us] +/-   27ms
+```
+
 #### download setup script and deploy freeipa
 Follow main RedHat [procedure](https://access.redhat.com/documentation/en-us/red_hat_enterprise_linux/8/html-single/installing_identity_management/index)
 ```bash
@@ -196,16 +219,21 @@ ssh ${undercloud_ip}
 
 ## Undercloud preparation
 ```bash
+# Set hostnames
 undercloud_name=`hostname -s`
 undercloud_suffix=`hostname -d`
 hostnamectl set-hostname ${undercloud_name}.${undercloud_suffix}
 hostnamectl set-hostname --transient ${undercloud_name}.${undercloud_suffix}
-```
-Get the undercloud ip and set the correct entries in /etc/hosts, ie (assuming the mgmt nic is eth0):
-```bash 
+
+# Get the undercloud ip and set the correct entries in /etc/hosts, ie (assuming the mgmt nic is eth0):
 undercloud_ip=`ip addr sh dev eth0 |grep "inet " |awk '{print $2}' |awk -F"/" '{print $1}'`
 echo ${undercloud_ip} ${undercloud_name}.${undercloud_suffix} ${undercloud_name} >> /etc/hosts
+
+# Ensure console encoding to WA for https://bugzilla.redhat.com/show_bug.cgi?id=1910416
+export LC_ALL=en_US.UTF-8
+echo -e "\nexport LC_ALL=en_US.UTF-8\n" >> $HOME/.bashrc
 ```
+
 ### Install undercloud according Red Hat documentation
 https://access.redhat.com/documentation/en-us/red_hat_openstack_platform/16.2/html/director_installation_and_usage/director_installation_and_configuration
 
@@ -239,8 +267,10 @@ FREE_IPA_OTP="<otp>"
 # !!! Adjust this IP to your setup
 prov_freeipa_ip=10.87.64.4
 # The following parameters need to be set within [DEFAULT] section
+# Adjust to setup (e.g. set internal ntp server if public ones are not available)
 cat << EOF >> ~/undercloud.conf
 undercloud_hostname: ${undercloud_name}.${undercloud_suffix}
+#undercloud_ntp_servers = 10.84.5.101
 undercloud_nameservers: $prov_freeipa_ip
 overcloud_domain_name: $undercloud_suffix
 enable_novajoin: True
