@@ -73,7 +73,7 @@ sudo firewall-cmd --get-active-zones
 #       interfaces:  eth0
 
 # Add virbr0 interface into the active zone for ovirtmgmt, e.g.
-sudo firewall-cmd --zone=public --change-interface=virbr0 --permanent
+sudo firewall-cmd --zone=public --change-zone=virbr0 --permanent
 sudo firewall-cmd --zone=public --add-forward --permanent
 # Ensure used interfaces in one zone
 sudo firewall-cmd --get-active-zones
@@ -246,6 +246,9 @@ ssh_root_password: "qwe123QWE"
 
 # gateway for VMs (undercloud and ipa)
 mgmt_gateway: "10.0.10.1"
+# dns to be set in ipa and initial dns for UC
+# k8s nodes uses ipa as dns
+dns_server:  "10.0.10.1"
 
 undercloud_name: "undercloud"
 undercloud_mgmt_ip: "10.0.10.201"
@@ -269,6 +272,7 @@ nodes:
   - name: node-10-0-10-147.dev.clouddomain
     ip: 10.0.10.147
     cluster: Default
+    comment: 10.0.10.147
     networks:
       - name: ctlplane
         phy_dev: eth1
@@ -286,6 +290,7 @@ nodes:
   - name: node-10-0-10-148.dev.clouddomain
     ip: 10.0.10.148
     cluster: node-10-0-10-148
+    comment: 10.0.10.148
     networks:
       - name: ctlplane
         phy_dev: eth1
@@ -294,6 +299,7 @@ nodes:
   - name: node-10-0-10-149.dev.clouddomain
     ip: 10.0.10.149
     cluster: node-10-0-10-149
+    comment: 10.0.10.149
     networks:
       - name: ctlplane
         phy_dev: eth1
@@ -302,6 +308,7 @@ nodes:
   - name: node-10-0-10-150.dev.clouddomain
     ip: 10.0.10.150
     cluster: node-10-0-10-150
+    comment: 10.0.10.150
     networks:
       - name: ctlplane
         phy_dev: eth1
@@ -378,12 +385,17 @@ cat << EOF > infra.yaml
       name: "{{ item.name }}"
       cluster: "{{ item.cluster }}"
       address: "{{ item.ip }}"
+      comment: "{{ item.comment | default(item.ip) }}"
       power_management_enabled: "{{ item.power_management_enabled | default(false) }}"
       # unsupported in rhel yet - to avoid reboot create node via web
       # reboot_after_installation: "{{ item.reboot_after_installation | default(false) }}"
       reboot_after_upgrade: "{{ item.reboot_after_upgrade | default(false) }}"
       public_key: "{{ ssh_public_key }}"
       password: "{{ ssh_root_password }}"
+    register: task_result
+    until: not task_result.failed
+    retries: 5
+    delay: 10
     when: item.name not in hostnames
     with_items:
        - "{{ nodes }}"
@@ -412,8 +424,10 @@ cat << EOF > infra.yaml
         address: "{{ item.address | default(item.host) }}"
         path: "{{ item.mountpoint }}"
         version: "auto"
+    register: task_result
+    until: not task_result.failed
     retries: 5
-    delay: 2
+    delay: 10
     with_items:
        - "{{ storage }}"
   - name: Create logical networks
@@ -467,6 +481,10 @@ ansible-playbook \
   infra.yaml
 ```
 
+## Check hosts statuses Up
+If a host is in Reboot status, go to extended menu and select 'Confirm Host has been rebooted"'
+
+
 # Prepare images
 - Make folder for images
 ```bash
@@ -474,7 +492,6 @@ mkdir ~/images
 ```
 
 - Download rhel8.4 base image from [RedHat downloads](https://access.redhat.com/downloads/content/479/ver=/rhel---8/8.4/x86_64/product-software) into the ~/images folder
-
 
 
 # Create Overcloud VMs
@@ -488,7 +505,7 @@ stack_password=contrail123
 export LIBGUESTFS_BACKEND=direct
 qemu-img create -f qcow2 images/overcloud.qcow2 100G
 virt-resize --expand /dev/sda3 ${cloud_image} images/overcloud.qcow2
-virt-customize  -a overcloud.qcow2 \
+virt-customize  -a images/overcloud.qcow2 \
   --run-command 'xfs_growfs /' \
   --root-password password:${root_password} \
   --run-command 'useradd stack' \
@@ -590,8 +607,11 @@ cat << EOF > overcloud.yaml
       format: cow
       image_path: "{{ item.image | default(omit) }}"
       storage_domain: "{{ item.storage }}"
+    register: task_result
+    ignore_errors: yes
+    until: not task_result.failed
     retries: 5
-    delay: 2
+    delay: 10
     with_items:
       - "{{ vms }}"
   - name: Deploy VMs
@@ -648,7 +668,7 @@ stack_password=contrail123
 export LIBGUESTFS_BACKEND=direct
 qemu-img create -f qcow2 images/k8s.qcow2 100G
 virt-resize --expand /dev/sda3 ${cloud_image} images/k8s.qcow2
-virt-customize  -a k8s.qcow2 \
+virt-customize  -a images/k8s.qcow2 \
   --run-command 'xfs_growfs /' \
   --root-password password:${root_password} \
   --password stack:password:${stack_password} \
@@ -837,7 +857,7 @@ stack_password=contrail123
 export LIBGUESTFS_BACKEND=direct
 qemu-img create -f qcow2 images/${undercloud_name}.qcow2 100G
 virt-resize --expand /dev/sda3 ${cloud_image} images/${undercloud_name}.qcow2
-virt-customize  -a ${undercloud_name}.qcow2 \
+virt-customize  -a images/${undercloud_name}.qcow2 \
   --run-command 'xfs_growfs /' \
   --root-password password:${root_password} \
   --hostname ${undercloud_name}.${domain_name} \
@@ -873,8 +893,11 @@ cat << EOF > undercloud.yaml
       size: 100GiB
       image_path: "images/{{ undercloud_name }}.qcow2"
       storage_domain: "{{ storage }}"
+    register: task_result
+    ignore_errors: yes
+    until: not task_result.failed
     retries: 5
-    delay: 2
+    delay: 10
   - name: deploy vms
     ovirt.ovirt.ovirt_vm:
       auth: "{{ ovirt_auth }}"
@@ -890,7 +913,7 @@ cat << EOF > undercloud.yaml
       cloud_init:
         host_name: "{{ undercloud_name }}.{{ overcloud_domain }}"
         dns_search: "{{ overcloud_domain }}"
-        dns_servers: "{{ mgmt_gateway }}"
+        dns_servers: "{{ dns_server | default(mgmt_gateway) }}"
         nic_name: "eth0"
         nic_boot_protocol_v6: none
         nic_boot_protocol: static
@@ -939,7 +962,7 @@ cd
 cloud_image=images/rhel-8.4-x86_64-kvm.qcow2
 ipa_name=ipa
 domain_name=dev.clouddomain
-qemu-img create -f qcow2 images/{ipa_name}.qcow2 100G
+qemu-img create -f qcow2 images/${ipa_name}.qcow2 100G
 virt-resize --expand /dev/sda3 ${cloud_image} images/${ipa_name}.qcow2
 virt-customize  -a images/${ipa_name}.qcow2 \
   --run-command 'xfs_growfs /' \
@@ -973,8 +996,11 @@ cat << EOF > ipa.yaml
       size: 100GiB
       image_path: "images/{{ ipa_name }}.qcow2"
       storage_domain: "{{ storage }}"
+    register: task_result
+    ignore_errors: yes
+    until: not task_result.failed
     retries: 5
-    delay: 2
+    delay: 10
   - name: deploy vms
     ovirt.ovirt.ovirt_vm:
       auth: "{{ ovirt_auth }}"
@@ -990,7 +1016,7 @@ cat << EOF > ipa.yaml
       cloud_init:
         host_name: "{{ ipa_name }}.{{ overcloud_domain }}"
         dns_search: "{{ overcloud_domain }}"
-        dns_servers: "{{ mgmt_gateway }}"
+        dns_servers: "{{ dns_server | default(mgmt_gateway) }}"
         nic_name: "eth0"
         nic_boot_protocol_v6: none
         nic_boot_protocol: static

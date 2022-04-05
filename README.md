@@ -254,7 +254,7 @@ https://access.redhat.com/documentation/en-us/red_hat_enterprise_linux/8/html/in
 ## Install the undercloud
 ### prepare config for undercloud installation
 ```bash
-yum install -y python-tripleoclient tmux
+yum install -y python3-tripleoclient tmux
 su - stack
 cp /usr/share/python-tripleoclient/undercloud.conf.sample ~/undercloud.conf
 ```
