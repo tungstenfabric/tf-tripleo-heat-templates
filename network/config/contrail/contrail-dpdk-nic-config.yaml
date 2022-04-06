@@ -251,6 +251,8 @@ resources:
                 addresses:
                 - ip_netmask:
                     get_param: TenantIpSubnet
+                routes:
+                  get_param: TenantInterfaceRoutes
 
 outputs:
   OS::stack_id:

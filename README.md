@@ -633,7 +633,7 @@ Pull from private INsecure registry:
 
 #### Optional: upload Contrail containers to undercloud registry
 ```
-openstack overcloud container image upload --config-file /tmp/contrail_container
+sudo openstack overcloud container image upload --config-file /tmp/contrail_container
 ```
 
 
@@ -660,6 +660,11 @@ tripleo-heat-templates/environments/contrail/contrail-services.yaml
 
 - Modify contrail-services.yaml to point to use external Contrail Control plane
 ```yaml
+parameter_defaults:
+  ServiceNetMap:
+    ...
+    KeystoneAdminApiNetwork: internal_api
+
   # Disable RHOSP Contrail Control plane roles
   ContrailControllerCount: 0
   ContrailAnalyticsCount: 0

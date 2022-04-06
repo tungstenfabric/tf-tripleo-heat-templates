@@ -541,6 +541,9 @@ vms:
         interface: virtio
         profile_name: "{{ datacenter_name }}-ctlplane"
         mac_address: "52:54:00:16:54:d8"
+      - name: eth1
+        interface: virtio
+        profile_name: "{{ datacenter_name }}-tenant"
     cluster: node-10-0-10-148
     storage: node-10-0-10-148-overcloud
   - name: contrail-controller-0
