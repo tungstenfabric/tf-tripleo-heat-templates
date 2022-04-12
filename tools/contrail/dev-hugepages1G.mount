@@ -14,6 +14,7 @@ Before=sysinit.target
 ConditionPathExists=/sys/kernel/mm/hugepages/hugepages-1048576kB
 ConditionCapability=CAP_SYS_ADMIN
 ConditionKernelCommandLine=hugepagesz=1G
+ConditionKernelCommandLine=!default_hugepagesz=1GB
 
 [Mount]
 What=hugetlbfs

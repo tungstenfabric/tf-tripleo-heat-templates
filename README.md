@@ -770,9 +770,9 @@ vi tripleo-heat-templates/environments/contrail/contrail-services.yaml
 ```yaml
   ContrailDpdkParameters:
     # For Intel CPU
-    KernelArgs: "intel_iommu=on iommu=pt default_hugepagesz=1GB hugepagesz=1G hugepages=4 hugepagesz=2M hugepages=1024"
+    KernelArgs: "intel_iommu=on iommu=pt default_hugepagesz=1GB hugepagesz=1G hugepages=4"
     # For AMD CPU uncomment
-    # KernelArgs: "amd_iommu=on iommu=pt default_hugepagesz=1GB hugepagesz=1G hugepages=4 hugepagesz=2M hugepages=1024"
+    # KernelArgs: "amd_iommu=on iommu=pt default_hugepagesz=1GB hugepagesz=1G hugepages=4"
     TunedProfileName: "cpu-partitioning"
     IsolCpusList: "1-16"
     ExtraSysctlSettings:
