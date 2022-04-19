@@ -115,19 +115,23 @@ export TF_ROOT_CA_CERT_BASE64=$(cat ca-bundle.pem | base64 -w 0)
 kubectl label node <worker_nodename> subcluster=<subcluster_name>
 ```
 
-4. Ensure RHOSP FQDNs are resolvable on K8S master nodes
+4.Ensure Kubernetes nodes can connect to External, Internal API and Tenant RHOSP networks.
+Ensure Kubernetes nodes can resolve RHOSP FQDNs for Overcloud VIPs for External, Internal API and CtlPlane networks.
 E.g.
+
 ```bash
 cat /etc/hosts
 
-#RHOSP VIPs
-192.168.21.201  overcloud.internalapi.dev.localdomain
-192.168.21.200  overcloud.dev.localdomain
+192.168.24.53 overcloud.ctlplane.5c7.local
+10.1.0.125 overcloud.internalapi.5c7.local
+10.2.0.90 overcloud.5c7.local overcloud.5c7.local
 
 #RHOSP Computes
 192.168.21.122  overcloud-remotecompute1-0.tenant.dev.localdomain
 #... other compute addresses if any
+... IMPORTANT: all FQDNs of all overcloud nodes (all networks) ...
 ```
+(FQDNs of Overcloud nodes can be taken from /etc/hosts of one of overcloud node)
 
 ```bash
 kubectl edit manager -n tf

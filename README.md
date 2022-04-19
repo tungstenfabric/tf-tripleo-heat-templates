@@ -352,8 +352,19 @@ cat k8s-root-ca.pem /etc/ipa/ca.crt  > ca-bundle.pem
 export SSL_CACERT=$(cat ~/ca-bundle.pem)
 export SSL_CAKEY=$(cat ~/k8s-root-ca-key.pem)
 ```
-Ensure Kubernetes nodes can connect to Internal API and Tenant networks.
-Ensure Kubernetes nodes can resolve RHOSP FQDNs for Overcloud VIPs and for Compute nodes in CtlPlane and Tenant networks.
+Ensure Kubernetes nodes can connect to External, Internal API and Tenant RHOSP networks.
+Ensure Kubernetes nodes can resolve RHOSP FQDNs for Overcloud VIPs for External, Internal API and CtlPlane networks.
+E.g.
+
+```bash
+cat /etc/hosts
+
+192.168.24.53 overcloud.ctlplane.5c7.local
+10.1.0.125 overcloud.internalapi.5c7.local
+10.2.0.90 overcloud.5c7.local overcloud.5c7.local
+... IMPORTANT: all FQDNs of all overcloud nodes (all networks) ...
+```
+(FQDNs of Overcloud nodes can be taken from /etc/hosts of one of overcloud node)
 
 
 # Overcloud deploy
