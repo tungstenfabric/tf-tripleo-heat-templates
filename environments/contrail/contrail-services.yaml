@@ -132,7 +132,7 @@ parameter_defaults:
 # Note: Mellanox with DPDK mode requries to set 'driver: mlnx' in the appropriate NIC file
 
   ContrailDpdkParameters:
-    KernelArgs: "intel_iommu=on iommu=pt default_hugepagesz=1GB hugepagesz=1G hugepages=4 hugepagesz=2M hugepages=1024 tsx=off"
+    KernelArgs: "intel_iommu=on iommu=pt default_hugepagesz=1GB hugepagesz=1G hugepages=4 tsx=off"
     #TSX is added for rhosp16.2 (see https://access.redhat.com/solutions/6036141)
     ForceNoTsx: true
     ExtraSysctlSettings:
@@ -160,7 +160,7 @@ parameter_defaults:
 
   # !! Adjust to your setup
   ContrailSriovParameters:
-    KernelArgs: "intel_iommu=on iommu=pt default_hugepagesz=1GB hugepagesz=1G hugepages=4 hugepagesz=2M hugepages=1024 tsx=off"
+    KernelArgs: "intel_iommu=on iommu=pt default_hugepagesz=1GB hugepagesz=1G hugepages=4 tsx=off"
     #TSX is added for rhosp16.2 (see https://access.redhat.com/solutions/6036141)
     ForceNoTsx: true
     ExtraSysctlSettings:
@@ -198,6 +198,6 @@ parameter_defaults:
 
   # !! Adjust to your setup
   ContrailTsnParameters:
-    KernelArgs: "intel_iommu=on iommu=pt default_hugepagesz=1GB hugepagesz=1G hugepages=4 hugepagesz=2M hugepages=1024 tsx=off"
+    KernelArgs: "intel_iommu=on iommu=pt default_hugepagesz=1GB hugepagesz=1G hugepages=4 tsx=off"
     #TSX is added for rhosp16.2 (see https://access.redhat.com/solutions/6036141)
     ForceNoTsx: true

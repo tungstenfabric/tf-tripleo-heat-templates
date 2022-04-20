@@ -1256,7 +1256,7 @@ KernelArgs: "default_hugepagesz=1GB hugepagesz=1G hugepages=2"
 ```
 ```yaml
 ContrailDpdkParameters:
-  KernelArgs: "intel_iommu=on iommu=pt default_hugepagesz=1GB hugepagesz=1G hugepages=64 hugepagesz=2M hugepages=1024 isolcpus=2-23,50-71,26-47,74-95"
+  KernelArgs: "intel_iommu=on iommu=pt default_hugepagesz=1GB hugepagesz=1G hugepages=64 isolcpus=2-23,50-71,26-47,74-95"
 ```
 ```yaml
 TunedProfileName: "cpu-partitioning"
@@ -1305,8 +1305,8 @@ Edit: `tripleo-heat-templates/environments/contrail/contrail-services.yaml` and 
 ```yaml
   ContrailDpdkParameters:
     KernelArgs: "intel_iommu=on iommu=pt default_hugepagesz=1GB" +
-                "hugepagesz=1G hugepages=64 hugepagesz=2M" +
-                "hugepages=1024 isolcpus=2-23,50-71,26-47,74-95"
+                "hugepagesz=1G hugepages=64 " +
+                "isolcpus=2-23,50-71,26-47,74-95"
     ExtraSysctlSettings:
       vm.nr_hugepages:
         value: 64
