@@ -287,7 +287,7 @@ outputs:
                 # In case if user specified podman inside nodemgr tries to lookup its id
                 # in /var/lib/containers/overlay/.../merged directory
                 # But it is empty in rhel7=>rhel8 upgrade case
-                # user: root
+                user: root
                 restart: always
                 volumes:
                   list_concat:
