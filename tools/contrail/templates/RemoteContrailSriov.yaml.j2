@@ -1,19 +1,23 @@
 ###############################################################################
-# Role: ContrailSriov
+# Role: ContrailSriov example for Remote compute                                    #
 ###############################################################################
-- name: ContrailSriov
+- name: RemoteContrailSriov{{ REMOTE_INDEX }}
   description: |
-    Contrail Sriov Node role
+    ContrailSriov with remote compute networking.
+  disable_constraints: False
   CountDefault: 0
   networks:
     InternalApi:
-      subnet: internal_api_subnet
-    Tenant:
-      subnet: tenant_subnet
+      subnet: internal_api{{ REMOTE_INDEX }}
     Storage:
-      subnet: storage_subnet
-  HostnameFormatDefault: '%stackname%-contrailsriov-%index%'
+      subnet: storage{{ REMOTE_INDEX }}
+    Tenant:
+      subnet: tenant{{ REMOTE_INDEX }}
+  HostnameFormatDefault: '%stackname%-remotecontrailsriov{{ REMOTE_INDEX }}-%index%'
   disable_upgrade_deployment: True
+  RoleParametersDefault:
+    TunedProfileName: "cpu-partitioning"
+  update_serial: 25
   ServicesDefault:
     - OS::TripleO::Services::AgilioVrouter
     - OS::TripleO::Services::Aide
@@ -24,25 +28,34 @@
     - OS::TripleO::Services::CephExternal
     - OS::TripleO::Services::CertmongerUser
     - OS::TripleO::Services::Collectd
-    - OS::TripleO::Services::ContrailCertmongerUser
-    - OS::TripleO::Services::ContrailSriov
     - OS::TripleO::Services::ComputeCeilometerAgent
     - OS::TripleO::Services::ComputeNeutronL3Agent
     - OS::TripleO::Services::ComputeNeutronMetadataAgent
+    - OS::TripleO::Services::ContrailCertmongerUser
+    - OS::TripleO::Services::ContrailSriov
     - OS::TripleO::Services::ContrailIssuCompute
-    - OS::TripleO::Services::ContainersLogrotateCrond
     - OS::TripleO::Services::Docker
-    - OS::TripleO::Services::Podman
     - OS::TripleO::Services::IpaClient
     - OS::TripleO::Services::Ipsec
     - OS::TripleO::Services::Iscsid
     - OS::TripleO::Services::Kernel
     - OS::TripleO::Services::LoginDefs
+    - OS::TripleO::Services::MetricsQdr
+    - OS::TripleO::Services::Multipathd
     - OS::TripleO::Services::MySQLClient
+    - OS::TripleO::Services::NeutronBgpVpnBagpipe
+    - OS::TripleO::Services::NeutronLinuxbridgeAgent
+    - OS::TripleO::Services::NeutronVppAgent
+    - OS::TripleO::Services::NovaAZConfig
     - OS::TripleO::Services::NovaCompute
     - OS::TripleO::Services::NovaLibvirt
+    - OS::TripleO::Services::NovaLibvirtGuests
     - OS::TripleO::Services::NovaMigrationTarget
+    - OS::TripleO::Services::ContainersLogrotateCrond
+    - OS::TripleO::Services::Podman
+    - OS::TripleO::Services::Rear
     - OS::TripleO::Services::Rhsm
+    - OS::TripleO::Services::Rsyslog
     - OS::TripleO::Services::RsyslogSidecar
     - OS::TripleO::Services::Securetty
     - OS::TripleO::Services::SkydiveAgent
@@ -54,3 +67,5 @@
     - OS::TripleO::Services::TripleoPackages
     - OS::TripleO::Services::Tuned
     - OS::TripleO::Services::Ptp
+    - OS::TripleO::Services::Vpp
+

@@ -22,9 +22,11 @@ for i in $(seq 1 ${SUBSLUSTERS_COUNT}); do
     # generate roles
     ${my_dir}/jinja_render.py 0<${my_dir}/templates/RemoteCompute.yaml.j2 > ${my_dir}/../../roles/RemoteCompute${REMOTE_INDEX}.yaml
     ${my_dir}/jinja_render.py 0<${my_dir}/templates/RemoteContrailDpdk.yaml.j2 > ${my_dir}/../../roles/RemoteContrailDpdk${REMOTE_INDEX}.yaml
+    ${my_dir}/jinja_render.py 0<${my_dir}/templates/RemoteContrailSriov.yaml.j2 > ${my_dir}/../../roles/RemoteContrailSriov${REMOTE_INDEX}.yaml
     # generate compute-nic-config-rcomp.yaml
     ${my_dir}/jinja_render.py 0<${my_dir}/templates/compute-nic-config-rcomp.yaml.j2 > ${my_dir}/../../network/config/contrail/compute-nic-config-rcomp${REMOTE_INDEX}.yaml
     ${my_dir}/jinja_render.py 0<${my_dir}/templates/contrail-dpdk-nic-config-rcomp.yaml.j2 > ${my_dir}/../../network/config/contrail/contrail-dpdk-nic-config-rcomp${REMOTE_INDEX}.yaml
+    ${my_dir}/jinja_render.py 0<${my_dir}/templates/contrail-sriov-nic-config-rcomp.yaml.j2 > ${my_dir}/../../network/config/contrail/contrail-sriov-nic-config-rcomp${REMOTE_INDEX}.yaml
     # generate rcomp-env.yaml
     ${my_dir}/jinja_render.py 0<${my_dir}/templates/rcomp-env.yaml.j2 > ${my_dir}/../../environments/contrail/rcomp${REMOTE_INDEX}-env.yaml
 done

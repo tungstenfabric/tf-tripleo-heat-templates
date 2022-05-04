@@ -184,6 +184,7 @@ subcluster_names=pop1,pop2
 This script generate one network_data_rcomp.yaml, and the set of files for each subcluster, e.g.
 tripleo-heat-templates/roles/RemoteCompute1.yaml
 tripleo-heat-templates/roles/RemoteContrailDpdk1.yaml
+tripleo-heat-templates/roles/RemoteContrailSriov1.yaml
 tripleo-heat-templates/environments/contrail/rcomp1-env.yaml
 tripleo-heat-templates/network/config/contrail/compute-nic-config-rcomp1.yaml
 tripleo-heat-templates/network/config/contrail/contrail-dpdk-nic-config-rcomp1.yaml
@@ -340,7 +341,7 @@ EOF
 cd
 # generate role file (adjust to your role list)
 openstack overcloud roles generate --roles-path tripleo-heat-templates/roles \
-  -o /home/stack/roles_data.yaml Controller RemoteCompute1 RemoteContrailDpdk1
+  -o /home/stack/roles_data.yaml Controller RemoteCompute1 RemoteContrailDpdk1 RemoteContrailSriov1
 # clean old files if any
 ./tripleo-heat-templates/tools/process-templates.py --clean \
   -r /home/stack/roles_data.yaml \

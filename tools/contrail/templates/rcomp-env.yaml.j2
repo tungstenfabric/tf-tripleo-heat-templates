@@ -15,6 +15,13 @@ resource_registry:
   OS::TripleO::RemoteContrailDpdk{{ REMOTE_INDEX }}::PreNetworkConfig: ../../extraconfig/pre_network/contrail/contrail_dpdk_pre_network.yaml
   OS::TripleO::RemoteContrailDpdk{{ REMOTE_INDEX }}ExtraConfigPre: ../../extraconfig/pre_deploy/contrail/contrail-init.yaml
 
+  OS::TripleO::RemoteContrailSriov{{ REMOTE_INDEX }}::Ports::TenantPort: ../../network/ports/tenant_from_pool.yaml
+  OS::TripleO::RemoteContrailSriov{{ REMOTE_INDEX }}::Ports::InternalApiPort: ../../network/ports/internal_api_from_pool.yaml
+  OS::TripleO::RemoteContrailSriov{{ REMOTE_INDEX }}::Ports::StoragePort: ../../network/ports/storage_from_pool.yaml
+  OS::TripleO::RemoteContrailSriov{{ REMOTE_INDEX }}::Net::SoftwareConfig: ../../network/config/contrail/contrail-sriov-nic-config-rcomp{{ REMOTE_INDEX }}.yaml
+  OS::TripleO::RemoteContrailSriov{{ REMOTE_INDEX }}::PreNetworkConfig: ../../extraconfig/pre_network/contrail/contrail_sriov_pre_network.yaml
+  OS::TripleO::RemoteContrailSriov{{ REMOTE_INDEX }}ExtraConfigPre: ../../extraconfig/pre_deploy/contrail/contrail-init.yaml
+
 parameter_defaults:
 
   # !!! Adjust to your setup
@@ -29,6 +36,7 @@ parameter_defaults:
   # !!! Adjust to correct count
   RemoteCompute{{ REMOTE_INDEX }}Count: 0
   RemoteContrailDpdk{{ REMOTE_INDEX }}Count: 0
+  RemoteContrailSriov{{ REMOTE_INDEX }}Count: 0
 
   # !!! Adjust to correct IPs
   ControlPlaneDefaultRoute: 192.168.{{ 24 + (REMOTE_INDEX | int) }}.254
@@ -58,12 +66,22 @@ parameter_defaults:
     storage:
     - 172.22.{{ REMOTE_INDEX }}.111
 
+  RemoteContrailSriov{{ REMOTE_INDEX }}IPs:
+    tenant:
+    - 172.20.{{ REMOTE_INDEX }}.121
+    internal_api:
+    - 172.21.{{ REMOTE_INDEX }}.121
+    storage:
+    - 172.22.{{ REMOTE_INDEX }}.121
+
   # !!! Adjust to your setup
   # more in [RedHat doc](https://access.redhat.com/documentation/en-us/red_hat_openstack_platform/16.2/html/distributed_compute_node_and_storage_deployment/preparing_overcloud_templates_for_dcn_deployment#proc_using-manageNetworks-to-reuse-network-resources)
   OvercloudRemoteCompute{{ REMOTE_INDEX }}Flavor: compute_leaf{{ REMOTE_INDEX }}
   RemoteCompute{{ REMOTE_INDEX }}ControlPlaneSubnet: leaf{{ REMOTE_INDEX }}
   OvercloudRemoteContrailDpdk{{ REMOTE_INDEX }}Flavor: contraildpdk_leaf{{ REMOTE_INDEX }}
   RemoteContrailDpdk{{ REMOTE_INDEX }}ControlPlaneSubnet: leaf{{ REMOTE_INDEX }}
+  OvercloudRemoteContrailSriov{{ REMOTE_INDEX }}Flavor: contrailsriov_leaf{{ REMOTE_INDEX }}
+  RemoteContrailSriov{{ REMOTE_INDEX }}ControlPlaneSubnet: leaf{{ REMOTE_INDEX }}
 
   NovaAZAttach: false
   NovaCrossAZAttach: false
@@ -76,6 +94,11 @@ parameter_defaults:
     contrail_control_ips: ""
 
   RemoteContrailDpdk{{ REMOTE_INDEX }}ExtraConfig:
+    contrail_internal_api_ssl: True
+    # !!! Adjust to subscluster Control service node
+    contrail_control_ips: ""
+
+  RemoteContrailSriov{{ REMOTE_INDEX }}ExtraConfig:
     contrail_internal_api_ssl: True
     # !!! Adjust to subscluster Control service node
     contrail_control_ips: ""
@@ -129,6 +152,46 @@ parameter_defaults:
       SUBCLUSTER: {{ SUBCLUSTER }}
       DPDK_UIO_DRIVER: 'vfio-pci'
       LACP_RATE: 0
+      # NIC_OFFLOAD_ENABLE: true
+      # SERVICE_CORE_MASK: '0x03'
+      # DPDK_CTRL_THREAD_MASK: '0x03'
+
+  RemoteContrailSriov{{ REMOTE_INDEX }}Parameters:
+    KernelArgs: "intel_iommu=on iommu=pt default_hugepagesz=1GB hugepagesz=1G hugepages=4 tsx=off"
+    ForceNoTsx: true
+    ExtraSysctlSettings:
+      # must be equal to value from 1G kernel args: hugepages=4
+      vm.nr_hugepages:
+        value: 4
+      vm.max_map_count:
+        value: 128960
+    ExtraKernelModules:
+      vfio: {}
+    # !! Adjust to your setup
+    ContrailSriovNumVFs: ["ens2f1:3"]
+    ContrailSriovMode: 'kernel'
+    NovaPCIPassthrough:
+      - devname: "ens2f1"
+        physical_network: "tenant"
+    # Tuned-d profile configuration
+    #   TunedProfileName -  Name of tuned profile
+    #   IsolCpusList     -  Logical CPUs list to be isolated from the host process (applied via cpu-partitioning tuned).
+    #                       It is mandatory to provide isolated cpus for tuned to achive optimal performance.
+    #                       Example: "3-8,12-15,18"
+    # TunedProfileName: "cpu-partitioning"
+    # IsolCpusList: "3-20"
+    ContrailSettings:
+      VROUTER_ENCRYPTION: false
+      # 16 bit BGP Autonomous System number for the cluster.
+      # !!! Adjust to your setup
+      BGP_ASN: {{ 64512 + (REMOTE_INDEX | int) }}
+      BGP_AUTO_MESH: true
+      # !!! Adjust to your setup if any
+      VROUTER_GATEWAY: "172.20.{{ REMOTE_INDEX }}.1"
+      SUBCLUSTER: {{ SUBCLUSTER }}
+      LACP_RATE: 0
+      # Adjust for ContrailSriovMode: dpdk
+      # DPDK_UIO_DRIVER: 'vfio-pci'
       # NIC_OFFLOAD_ENABLE: true
       # SERVICE_CORE_MASK: '0x03'
       # DPDK_CTRL_THREAD_MASK: '0x03'
