@@ -130,7 +130,10 @@ cat /etc/hosts
 192.168.21.122  overcloud-remotecompute1-0.tenant.dev.localdomain
 # ...
 #RHOSP Contrail Dpdk
-192.168.21.122  overcloud-contraildpdk1-0.tenant.dev.localdomain
+192.168.21.132  overcloud-remotecontraildpdk1-0.tenant.dev.localdomain
+# ...
+#RHOSP Contrail Sriov
+192.168.21.142  overcloud-remotecontrailsriov1-0.tenant.dev.localdomain
 # ...
 #... other compute addresses if any
 ... IMPORTANT: all FQDNs of all overcloud nodes (all networks) ...
@@ -174,7 +177,7 @@ Add record to controls for each subcluster:
 
 1. Prepare Openstack hosts and run undercloud setup by [README.md]
 
-2. Run script to generate remote computes heat templates
+2. Run script to generate remote computes heat templates for kernel, dpdk and sriov kinds
 ```bash
 cd
 # comma separated list of names
@@ -188,6 +191,7 @@ tripleo-heat-templates/roles/RemoteContrailSriov1.yaml
 tripleo-heat-templates/environments/contrail/rcomp1-env.yaml
 tripleo-heat-templates/network/config/contrail/compute-nic-config-rcomp1.yaml
 tripleo-heat-templates/network/config/contrail/contrail-dpdk-nic-config-rcomp1.yaml
+tripleo-heat-templates/network/config/contrail/contrail-sriov-nic-config-rcomp1.yaml
 
 3. !!IMPORTANT: Adjust generated files and othere templates to your setup (storage, network CIDRs, routes, etc)
 Check carefully [the RedHat documentation](https://access.redhat.com/documentation/en-us/red_hat_openstack_platform/16.2/html/distributed_compute_node_and_storage_deployment/planning_a_distributed_compute_node_dcn_deployment)
