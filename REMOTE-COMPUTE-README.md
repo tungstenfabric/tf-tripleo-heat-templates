@@ -128,6 +128,10 @@ cat /etc/hosts
 
 #RHOSP Computes
 192.168.21.122  overcloud-remotecompute1-0.tenant.dev.localdomain
+# ...
+#RHOSP Contrail Dpdk
+192.168.21.122  overcloud-contraildpdk1-0.tenant.dev.localdomain
+# ...
 #... other compute addresses if any
 ... IMPORTANT: all FQDNs of all overcloud nodes (all networks) ...
 ```
@@ -179,8 +183,10 @@ subcluster_names=pop1,pop2
 ```
 This script generate one network_data_rcomp.yaml, and the set of files for each subcluster, e.g.
 tripleo-heat-templates/roles/RemoteCompute1.yaml
+tripleo-heat-templates/roles/RemoteContrailDpdk1.yaml
 tripleo-heat-templates/environments/contrail/rcomp1-env.yaml
 tripleo-heat-templates/network/config/contrail/compute-nic-config-rcomp1.yaml
+tripleo-heat-templates/network/config/contrail/contrail-dpdk-nic-config-rcomp1.yaml
 
 3. !!IMPORTANT: Adjust generated files and othere templates to your setup (storage, network CIDRs, routes, etc)
 Check carefully [the RedHat documentation](https://access.redhat.com/documentation/en-us/red_hat_openstack_platform/16.2/html/distributed_compute_node_and_storage_deployment/planning_a_distributed_compute_node_dcn_deployment)
@@ -334,7 +340,7 @@ EOF
 cd
 # generate role file (adjust to your role list)
 openstack overcloud roles generate --roles-path tripleo-heat-templates/roles \
-  -o /home/stack/roles_data.yaml Controller RemoteCompute1
+  -o /home/stack/roles_data.yaml Controller RemoteCompute1 RemoteContrailDpdk1
 # clean old files if any
 ./tripleo-heat-templates/tools/process-templates.py --clean \
   -r /home/stack/roles_data.yaml \

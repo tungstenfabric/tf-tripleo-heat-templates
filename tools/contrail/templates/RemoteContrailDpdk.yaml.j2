@@ -1,9 +1,9 @@
 ###############################################################################
-# Role: Compute example for Remote compute                                    #
+# Role: ContrailDpdk example for Remote compute                                    #
 ###############################################################################
-- name: RemoteCompute{{ REMOTE_INDEX }}
+- name: RemoteContrailDpdk{{ REMOTE_INDEX }}
   description: |
-    Compute with remote compute networking.
+    ContrailDpdk with remote compute networking.
   disable_constraints: False
   CountDefault: 0
   networks:
@@ -13,9 +13,10 @@
       subnet: storage{{ REMOTE_INDEX }}
     Tenant:
       subnet: tenant{{ REMOTE_INDEX }}
-  HostnameFormatDefault: '%stackname%-remotecompute{{ REMOTE_INDEX }}-%index%'
+  HostnameFormatDefault: '%stackname%-remotecontraildpdk{{ REMOTE_INDEX }}-%index%'
+  disable_upgrade_deployment: True
   RoleParametersDefault:
-    TunedProfileName: "virtual-host"
+    TunedProfileName: "cpu-partitioning"
   update_serial: 25
   ServicesDefault:
     - OS::TripleO::Services::Aide
@@ -27,11 +28,10 @@
     - OS::TripleO::Services::CertmongerUser
     - OS::TripleO::Services::Collectd
     - OS::TripleO::Services::ComputeCeilometerAgent
-    - OS::TripleO::Services::ComputeNeutronCorePlugin
     - OS::TripleO::Services::ComputeNeutronL3Agent
     - OS::TripleO::Services::ComputeNeutronMetadataAgent
-    - OS::TripleO::Services::ComputeNeutronOvsAgent
     - OS::TripleO::Services::ContrailCertmongerUser
+    - OS::TripleO::Services::ContrailDpdk
     - OS::TripleO::Services::ContrailIssuCompute
     - OS::TripleO::Services::Docker
     - OS::TripleO::Services::IpaClient
@@ -67,6 +67,4 @@
     - OS::TripleO::Services::Tuned
     - OS::TripleO::Services::Ptp
     - OS::TripleO::Services::Vpp
-    - OS::TripleO::Services::OVNController
-    - OS::TripleO::Services::OVNMetadataAgent
 
