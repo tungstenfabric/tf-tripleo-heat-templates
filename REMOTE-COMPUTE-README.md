@@ -459,8 +459,8 @@ openstack overcloud deploy --templates tripleo-heat-templates/ \
 6.3. Follow next steps from [RedHat documentaion, e.g](https://access.redhat.com/documentation/en-us/red_hat_openstack_platform/16.2/html/distributed_compute_node_and_storage_deployment/assembly_deploying-storage-at-the-edge)
 
 ```
-7.1. Deploying edge sites with storage
-  8. You must ensure that nova cell_v2 host mappings are created in the nova API database after the edge locations are deployed. Run the following command on the undercloud:
+  7.1. Deploying edge sites with storage
+    8. You must ensure that nova cell_v2 host mappings are created in the nova API database after the edge locations are deployed. Run the following command on the undercloud:
 ```
 ```bash
 TRIPLEO_PLAN_NAME=overcloud \
