@@ -349,8 +349,8 @@ for Contrail in Kuberentes uses CA certificate bundle that contains
 own self-igned certificate and IPA CA. Example how to provide variable for TF Operator:
 ```bash
 cat k8s-root-ca.pem /etc/ipa/ca.crt  > ca-bundle.pem
-export SSL_CACERT=$(cat ~/ca-bundle.pem)
-export SSL_CAKEY=$(cat ~/k8s-root-ca-key.pem)
+export TF_ROOT_CA_KEY_BASE64=$(cat k8s-root-ca-key.pem | base64 -w 0)
+export TF_ROOT_CA_CERT_BASE64=$(cat ca-bundle.pem | base64 -w 0)
 ```
 Ensure Kubernetes nodes can connect to External, Internal API and Tenant RHOSP networks.
 Ensure Kubernetes nodes can resolve RHOSP FQDNs for Overcloud VIPs for External, Internal API and CtlPlane networks.
