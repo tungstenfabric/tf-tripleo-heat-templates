@@ -25,10 +25,14 @@
         set_fact:
           dmi_uuid: "{{ dmi.stdout }}"
 
+      - name: convert nodedata to json
+        set_fact:
+          nodedata_json: "{{ _NODEDATA_ | to_json(ensure_ascii=False) | from_json }}"
+
       - name: set nodedata
         set_fact:
-          nodedata: "{{ _NODEDATA_[dmi_uuid] }}"
-        when: _NODEDATA_[dmi_uuid] is defined
+          nodedata: "{{ nodedata_json[dmi_uuid] }}"
+        when: nodedata_json[dmi_uuid] is defined
 
       - name: update contrail settings with node data values
         set_fact:

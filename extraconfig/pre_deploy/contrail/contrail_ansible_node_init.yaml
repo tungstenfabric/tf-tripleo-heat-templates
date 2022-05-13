@@ -218,15 +218,19 @@
         set_fact:
           dmi_uuid_upper: "{{ dmi.stdout | upper }}"
 
+      - name: convert nodedata to json
+        set_fact:
+          nodedata_json: "{{ _NODEDATA_ | to_json(ensure_ascii=False) | from_json }}"
+
       - name: set nodedata
         set_fact:
-          nodedata: "{{ _NODEDATA_[dmi_uuid] }}"
-        when: _NODEDATA_[dmi_uuid] is defined
+          nodedata: "{{ nodedata_json[dmi_uuid] }}"
+        when: nodedata_json[dmi_uuid] is defined
 
       - name: set nodedata upper
         set_fact:
-          nodedata_upper: "{{ _NODEDATA_[dmi_uuid_upper] }}"
-        when: _NODEDATA_[dmi_uuid_upper] is defined
+          nodedata_upper: "{{ nodedata_json[dmi_uuid_upper] }}"
+        when: nodedata_json[dmi_uuid_upper] is defined
 
       - name: write nodedata
         copy:
