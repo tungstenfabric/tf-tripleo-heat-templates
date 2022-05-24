@@ -43,12 +43,16 @@ kubectl label nodes node1 contrail-issu=""
 
 3. Collect data from operator environment, e.g.
 ```bash
+# example how to ger data for new_rabbit.. parameters
 kubectl -n tf exec -it config1-config-statefulset-0 \
-  -c api -- bash -c 'cat /etc/contrailconfigmaps/api.0.$POD_IP'
+  -c api -- bash -c 'cat /etc/contrailconfigmaps/api.0.$POD_IP' | grep rabbit
 ```
 
 4. Prepare issu configmap
 ```bash
+# get tf-tripleo-heat-templates project, e.g.
+git clone -b stable/train https://github.com/tungstenfabric/tf-tripleo-heat-templates
+# make copy of issu config files
 mkdir -p issu-configmap
 cp tf-tripleo-heat-templates/tools/contrail/issu/issu.* \
   tf-tripleo-heat-templates/tools/contrail/issu/*.sh \
@@ -118,6 +122,7 @@ Config Sync done...
 Started runtime sync...
 Start Compute upgrade...
 ```
+- Note, this jobs should be active during whole ISSU procedure.
 - !!! Important: At this point switch to main istruction and follow RHOSP udpate/upgrade procedure 
 
 10. Return to the main workflow and update cluster
