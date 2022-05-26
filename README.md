@@ -304,6 +304,13 @@ parameter_defaults:
       YOUR_REDHAT_LOGIN: 'YOUR_REDHAT_PASSWORD'
 ```
 
+### Ensure locale is set to UTF-8
+https://bugzilla.redhat.com/show_bug.cgi?id=1910416
+```bash
+export LC_ALL=en_US.UTF-8
+echo "export LC_ALL=en_US.UTF-8" >> ~/.bashrc
+```
+
 ### install undercloud
 ```bash
 openstack undercloud install
