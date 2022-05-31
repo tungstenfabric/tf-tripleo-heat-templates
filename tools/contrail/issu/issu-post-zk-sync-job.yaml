@@ -36,13 +36,13 @@ spec:
           - |
             set -ex
             set -o pipefail
-            exec &> >(tee -a /var/log/contrail/issu-post-zk-sync-job.log)
+            exec &> >(stdbuf -i0 -o0 -e0 tee -a /var/log/contrail/issu-post-zk-sync-job.log)
             source /etc/issu/issu.env
             mkdir -p /etc/contrail
             ln -s -f /etc/contrailconfigmaps/vnc_api_lib.ini.${POD_IP} /etc/contrail/vnc_api_lib.ini
             ln -s -f /etc/contrailconfigmaps/contrail-keystone-auth.conf.${POD_IP} /etc/contrail/contrail-keystone-auth.conf
             eval "echo \"$(cat /etc/issu/issu.conf)\"" > /etc/contrail/issu.conf
-            /usr/bin/contrail-issu-zk-sync -c /etc/contrail/issu.conf
+            stdbuf -i0 -o0 -e0 /usr/bin/contrail-issu-zk-sync -c /etc/contrail/issu.conf
         volumeMounts:
         - mountPath: /etc/issu
           name: issu-config

@@ -36,7 +36,7 @@ spec:
           - |
             set -ex
             set -o pipefail
-            exec &> >(tee -a /var/log/contrail/issu-sync-job.log)
+            exec &> >(stdbuf -i0 -o0 -e0 tee -a /var/log/contrail/issu-sync-job.log)
             source /etc/issu/issu.env
             mkdir -p /etc/contrail
             ln -s -f /etc/contrailconfigmaps/vnc_api_lib.ini.${POD_IP} /etc/contrail/vnc_api_lib.ini
