@@ -35,6 +35,14 @@ parameters:
     description: image
     type: string
     default: "contrail-vrouter-kernel-init"
+  DockerContrailVrouterKernelInitDpdkImageName:
+    description: image
+    type: string
+    default: "contrail-vrouter-kernel-init-dpdk"
+  DockerContrailVrouterAgentDpdkContainerName:
+    description: image
+    type: string
+    default: "contrail-vrouter-agent-dpdk"
   ContrailVrouterAgentMode:
     default: 'kernel'
     description: Agent mode kernel or dpdk
@@ -47,12 +55,36 @@ parameters:
     default: '2'
     description: Number of 1GB hugepages
     type: string
+  ContrailDpdkOptions:
+    default: ''
+    description: >
+      Vrouter dpdk advanced options.
+      This string is passed to dpdk container as env variable DPDK_COMMAND_ADDITIONAL_ARGS,
+      so dpdk command line is populated with arguments from this string.
+      E.g. --vr_mempool_sz --dpdk_txd_sz --dpdk_rxd_sz
+      dpdk --vr_dpdk_rx_ring_sz <int>  --vr_dpdk_tx_ring_sz <int> –-yield_option ‘0 or 1’
+    type: string
+    tags:
+      - role_specific
+
+conditions:
+  is_dpdk: {equals: [{get_param: ContrailVrouterAgentMode}, 'dpdk']}
 
 resources:
-  DockerContrailVrouterKernelImageNormalize:
+  DockerContrailVrouterKernelInitImageNormalize:
     type: ../../tools/contrail/contrail-image-normalize.yaml
     properties:
       GenericImageName: {get_param: DockerContrailVrouterKernelInitImageName}
+
+  DockerContrailVrouterKernelInitDpdkImageNormalize:
+    type: ../../tools/contrail/contrail-image-normalize.yaml
+    properties:
+      GenericImageName: {get_param: DockerContrailVrouterKernelInitDpdkImageName}
+
+  DockerContrailVrouterAgentDpdkImageNormalize:
+    type: ../../tools/contrail/contrail-image-normalize.yaml
+    properties:
+      GenericImageName: {get_param: DockerContrailVrouterAgentDpdkContainerName}
 
   ContrailVrouterIssu:
     type: OS::TripleO::ContrailVrouterIssu
@@ -73,10 +105,12 @@ resources:
           - map_replace:
             - hugepages_2mb: ContrailVrouterHugepages2MB
               hugepages_1gb: ContrailVrouterHugepages1GB
+              dpdk_options: ContrailDpdkOptions
             - values: {get_param: [RoleParameters]}
           - values:
               ContrailVrouterHugepages2MB: {get_param: ContrailVrouterHugepages2MB}
               ContrailVrouterHugepages1GB: {get_param: ContrailVrouterHugepages1GB}
+              ContrailDpdkOptions: {get_param: ContrailDpdkOptions}
 
 outputs:
   role_data:
@@ -86,8 +120,21 @@ outputs:
       agent_mode: &agent_mode {get_param: ContrailVrouterAgentMode}
       hugepages_2mb: &hugepages_2mb {get_attr: [ContrailSettingsRoleParametersValue, value, hugepages_2mb]}
       hugepages_1gb: &hugepages_1gb {get_attr: [ContrailSettingsRoleParametersValue, value, hugepages_1gb]}
+      dpdk_options: &dpdk_options {get_attr: [ContrailSettingsRoleParametersValue, value, dpdk_options]}
       vrouter_init_image: &vrouter_init_image
-        {get_attr: [DockerContrailVrouterKernelImageNormalize, contrail_image]}
+        if:
+          - is_dpdk
+          - {get_attr: [DockerContrailVrouterKernelInitDpdkImageNormalize, contrail_image]}
+          - {get_attr: [DockerContrailVrouterKernelInitImageNormalize, contrail_image]}
+      vrouter_init_container_name: &vrouter_init_container_name
+        if:
+          - is_dpdk
+          - {get_attr: [DockerContrailVrouterKernelInitDpdkImageNormalize, contrail_image_only]}
+          - {get_attr: [DockerContrailVrouterKernelInitImageNormalize, contrail_image_only]}
+      dpdk_image_name: &dpdk_image_name
+        {get_attr: [DockerContrailVrouterAgentDpdkImageNormalize, contrail_image]}
+      dpdk_container_name: &dpdk_container_name
+        {get_attr: [DockerContrailVrouterAgentDpdkImageNormalize, contrail_image_only]}
       host_prep_tasks:
         list_concat:
           - - name: Contrail vrouter base host prep tasks
@@ -221,30 +268,137 @@ outputs:
               when:
                 - agent_container_volume_name.stdout != ''
                 - agent_container_volume_location.stdout != '/var/lib/contrail'
-
-      post_update_tasks:
-        - name: Post upgrade agent to use /var/lib/contrail instead of volume
+        - name: Contrail vrouter reinit vhost0
           when: step|int == 1
           block:
-            - name: Check if /tmp/contrail_var_lib_unnamed_volume exists
-              stat:
-                path: /tmp/contrail_var_lib_unnamed_volume
-              register: contrail_var_lib_unnamed_volume
-            - block:
-              - name: Get name of volume from /tmp/contrail_var_lib_unnamed_volume
-                command: >
-                  cat /tmp/contrail_var_lib_unnamed_volume
-                register:
-                  tmp_file
-              - name: Ensure old unused volume is absent
-                docker_volume:
-                  name: '{{ tmp_file.stdout }}'
-                  state: absent
-              - name: Ensure temp file is absent
-                file:
-                  name: "/tmp/contrail_var_lib_unnamed_volume"
-                  state: absent
-              when: 'contrail_var_lib_unnamed_volume.stat.exists == true'
+                - name: Set kernel init container name (old container)
+                  set_fact:
+                    vrouter_init_container_name: *vrouter_init_container_name
+                - name: Set kernel init container name (new container)
+                  set_fact:
+                    vrouter_init_image: *vrouter_init_image
+                - name: Set dpdk image name
+                  set_fact:
+                    dpdk_image_name: *dpdk_image_name
+                - name: Set dpdk container name
+                  set_fact:
+                    dpdk_container_name: *dpdk_container_name
+                - name: Set agent mode
+                  set_fact:
+                    agent_mode: *agent_mode
+                - name: Set dpdk_options for init container
+                  set_fact:
+                    dpdk_options: *dpdk_options
+                - name: Stop vrouter agent service
+                  shell: bash -c 'systemctl stop tripleo_contrail_vrouter_agent.service'
+                - name: Remove old kernel init container
+                  shell: >
+                    {{ container_cli }} rm -f "{{ vrouter_init_container_name }}"
+                - set_fact:
+                    plugin_init_env_args: ''
+                - name: get dmi
+                  shell: |
+                    #!/bin/sh
+                    dmidecode --s system-uuid | awk 'match($0, /[0-9A-Fa-f]{8}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{12}/) { print substr($0, RSTART, RLENGTH) }'
+                  register: dmi
+                - name: set dmi fact
+                  set_fact:
+                    dmi_uuid: "{{ dmi.stdout }}"
+                - name: get contrail_settings from hiera
+                  shell: hiera -c /etc/puppet/hiera.yaml contrail_settings ::uuid={{ dmi_uuid }} | sed 's/=>/:/g'
+                  register: contrail_settings_env_vars_str
+                - name: convert contrail_settings string to json
+                  set_fact:
+                    contrail_settings_env_vars: "{{ contrail_settings_env_vars_str.stdout | regex_replace('nil', '{}') | to_json | from_json }}"
+                - name: prepare podman env args
+                  set_fact:
+                    plugin_init_env_args: "{{ plugin_init_env_args }} -e {{ item.key}}='{{ item.value }}'"
+                  loop: "{{ contrail_settings_env_vars | dict2items}}"
+                - name: Start new kernel init container 
+                  shell: |
+                    set -x
+                    {{ container_cli }} run -t --privileged {{ plugin_init_env_args }} \
+                      --network host --name {{ vrouter_init_container_name }} \
+                      -v /etc/sysconfig/network-scripts:/etc/sysconfig/network-scripts \
+                      -v /lib/modules:/lib/modules -v /bin:/host/bin -v /dev:/dev \
+                      -e AGENT_MODE={{ agent_mode }} \
+                      -e CONTRAIL_VROUTER_AGENT_CONTAINER_NAME=contrail_vrouter_agent \
+                      -e DPDK_COMMAND_ADDITIONAL_ARGS="{{ dpdk_options }}" \
+                      -e CONTRAIL_VROUTER_AGENT_DPDK_DOCKER_IMAGE='{{ dpdk_image_name }}' \
+                      -e CONTRAIL_VROUTER_AGENT_DPDK_CONTAINER_NAME='{{ dpdk_container_name }}' \
+                      "{{ vrouter_init_image }}"
+                  args:
+                    executable: /bin/bash
+                - name: Restart vhost0 interface
+                  shell: |
+                    exec > >(tee -a /tmp/contrail_reinit_vhost0.log)
+                    exec 2>&1
+                    set -x
+                    vrouter_ver_path="/sys/module/vrouter/version"
+                    [[ -e "$vrouter_ver_path" ]] && echo "$vrouter_ver_path $(cat $vrouter_ver_path)"
+                    ifdown vhost0
+                    ifup vhost0
+                    [[ -e "$vrouter_ver_path" ]] && echo "$vrouter_ver_path $(cat $vrouter_ver_path)"
+                  async: 120
+                  poll: 5
+                  register: reinit_vhost0
+                  ignore_errors: yes
+                  args:
+                    executable: /bin/bash
+                - debug: var=reinit_vhost0.stdout
+
+      reinit_vhost_tasks: &reinit_vhost_tasks
+        - name: Run kernel init container and reinit vhost0
+          when:
+            - step|int == 1
+          block:
+            - name: Set kernel init container name
+              set_fact:
+                vrouter_init_container_name: *vrouter_init_container_name
+            - name: Start kernel init container as post update
+              shell: >
+                {{ container_cli }} start -i {{ vrouter_init_container_name }}
+            - name: Restart vhost0 interface
+              shell: |
+                exec > >(tee -a /tmp/contrail_reinit_vhost0_post.log)
+                exec 2>&1
+                set -x
+                ifdown vhost0
+                ifup vhost0
+                {{ container_cli }} start contrail_vrouter_agent
+              async: 120
+              poll: 5
+              register: reinit_vhost0
+              ignore_errors: yes
+              args:
+                executable: /bin/bash
+            - debug: var=reinit_vhost0.stdout
+
+      post_update_tasks:
+        list_concat:
+          - - name: Post upgrade agent to use /var/lib/contrail instead of volume
+              when: step|int == 1
+              block:
+                - name: Check if /tmp/contrail_var_lib_unnamed_volume exists
+                  stat:
+                    path: /tmp/contrail_var_lib_unnamed_volume
+                  register: contrail_var_lib_unnamed_volume
+                - block:
+                  - name: Get name of volume from /tmp/contrail_var_lib_unnamed_volume
+                    command: >
+                      cat /tmp/contrail_var_lib_unnamed_volume
+                    register:
+                      tmp_file
+                  - name: Ensure old unused volume is absent
+                    docker_volume:
+                      name: '{{ tmp_file.stdout }}'
+                      state: absent
+                  - name: Ensure temp file is absent
+                    file:
+                      name: "/tmp/contrail_var_lib_unnamed_volume"
+                      state: absent
+                  when: 'contrail_var_lib_unnamed_volume.stat.exists == true'
+          - *reinit_vhost_tasks
 
       upgrade_tasks:
         list_concat:
@@ -308,7 +462,8 @@ outputs:
                   -v /lib/modules:/lib/modules \
                   --name contrail-vrouter-kernel-init-leapp \
                   {{ vrouter_init_image }}
-                
 
       post_upgrade_tasks:
-        get_attr: [ContrailVrouterIssu, role_data, post_upgrade_tasks]
+        list_concat:
+          - get_attr: [ContrailVrouterIssu, role_data, post_upgrade_tasks]
+          - *reinit_vhost_tasks

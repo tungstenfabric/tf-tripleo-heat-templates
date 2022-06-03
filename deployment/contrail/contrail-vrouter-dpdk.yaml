@@ -212,31 +212,10 @@ outputs:
         get_attr: [ContrailBase, role_data, metadata_settings]
 
       update_tasks:
-        list_concat:
-          - {get_attr: [ContrailVrouterBase, role_data, update_tasks]}
-
-      reinit_vhost_tasks: &reinit_vhost_tasks
-        - name: Update vrouter dpdk on post upgrade and reinit vhost0
-          when:
-            - step|int == 1
-          block:
-            - name: Restart vhost0 interface
-              shell: |
-                exec > >(tee -a /tmp/contrail_reinit_vhost0.log)
-                exec 2>&1
-                ifdown vhost0
-                ifup vhost0
-                {{ container_cli }} start contrail_vrouter_agent
-              async: 120
-              poll: 5
-              ignore_errors: yes
-              args:
-                executable: /bin/bash
+        get_attr: [ContrailVrouterBase, role_data, update_tasks]
 
       post_update_tasks:
-        list_concat:
-          - {get_attr: [ContrailVrouterBase, role_data, post_update_tasks]}
-          - *reinit_vhost_tasks
+        get_attr: [ContrailVrouterBase, role_data, post_update_tasks]
 
       upgrade_tasks:
         list_concat:
@@ -244,6 +223,4 @@ outputs:
           - {get_attr: [ContrailVrouterBase, role_data, upgrade_tasks]}
 
       post_upgrade_tasks:
-        list_concat:
-          - {get_attr: [ContrailVrouterBase, role_data, post_upgrade_tasks]}
-          - *reinit_vhost_tasks
+        get_attr: [ContrailVrouterBase, role_data, post_upgrade_tasks]
