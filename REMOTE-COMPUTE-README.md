@@ -140,6 +140,8 @@ cat /etc/hosts
 ```
 (FQDNs of Overcloud nodes can be taken from /etc/hosts of one of overcloud node)
 
+5. Edit manager manifest - add one more control with node nodeselector and Subcluster param
+
 ```bash
 kubectl edit manager -n tf
 ```
@@ -171,7 +173,6 @@ Add record to controls for each subcluster:
           - name: provisioner
             image: contrail-provisioner
 ```
-5. Edit manager manifest - add one more control with node nodeselector and Subcluster param
 
 # Prepare Openstack managed hosts
 
@@ -273,7 +274,7 @@ done
 cat ca-bundle.yaml
 ```
 
-4.3. Prepare central site specifica parameters
+4.3. Prepare central site specific parameters
 ```bash
 # !!! IMPORTANTN: Adjust to your setup
 # (Check more options in RedHat doc)
