@@ -38,6 +38,8 @@ parameters:
       Example "eth1:4096,eth2:128"
     type: comma_delimited_list
     default: ""
+    tags:
+      - role_specific
   ContrailDpdkOptions:
     default: ''
     description: >
@@ -47,6 +49,8 @@ parameters:
       E.g. --vr_mempool_sz --dpdk_txd_sz --dpdk_rxd_sz
       dpdk --vr_dpdk_rx_ring_sz <int>  --vr_dpdk_tx_ring_sz <int> –-yield_option ‘0 or 1’
     type: string
+    tags:
+      - role_specific
   ContrailSriovMode:
     default: 'kernel'
     type: string
@@ -99,6 +103,8 @@ parameters:
     default: {}
     description: Contrail Service settings
     type: json
+    tags:
+      - role_specific
 
 description: >
   This template installs the Contrail dpdk packages in order

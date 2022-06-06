@@ -67,6 +67,8 @@ parameters:
     default: {}
     description: Contrail Service settings
     type: json
+    tags:
+      - role_specific
 
 description: >
   This template installs the Contrail kernel module  packages in order
