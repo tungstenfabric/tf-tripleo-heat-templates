@@ -30,6 +30,8 @@ parameters:
       E.g. --vr_mempool_sz --dpdk_txd_sz --dpdk_rxd_sz
       dpdk --vr_dpdk_rx_ring_sz <int>  --vr_dpdk_tx_ring_sz <int> –-yield_option ‘0 or 1’
     type: string
+    tags:
+      - role_specific
   DockerInsecureRegistryAddress:
     description: Optional. The IP Address and Port of an insecure docker
                  namespace that will be configured in /etc/sysconfig/docker.
@@ -73,6 +75,8 @@ parameters:
     default: {}
     description: Contrail Service settings
     type: json
+    tags:
+      - role_specific
 
 description: >
   This template installs the Contrail dpdk packages in order

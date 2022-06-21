@@ -88,6 +88,8 @@ parameters:
     default: {}
     description: Contrail Service settings
     type: json
+    tags:
+      - role_specific
   ContrailDefaults:
     default: {}
     description: Dict of env variables for provisioner container
