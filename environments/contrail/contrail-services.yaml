@@ -149,6 +149,8 @@ parameter_defaults:
     # TunedProfileName: "cpu-partitioning"
     # IsolCpusList: "3-20"
     ContrailSettings:
+      # Override default log path for dpdk contianer managed manually by ifup
+      CONTAINER_LOG_OPT: "path=/var/log/containers/stdouts/contrail-vrouter-agent-dpdk.log"
       DPDK_UIO_DRIVER: 'vfio-pci'
       VROUTER_ENCRYPTION: false
       BGP_ASN: 64512
@@ -186,6 +188,8 @@ parameter_defaults:
     # TunedProfileName: "cpu-partitioning"
     # IsolCpusList: "3-20"
     ContrailSettings:
+      # Override default log path for dpdk contianer managed manually by ifup
+      CONTAINER_LOG_OPT: "path=/var/log/containers/stdouts/contrail-vrouter-agent-dpdk.log"
       VROUTER_ENCRYPTION: false
       BGP_ASN: 64512
       BGP_AUTO_MESH: true

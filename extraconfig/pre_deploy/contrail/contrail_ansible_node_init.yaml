@@ -38,6 +38,7 @@
         - /var/log/containers/contrail/kafka
         - /var/log/containers/contrail/zookeeper
         - /var/log/containers/contrail/rabbitmq
+        - /var/log/containers/stdouts
 
     - name: create contrail containers ssl directories
       file:
