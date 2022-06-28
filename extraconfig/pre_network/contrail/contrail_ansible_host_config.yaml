@@ -77,9 +77,15 @@
 
     - name: create crash directory
       file:
-        path: "/var/crashes"
+        path: "{{ item }}"
         state: directory
+        recurse: yes
         mode: 0755
+      with_items:
+        - /etc/contrail
+        - /etc/contrail/ssl
+        - /var/crashes
+        - /var/log/containers/stdouts
 
     - name: ulimit -c unlimited
       shell: ulimit -c unlimited
