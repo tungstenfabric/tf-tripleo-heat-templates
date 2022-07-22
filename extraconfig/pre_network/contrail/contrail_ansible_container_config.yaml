@@ -134,7 +134,7 @@
           shell: |
             {{ container_cli }} run  -t --network host --name {{ _CONTRAIL_VROUTER_INIT_IMAGE_NAME_ }} --privileged \
               -v /dev:/dev -v /etc/sysconfig/network-scripts:/etc/sysconfig/network-scripts -v /lib/modules:/lib/modules -v /bin:/host/bin \
-              -e AGENT_MODE=dpdk -e CONTRAIL_VROUTER_AGENT_DPDK_DOCKER_IMAGE={{ _CONTRAIL_VROUTER_AGENT_DPDK_IMAGE_ }} \
+              -e AGENT_MODE=dpdk -e KERNEL_INIT_VHOST0=false -e CONTRAIL_VROUTER_AGENT_DPDK_DOCKER_IMAGE={{ _CONTRAIL_VROUTER_AGENT_DPDK_IMAGE_ }} \
               -e CONTRAIL_VROUTER_AGENT_DPDK_CONTAINER_NAME={{ _CONTRAIL_VROUTER_AGENT_DPDK_CONTAINER_NAME_ }} \
               -e CONTRAIL_VROUTER_AGENT_CONTAINER_NAME=contrail_vrouter_agent \
               -e DPDK_COMMAND_ADDITIONAL_ARGS="{{ _CONTRAIL_DPDK_COMMAND_ADDITIONAL_ARGS_ }}" \
