@@ -71,15 +71,45 @@
           set_fact:
             contrail_registry: "{{ _CONTRAIL_VROUTER_PLUGIN_INIT_IMAGE_.split('/')[0] }}"
 
-        - name: Setup podman insecure registry for contrail vrouter plugin
+        - name: Detect podman configuration version
+          lineinfile:
+            dest: /etc/containers/registries.conf
+            line: '[[registry]]'
+            state: present
+          check_mode: yes
+          register: podman_v2_check
+
+        - debug:
+            msg: "podman configuration v2 detected"
+          when: not podman_v2_check.changed
+
+        - name: Setup podman insecure registry v2
+          blockinfile:
+            path: /etc/containers/registries.conf
+            block: |
+              [[registry]]
+              prefix = "{{ contrail_registry }}"
+              insecure = true
+              location = "{{ contrail_registry }}"
           when:
             - contrail_registry != ""
             - contrail_registry in _DOCKER_INSECURE_REGISTRIES_
+            - not podman_v2_check.changed
+
+        - debug:
+            msg: "podman configuration v2 not detected. Using v1"
+          when: podman_v2_check.changed
+
+        - name: Setup podman insecure registry v1
           ini_file:
             path: /etc/containers/registries.conf
             section: 'registries.insecure'
             option: 'registries'
             value: "[ '{{ contrail_registry }}' ]"
+          when:
+            - contrail_registry != ""
+            - contrail_registry in _DOCKER_INSECURE_REGISTRIES_
+            - podman_v2_check.changed
 
         - name: remove contrail vrouter plugin init container if exists
           shell: >

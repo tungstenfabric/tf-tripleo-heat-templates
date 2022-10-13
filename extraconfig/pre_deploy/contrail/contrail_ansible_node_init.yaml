@@ -112,13 +112,39 @@
         - ssl_enable
         - _SERVER_CA_ == 'IPA'
 
-    - name: Setup podman insecure registry
+    - name: Detect podman configuration version
+      lineinfile:
+        dest: /etc/containers/registries.conf
+        line: '[[registry]]'
+        state: present
+      check_mode: yes
+      register: podman_v2_check
+
+    - debug:
+        msg: "podman configuration v2 detected"
+      when: not podman_v2_check.changed
+
+    - name: Setup podman insecure registry v2
+      blockinfile:
+        path: /etc/containers/registries.conf
+        block: |
+          [[registry]]
+          prefix = "{{ _CONTRAIL_REGISTRY_ }}"
+          insecure = true
+          location = "{{ _CONTRAIL_REGISTRY_ }}"
+      when: _CONTRAIL_REGISTRY_ != "" and not podman_v2_check.changed
+
+    - debug:
+        msg: "podman configuration v2 not detected. Using v1"
+      when: podman_v2_check.changed
+
+    - name: Setup podman insecure registry v1
       ini_file:
         path: /etc/containers/registries.conf
         section: 'registries.insecure'
         option: 'registries'
         value: "[ '{{ _CONTRAIL_REGISTRY_ }}' ]"
-      when: _CONTRAIL_REGISTRY_ != ""
+      when: _CONTRAIL_REGISTRY_ != "" and podman_v2_check.changed
 
     - name: prepare podman volume args
       set_fact:
