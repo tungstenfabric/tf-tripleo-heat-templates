@@ -54,6 +54,9 @@ sudo subscription-manager repos \
 # Remove cloud-init (in case if it virt test setup and cloud image used for deploy)
 sudo dnf remove -y cloud-init || true
 
+# Set relase version to 8.4 else using current procedure brings the rhel-8.6
+sudo subscription-manager release --set=8.4
+
 # Enable dnf modules and update system
 # For Red Hat Virtualization Manager 4.4 use virt:av
 # (for previous versions check RedHat documentation)
@@ -161,7 +164,7 @@ fi
 sudo dnf install -y \
   tmux \
   rhvm-appliance \
-  ovirt-hosted-engine-setup
+  ovirt-hosted-engine-setup-2.5*
 ```
 
 ## Deploying the self-hosted engine
@@ -189,7 +192,7 @@ sudo firewall-cmd --get-active-zones
 ```
 
 
-## To enable virh cli to use ovirt auth
+## To enable virsh cli to use ovirt auth
 ```bash
 sudo ln -s /etc/ovirt-hosted-engine/virsh_auth.conf  /etc/libvirt/auth.conf
 ```
