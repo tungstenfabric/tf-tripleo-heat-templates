@@ -428,6 +428,7 @@ spec:
 7.1. Export environment form cenral site
 ```bash
 mkdir -p ~/dcn-common
+chmod -R 777 ~/dcn-common
 openstack overcloud export \
   --stack overcloud \
   --config-download-dir /var/lib/mistral/overcloud \
