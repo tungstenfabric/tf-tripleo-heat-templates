@@ -133,7 +133,7 @@ sudo systemctl restart nfs-server
 # check exports
 sudo exportfs
 
-# Rebbot system In case if newer kernel availalbe in /lib/modules
+# Reboot system In case if newer kernel availalbe in /lib/modules
 latest_kv=$(ls -1 /lib/modules | sort -V | tail -n 1)
 active_kv=$(uname -r)
 if [[ "$latest_kv" != "$active_kv" ]] ; then
