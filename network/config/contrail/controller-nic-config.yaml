@@ -195,9 +195,13 @@ resources:
               network_config:
               - type: interface
                 name: nic1
+                mtu:
+                  get_param: ControlPlaneMtu
                 use_dhcp: false
                 dns_servers:
                   get_param: DnsServers
+                domain:
+                  get_param: DnsSearchDomains
                 addresses:
                 - ip_netmask:
                     list_join:
@@ -205,7 +209,7 @@ resources:
                       - - get_param: ControlPlaneIp
                         - get_param: ControlPlaneSubnetCidr
                 routes:
-                  list_concat:
+                  list_concat_unique:
                     - - ip_netmask: 169.254.169.254/32
                         next_hop:
                           get_param: EC2MetadataIp
@@ -217,46 +221,61 @@ resources:
                 vlan_id:
                   get_param: InternalApiNetworkVlanID
                 device: nic1
+                mtu:
+                  get_param: InternalApiMtu
                 addresses:
                 - ip_netmask:
                     get_param: InternalApiIpSubnet
                 routes:
-                  get_param: InternalApiInterfaceRoutes
+                  list_concat_unique:
+                    - get_param: InternalApiInterfaceRoutes
               - type: vlan
                 vlan_id:
                   get_param: ExternalNetworkVlanID
                 device: nic1
+                mtu:
+                  get_param: ExternalMtu
                 addresses:
                 - ip_netmask:
                     get_param: ExternalIpSubnet
                 routes:
-                  get_param: ExternalInterfaceRoutes
+                  list_concat_unique:
+                    - get_param: ExternalInterfaceRoutes
               - type: vlan
                 vlan_id:
                   get_param: StorageNetworkVlanID
                 device: nic1
+                mtu:
+                  get_param: StorageMtu
                 addresses:
                 - ip_netmask:
                     get_param: StorageIpSubnet
                 routes:
-                  get_param: StorageInterfaceRoutes
+                  list_concat_unique:
+                    - get_param: StorageInterfaceRoutes
               - type: vlan
                 vlan_id:
                   get_param: StorageMgmtNetworkVlanID
                 device: nic1
+                mtu:
+                  get_param: StorageMgmtMtu
                 addresses:
                 - ip_netmask:
                     get_param: StorageMgmtIpSubnet
                 routes:
-                  get_param: StorageMgmtInterfaceRoutes
-              # - type: interface
-              #   name: nic2
-              #   use_dhcp: false
-              #   addresses:
-              #   - ip_netmask:
-              #       get_param: TenantIpSubnet
-              #   routes:
-              #     get_param: TenantInterfaceRoutes
+                  list_concat_unique:
+                    - get_param: StorageMgmtInterfaceRoutes
+              #- type: interface
+              #  name: nic2
+              #  mtu:
+              #    get_param: TenantMtu
+              #  use_dhcp: false
+              #  addresses:
+              #  - ip_netmask:
+              #      get_param: TenantIpSubnet
+              #  routes:
+              #    list_concat_unique:
+              #      - get_param: TenantInterfaceRoutes
 
 
 outputs:
