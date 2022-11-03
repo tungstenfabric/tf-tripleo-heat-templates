@@ -11,6 +11,14 @@ parameters:
   ContrailImageTag:
     description: Contrail container image tag
     type: string
+  ContrailRegistryUser:
+    default: ''
+    description: Contrail Registry Username
+    type: string
+  ContrailRegistryPassword:
+    default: ''
+    description: Contrail Registry Password
+    type: string
   DockerContrailNodeInitImageName:
     description: image
     type: string
@@ -73,6 +81,8 @@ resources:
       group: ansible
       inputs:
         - name: _CONTRAIL_REGISTRY_
+        - name: _CONTRAIL_REGISTRY_USER_
+        - name: _CONTRAIL_REGISTRY_PASSWORD_
         - name: _CONTRAIL_NODE_INIT_IMAGE_
         - name: _CONTRAIL_STATUS_IMAGE_
         - name: _SERVER_CA_
@@ -106,6 +116,8 @@ resources:
         _SSL_ENABLE_: {get_param: ContrailSslEnabled}
         _INSTALL_PUPPET_: {get_param: install_contrail_puppet}
         _NODEDATA_: {get_param: NodeDataLookup}
+        _CONTRAIL_REGISTRY_USER_: {get_param: ContrailRegistryUser}
+        _CONTRAIL_REGISTRY_PASSWORD_: {get_param: ContrailRegistryPassword}
     depends_on:
       - DockerContrailNodeImageNormalize
       - DockerContrailStatusImageNormalize

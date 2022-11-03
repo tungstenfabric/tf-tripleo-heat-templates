@@ -61,7 +61,7 @@
         {{ container_cli }} container rm --force $( {{ container_cli }} ps -a --filter 'name=.*contrail-node-init.*' --format "{{'{{'}}.ID{{'}}'}}")
 
       ignore_errors: yes
-  
+
     - set_fact:
         ssl_enable: "{{ _SSL_ENABLE_ | default('false')}} | bool"
 
@@ -145,6 +145,11 @@
         option: 'registries'
         value: "[ '{{ _CONTRAIL_REGISTRY_ }}' ]"
       when: _CONTRAIL_REGISTRY_ != "" and podman_v2_check.changed
+
+    - name: Login to registry
+      shell: >
+        podman login -u {{ _CONTRAIL_REGISTRY_USER_ }} -p {{ _CONTRAIL_REGISTRY_PASSWORD_ }} {{ _CONTRAIL_REGISTRY_ }} --tls-verify=false
+      when: _CONTRAIL_REGISTRY_USER_ != "" and _CONTRAIL_REGISTRY_PASSWORD_ != "" and _CONTRAIL_REGISTRY_ != ""
 
     - name: prepare podman volume args
       set_fact:

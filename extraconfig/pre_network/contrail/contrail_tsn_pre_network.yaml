@@ -58,7 +58,14 @@ parameters:
     default: 'latest'
     description: Contrail container image tag
     type: string
-
+  ContrailRegistryUser:
+    default: ''
+    description: Contrail Registry Username
+    type: string
+  ContrailRegistryPassword:
+    default: ''
+    description: Contrail Registry Password
+    type: string
   NodeDataLookup:
     type: json
     default: {}
@@ -124,6 +131,8 @@ resources:
         - name: _CONTRAIL_VROUTER_PLUGIN_INIT_IMAGE_
         - name: _CONTRAIL_VROUTER_PLUGIN_INIT_IMAGE_NAME_
         - name: _DOCKER_INSECURE_REGISTRIES_
+        - name: _CONTRAIL_REGISTRY_USER_
+        - name: _CONTRAIL_REGISTRY_PASSWORD_
       outputs:
         - name: result
       config:
@@ -149,6 +158,8 @@ resources:
         _CONTRAIL_VROUTER_PLUGIN_INIT_IMAGE_: {get_attr: [DockerContrailVrouterPluginInitImageNormalize, contrail_image]}
         _CONTRAIL_VROUTER_PLUGIN_INIT_IMAGE_NAME_: {get_attr: [DockerContrailVrouterPluginInitImageNormalize, contrail_image_only]}
         _DOCKER_INSECURE_REGISTRIES_: {get_param: DockerInsecureRegistryAddress}
+        _CONTRAIL_REGISTRY_USER_: {get_param: ContrailRegistryUser}
+        _CONTRAIL_REGISTRY_PASSWORD_: {get_param: ContrailRegistryPassword}
     depends_on:
       - DockerContrailVrouterPluginInitImageNormalize
       - DockerContrailVrouterKernelImageNormalize
