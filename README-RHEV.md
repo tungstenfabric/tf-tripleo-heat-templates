@@ -18,7 +18,9 @@ See more about installation options in the RedHat [documentation](https://access
 
 IMPORTNANT: this readme uses NFS as a storage for VMs, note that you need to plan you storage layout
 and consider other options (including localfs on dedicated disks) for desired balance of performance,
-flexibility and relybility.
+flexibility and reliability.
+
+In case of redeployment self-hosted engine please use [Red Hat documentation for cleaning-up] (https://access.redhat.com/documentation/en-us/red_hat_virtualization/4.4/html/installing_red_hat_virtualization_as_a_self-hosted_engine_using_the_command_line/troubleshooting_she_she_cli_deploy#Cleaning_Up_a_Failed_Self-hosted_Engine_Deployment_SHE_cli_deploy)
 
 
 # Repare Red Hat Virtualization Manager hosts
@@ -26,7 +28,8 @@ More about hosts preparateion in [RedHat instruction](https://access.redhat.com/
 
 ## Deploy hosts with RHEL8
 
-## Install and enable required software
+All the hosts must have RedHat subscription and enabled repos (see the commands bellow)
+
 ```bash
 # Register node with RedHat subscription
 # (for satelite check RedHat instruction)
@@ -37,8 +40,7 @@ sudo subscription-manager register \
 # Attach pools that allow to enable all required repos
 # e.g.:
 sudo subscription-manager attach \
-  --pool <RHOSP16.2 pool ID> \
-  --pool <Red Hat Virtualization Manager pool ID>
+  --pool <pool ID> \
 
 # Enable repos
 sudo subscription-manager repos \
@@ -54,16 +56,17 @@ sudo subscription-manager repos \
 # Remove cloud-init (in case if it virt test setup and cloud image used for deploy)
 sudo dnf remove -y cloud-init || true
 
-# Set relase version to 8.4 else using current procedure brings the rhel-8.6
-sudo subscription-manager release --set=8.4
+# Set relase version to 8.6 
+sudo subscription-manager release --set=8.6
 
 # Enable dnf modules and update system
-# For Red Hat Virtualization Manager 4.4 use virt:av
 # (for previous versions check RedHat documentation)
 sudo dnf module reset -y virt
-sudo dnf module enable -y virt:av
+sudo dnf module enable -y virt:rhel
 sudo dnf distro-sync -y --nobest
 sudo dnf upgrade -y --nobest
+
+## Install and enable required software on the main node (node where self-hosted engine deployed) 
 
 # Enable firewall
 sudo dnf install -y firewalld
@@ -164,7 +167,7 @@ fi
 sudo dnf install -y \
   tmux \
   rhvm-appliance \
-  ovirt-hosted-engine-setup-2.5*
+  ovirt-hosted-engine-setup
 ```
 
 ## Deploying the self-hosted engine
@@ -476,7 +479,7 @@ cat << EOF > infra.yaml
 EOF
 ```
 
-## Deploy nodes, networks and storages
+## Deploy nodes, networks and storages (must be run from the host where self-engine deployed)
 ```bash
 ansible-playbook \
   --extra-vars="@common-env.yaml" \
