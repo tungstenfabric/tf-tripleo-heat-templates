@@ -598,6 +598,7 @@ EOF
 
 # Playbook for overcloud VMs
 # !!! Adjustto your setup
+# bios_type: q35_ovmf is added as workaround for UEFI issue (https://access.redhat.com/solutions/6973535)
 cat << EOF > overcloud.yaml
 - hosts: localhost
   tasks:
@@ -636,6 +637,7 @@ cat << EOF > overcloud.yaml
       placement_policy: pinned
       operating_system: rhel_8x64
       disk_format: cow
+      bios_type: q35_ovmf
       graphical_console:
         protocol:
           - spice
