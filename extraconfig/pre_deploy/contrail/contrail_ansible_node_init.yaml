@@ -149,7 +149,13 @@
     - name: Login to registry
       shell: >
         podman login -u {{ _CONTRAIL_REGISTRY_USER_ }} -p {{ _CONTRAIL_REGISTRY_PASSWORD_ }} {{ _CONTRAIL_REGISTRY_ }} --tls-verify=false
-      when: _CONTRAIL_REGISTRY_USER_ != "" and _CONTRAIL_REGISTRY_PASSWORD_ != "" and _CONTRAIL_REGISTRY_ != ""
+      when:
+        - _CONTRAIL_REGISTRY_USER_ is defined
+        - _CONTRAIL_REGISTRY_PASSWORD_ is defined
+        - _CONTRAIL_REGISTRY_ is defined
+        - _CONTRAIL_REGISTRY_USER_ != ""
+        - _CONTRAIL_REGISTRY_PASSWORD_ != ""
+        - _CONTRAIL_REGISTRY_ != ""
 
     - name: prepare podman volume args
       set_fact:

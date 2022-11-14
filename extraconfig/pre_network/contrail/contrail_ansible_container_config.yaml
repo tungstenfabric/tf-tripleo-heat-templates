@@ -98,6 +98,17 @@
         - contrail_registry is defined and contrail_registry != ""
         - contrail_registry is defined and contrail_registry in _DOCKER_INSECURE_REGISTRIES_
 
+    - name: Login to registry
+      shell: >
+        podman login -u {{ _CONTRAIL_REGISTRY_USER_ }} -p {{ _CONTRAIL_REGISTRY_PASSWORD_ }} {{ contrail_registry }} --tls-verify=false
+      when:
+        - _CONTRAIL_REGISTRY_USER_ is defined
+        - _CONTRAIL_REGISTRY_PASSWORD_ is defined
+        - contrail_registry is defined
+        - _CONTRAIL_REGISTRY_USER_ != ""
+        - _CONTRAIL_REGISTRY_PASSWORD_ != ""
+        - contrail_registry != ""
+
     - name: contrail vrouter plugin init container if exists
       block:
         - set_fact:
