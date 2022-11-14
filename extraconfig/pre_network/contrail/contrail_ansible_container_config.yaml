@@ -57,20 +57,8 @@
         create: yes
       when: _CONTRAIL_VROUTER_MODULE_OPTS_ is defined and _CONTRAIL_VROUTER_MODULE_OPTS_ != ''
 
-    - name: contrail vrouter plugin init container if exists
+    - name: Setup podman insecure registry
       block:
-        - set_fact:
-            plugin_init_env_args: ''
-
-        - name: prepare podman env args
-          set_fact:
-            plugin_init_env_args: "{{ plugin_init_env_args }}  -e  {{ item.key}}='{{ item.value }}'"
-          loop: "{{ contrail_settings_env_vars | dict2items}}"
-
-        - name: contrail vrouter plugin registry
-          set_fact:
-            contrail_registry: "{{ _CONTRAIL_VROUTER_PLUGIN_INIT_IMAGE_.split('/')[0] }}"
-
         - name: Detect podman configuration version
           lineinfile:
             dest: /etc/containers/registries.conf
@@ -92,8 +80,6 @@
               insecure = true
               location = "{{ contrail_registry }}"
           when:
-            - contrail_registry != ""
-            - contrail_registry in _DOCKER_INSECURE_REGISTRIES_
             - not podman_v2_check.changed
 
         - debug:
@@ -107,9 +93,24 @@
             option: 'registries'
             value: "[ '{{ contrail_registry }}' ]"
           when:
-            - contrail_registry != ""
-            - contrail_registry in _DOCKER_INSECURE_REGISTRIES_
             - podman_v2_check.changed
+      when:
+        - contrail_registry is defined and contrail_registry != ""
+        - contrail_registry is defined and contrail_registry in _DOCKER_INSECURE_REGISTRIES_
+
+    - name: contrail vrouter plugin init container if exists
+      block:
+        - set_fact:
+            plugin_init_env_args: ''
+
+        - name: prepare podman env args
+          set_fact:
+            plugin_init_env_args: "{{ plugin_init_env_args }}  -e  {{ item.key}}='{{ item.value }}'"
+          loop: "{{ contrail_settings_env_vars | dict2items}}"
+
+        - name: contrail vrouter plugin registry
+          set_fact:
+            contrail_registry: "{{ _CONTRAIL_VROUTER_PLUGIN_INIT_IMAGE_.split('/')[0] }}"
 
         - name: remove contrail vrouter plugin init container if exists
           shell: >
@@ -129,21 +130,6 @@
     - name: contrail vrouter init registry
       set_fact:
         contrail_registry: "{{ _CONTRAIL_VROUTER_INIT_IMAGE_.split('/')[0] }}"
-
-    - name: Setup podman insecure registry for contrail vrouter init
-      when:
-        - contrail_registry != ""
-        - contrail_registry in _DOCKER_INSECURE_REGISTRIES_
-      ini_file:
-        path: /etc/containers/registries.conf
-        section: 'registries.insecure'
-        option: 'registries'
-        value: "[ '{{ contrail_registry }}' ]"
-
-    - name: Login to registry
-      shell: >
-        podman login -u {{ _CONTRAIL_REGISTRY_USER_ }} -p {{ _CONTRAIL_REGISTRY_PASSWORD_ }} {{ _CONTRAIL_REGISTRY_ }} --tls-verify=false
-      when: _CONTRAIL_REGISTRY_USER_ != "" and _CONTRAIL_REGISTRY_PASSWORD_ != "" and _CONTRAIL_REGISTRY_ != ""
 
     - name: start contrail dpdk init container
       block:
