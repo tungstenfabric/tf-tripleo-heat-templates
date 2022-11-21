@@ -57,6 +57,10 @@
         create: yes
       when: _CONTRAIL_VROUTER_MODULE_OPTS_ is defined and _CONTRAIL_VROUTER_MODULE_OPTS_ != ''
 
+    - name: contrail vrouter init registry
+      set_fact:
+        contrail_registry: "{{ _CONTRAIL_VROUTER_INIT_IMAGE_.split('/')[0] }}"
+
     - name: Setup podman insecure registry
       block:
         - name: Detect podman configuration version
@@ -119,10 +123,6 @@
             plugin_init_env_args: "{{ plugin_init_env_args }}  -e  {{ item.key}}='{{ item.value }}'"
           loop: "{{ contrail_settings_env_vars | dict2items}}"
 
-        - name: contrail vrouter plugin registry
-          set_fact:
-            contrail_registry: "{{ _CONTRAIL_VROUTER_PLUGIN_INIT_IMAGE_.split('/')[0] }}"
-
         - name: remove contrail vrouter plugin init container if exists
           shell: >
             {{ container_cli }} container rm --force "{{ _CONTRAIL_VROUTER_PLUGIN_INIT_IMAGE_NAME_ }}"
@@ -137,10 +137,6 @@
       when:
         - _CONTRAIL_VROUTER_PLUGIN_INIT_IMAGE_NAME_ is defined and _CONTRAIL_VROUTER_PLUGIN_INIT_IMAGE_NAME_ != ''
         - _CONTRAIL_VROUTER_PLUGIN_INIT_IMAGE_ is defined and _CONTRAIL_VROUTER_PLUGIN_INIT_IMAGE_ != ''
-
-    - name: contrail vrouter init registry
-      set_fact:
-        contrail_registry: "{{ _CONTRAIL_VROUTER_INIT_IMAGE_.split('/')[0] }}"
 
     - name: start contrail dpdk init container
       block:
